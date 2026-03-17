@@ -52,6 +52,11 @@ defmodule LoyaltyWeb.Layouts do
               {@current_scope.user.email}
             </li>
             <li>
+              <.link href={~p"/establishments"}>
+                Establishments
+              </.link>
+            </li>
+            <li>
               <.link href={~p"/users/settings"}>Settings</.link>
             </li>
             <li>

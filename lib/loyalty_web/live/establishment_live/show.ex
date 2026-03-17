@@ -20,6 +20,13 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
           >
             <.icon name="hero-pencil-square" /> Edit establishment
           </.button>
+
+          <.button
+            variant="primary"
+            navigate={~p"/establishments/#{@establishment}/loyalty_programs"}
+          >
+            <.icon name="hero-plus" /> New Loyalty Program
+          </.button>
         </:actions>
       </.header>
 
