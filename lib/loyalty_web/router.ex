@@ -54,6 +54,11 @@ defmodule LoyaltyWeb.Router do
       on_mount: [{LoyaltyWeb.UserAuth, :require_authenticated}] do
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
+
+      live "/establishments", EstablishmentLive.Index, :index
+      live "/establishments/new", EstablishmentLive.Form, :new
+      live "/establishments/:id", EstablishmentLive.Show, :show
+      live "/establishments/:id/edit", EstablishmentLive.Form, :edit
     end
 
     post "/users/update-password", UserSessionController, :update_password
