@@ -121,7 +121,7 @@ defmodule Loyalty.MixProject do
         "format --check-formatted",
         "credo --strict",
         "sobelow --skip -i Config.CSP --config",
-        "dialyzer",
+        "dialyzer --format github",
         "test --cover",
         "coverage.index"
       ]
