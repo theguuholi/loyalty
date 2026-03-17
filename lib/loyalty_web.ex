@@ -88,8 +88,8 @@ defmodule LoyaltyWeb do
       import LoyaltyWeb.CoreComponents
 
       # Common modules used in templates
-      alias Phoenix.LiveView.JS
       alias LoyaltyWeb.Layouts
+      alias Phoenix.LiveView.JS
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())

@@ -11,7 +11,12 @@ defmodule Loyalty.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      dialyzer: dialyzer(),
+      test_coverage: [
+        summary: [threshold: 90],
+        ignore_modules: ignore_coverage_modules()
+      ]
     ]
   end
 
@@ -31,6 +36,22 @@ defmodule Loyalty.MixProject do
     ]
   end
 
+  # Test coverage configuration
+  defp ignore_coverage_modules do
+    {modules, _} = Code.eval_file(".test_coverage_ignore.exs")
+    modules
+  end
+
+  # Dialyzer configuration
+  defp dialyzer do
+    [
+      plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
+      plt_add_apps: [:mix, :ex_unit],
+      flags: [:error_handling, :underspecs],
+      ignore_warnings: ".dialyzer_ignore.exs"
+    ]
+  end
+
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
@@ -40,6 +61,7 @@ defmodule Loyalty.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.8.1"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
@@ -65,7 +87,12 @@ defmodule Loyalty.MixProject do
       {:gettext, "~> 0.26"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.8", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:money, "~> 1.13"}
     ]
   end
 
@@ -88,7 +115,16 @@ defmodule Loyalty.MixProject do
         "esbuild loyalty --minify",
         "phx.digest"
       ],
-      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
+      precommit: [
+        "compile --warnings-as-errors",
+        "deps.unlock --check-unused",
+        "format --check-formatted",
+        "credo --strict",
+        "sobelow --skip -i Config.CSP --config",
+        "dialyzer --format github",
+        "test --cover",
+        "coverage.index"
+      ]
     ]
   end
 end
