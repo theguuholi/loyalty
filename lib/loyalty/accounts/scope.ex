@@ -17,8 +17,9 @@ defmodule Loyalty.Accounts.Scope do
   """
 
   alias Loyalty.Accounts.User
+  alias Loyalty.Establishments.Establishment
 
-  defstruct user: nil
+  defstruct user: nil, establishment: nil
 
   @doc """
   Creates a scope for the given user.
@@ -30,4 +31,8 @@ defmodule Loyalty.Accounts.Scope do
   end
 
   def for_user(nil), do: nil
+
+  def put_establishment(%__MODULE__{} = scope, %Establishment{} = establishment) do
+    %{scope | establishment: establishment}
+  end
 end

@@ -11,6 +11,7 @@ defmodule LoyaltyWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_scope_for_user
+    plug :fetch_establishment_from_scope
   end
 
   pipeline :api do
@@ -51,7 +52,10 @@ defmodule LoyaltyWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
-      on_mount: [{LoyaltyWeb.UserAuth, :require_authenticated}] do
+      on_mount: [
+        {LoyaltyWeb.UserAuth, :require_authenticated},
+        {LoyaltyWeb.UserAuth, :assign_establishment_to_scope}
+      ] do
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
 
@@ -59,6 +63,13 @@ defmodule LoyaltyWeb.Router do
       live "/establishments/new", EstablishmentLive.Form, :new
       live "/establishments/:id", EstablishmentLive.Show, :show
       live "/establishments/:id/edit", EstablishmentLive.Form, :edit
+
+      scope "/establishments/:establishment_id" do
+        live "/loyalty_programs", LoyaltyProgramLive.Index, :index
+        live "/loyalty_programs/new", LoyaltyProgramLive.Form, :new
+        live "/loyalty_programs/:id", LoyaltyProgramLive.Show, :show
+        live "/loyalty_programs/:id/edit", LoyaltyProgramLive.Form, :edit
+      end
     end
 
     post "/users/update-password", UserSessionController, :update_password

@@ -5,6 +5,7 @@ defmodule Loyalty.AccountsFixtures do
   """
 
   import Ecto.Query
+  import Loyalty.EstablishmentsFixtures, only: [establishment_fixture: 1]
 
   alias Loyalty.Accounts
   alias Loyalty.Accounts.Scope
@@ -80,5 +81,10 @@ defmodule Loyalty.AccountsFixtures do
 
     from(ut in Accounts.UserToken, where: ut.token == ^token)
     |> Loyalty.Repo.update_all(set: [inserted_at: dt, authenticated_at: dt])
+  end
+
+  def establishment_scope_fixture(scope \\ user_scope_fixture()) do
+    establishment = establishment_fixture(scope)
+    Scope.put_establishment(scope, establishment)
   end
 end

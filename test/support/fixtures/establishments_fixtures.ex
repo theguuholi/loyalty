@@ -3,6 +3,8 @@ defmodule Loyalty.EstablishmentsFixtures do
   This module defines test helpers for creating
   entities via the `Loyalty.Establishments` context.
   """
+  import Loyalty.AccountsFixtures, only: [user_scope_fixture: 0]
+  alias Loyalty.Accounts.Scope
 
   @doc """
   Generate a establishment.
@@ -15,5 +17,10 @@ defmodule Loyalty.EstablishmentsFixtures do
 
     {:ok, establishment} = Loyalty.Establishments.create_establishment(scope, attrs)
     establishment
+  end
+
+  def establishment_scope_fixture(scope \\ user_scope_fixture()) do
+    establishment = establishment_fixture(scope)
+    Scope.put_establishment(scope, establishment)
   end
 end

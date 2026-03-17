@@ -4,8 +4,7 @@ defmodule LoyaltyWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
-  alias Loyalty.Accounts
-  alias Loyalty.Accounts.Scope
+  alias Loyalty.{Accounts, Accounts.Scope, Establishments}
 
   # Make the remember me cookie valid for 14 days. This should match
   # the session validity setting in UserToken.
@@ -248,6 +247,33 @@ defmodule LoyaltyWeb.UserAuth do
     end
   end
 
+  def on_mount(
+        :assign_establishment_to_scope,
+        %{"establishment_id" => establishment_id},
+        _session,
+        socket
+      ) do
+    socket =
+      case socket.assigns.current_scope do
+        %{establishment: nil} = scope ->
+          establishment =
+            Establishments.get_establishment!(scope, establishment_id)
+
+          Phoenix.Component.assign(
+            socket,
+            :current_scope,
+            Scope.put_establishment(scope, establishment)
+          )
+
+        _ ->
+          socket
+      end
+
+    {:cont, socket}
+  end
+
+  def on_mount(:assign_establishment_to_scope, _params, _session, socket), do: {:cont, socket}
+
   defp mount_current_scope(socket, session) do
     Phoenix.Component.assign_new(socket, :current_scope, fn ->
       {user, _} =
@@ -287,4 +313,17 @@ defmodule LoyaltyWeb.UserAuth do
   end
 
   defp maybe_store_return_to(conn), do: conn
+
+  def fetch_establishment_from_scope(conn, _opts) do
+    establishment_id = conn.params["establishment_id"]
+
+    current_scope = conn.assigns.current_scope
+
+    if establishment_id do
+      establishment = Establishments.get_establishment!(current_scope, establishment_id)
+      assign(conn, :current_scope, Scope.put_establishment(current_scope, establishment))
+    else
+      conn
+    end
+  end
 end
