@@ -95,8 +95,8 @@ defmodule LoyaltyWeb.EstablishmentLiveTest do
     test "displays establishment", %{conn: conn, establishment: establishment} do
       {:ok, _show_live, html} = live(conn, ~p"/establishments/#{establishment}")
 
-      assert html =~ "Show Establishment"
       assert html =~ establishment.name
+      assert html =~ "Ver cartões"
     end
 
     test "updates establishment and returns to show", %{conn: conn, establishment: establishment} do
@@ -104,7 +104,7 @@ defmodule LoyaltyWeb.EstablishmentLiveTest do
 
       assert {:ok, form_live, _} =
                show_live
-               |> element("a", "Edit")
+               |> element("a", "Editar estabelecimento")
                |> render_click()
                |> follow_redirect(conn, ~p"/establishments/#{establishment}/edit?return_to=show")
 

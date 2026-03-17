@@ -19,6 +19,8 @@ defmodule Loyalty.Accounts.Scope do
   alias Loyalty.Accounts.User
   alias Loyalty.Establishments.Establishment
 
+  @type t() :: %__MODULE__{}
+
   defstruct user: nil, establishment: nil
 
   @doc """

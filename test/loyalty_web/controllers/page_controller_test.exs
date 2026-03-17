@@ -3,6 +3,9 @@ defmodule LoyaltyWeb.PageControllerTest do
 
   test "GET /", %{conn: conn} do
     conn = get(conn, ~p"/")
-    assert html_response(conn, 200) =~ "Loyalty"
+    assert html_response(conn, 200) =~ "MyRewards"
+    assert html_response(conn, 200) =~ "Ver meus cartões"
+    assert html_response(conn, 200) =~ "landing-cta-cards"
+    assert html_response(conn, 200) =~ "landing-link-establishment"
   end
 end

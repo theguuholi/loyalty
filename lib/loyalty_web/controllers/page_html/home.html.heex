@@ -1,3 +1,26 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
-  <h1>Loyalty</h1>
+  <div class="space-y-6 text-center">
+    <h1 class="text-2xl font-bold text-[#1a1d21]">
+      MyRewards — Nunca mais perca seus cartões de fidelidade
+    </h1>
+    <p class="text-[#6b7280]">
+      Nunca mais perca seus cartões de fidelidade. Guarde no celular.
+    </p>
+    <div class="flex flex-col gap-4 items-center">
+      <.button
+        id="landing-cta-cards"
+        navigate={~p"/cards"}
+        variant="primary"
+      >
+        Ver meus cartões
+      </.button>
+      <.link
+        id="landing-link-establishment"
+        href={~p"/users/log-in"}
+        class="text-sm text-[#1b4d3e] hover:text-[#2d6a4f] font-medium"
+      >
+        Sou estabelecimento
+      </.link>
+    </div>
+  </div>
 </Layouts.app>
