@@ -20,8 +20,10 @@ defmodule LoyaltyWeb.UserLive.LoginTest do
 
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
 
+      login_form = form(lv, "#login_form_magic", user: %{email: user.email})
+
       {:ok, _lv, html} =
-        form(lv, "#login_form_magic", user: %{email: user.email})
+        login_form
         |> render_submit()
         |> follow_redirect(conn, ~p"/users/log-in")
 
@@ -34,8 +36,10 @@ defmodule LoyaltyWeb.UserLive.LoginTest do
     test "does not disclose if user is registered", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
 
+      login_form = form(lv, "#login_form_magic", user: %{email: "idonotexist@example.com"})
+
       {:ok, _lv, html} =
-        form(lv, "#login_form_magic", user: %{email: "idonotexist@example.com"})
+        login_form
         |> render_submit()
         |> follow_redirect(conn, ~p"/users/log-in")
 

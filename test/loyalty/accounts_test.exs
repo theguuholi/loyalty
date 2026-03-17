@@ -1,9 +1,9 @@
 defmodule Loyalty.AccountsTest do
   use Loyalty.DataCase
 
-  alias Loyalty.Accounts
-
   import Loyalty.AccountsFixtures
+
+  alias Loyalty.Accounts
   alias Loyalty.Accounts.{User, UserToken}
 
   describe "get_user_by_email/1" do
@@ -79,7 +79,13 @@ defmodule Loyalty.AccountsTest do
 
     test "registers users without password" do
       email = unique_user_email()
-      {:ok, user} = Accounts.register_user(valid_user_attributes(email: email))
+
+      attrs = valid_user_attributes(email: email)
+
+      {:ok, user} =
+        attrs
+        |> Accounts.register_user()
+
       assert user.email == email
       assert is_nil(user.hashed_password)
       assert is_nil(user.confirmed_at)
@@ -274,7 +280,8 @@ defmodule Loyalty.AccountsTest do
     end
 
     test "duplicates the authenticated_at of given user in new token", %{user: user} do
-      user = %{user | authenticated_at: DateTime.add(DateTime.utc_now(:second), -3600)}
+      base_time = DateTime.utc_now(:second)
+      user = %{user | authenticated_at: base_time |> DateTime.add(-3600)}
       token = Accounts.generate_user_session_token(user)
       assert user_token = Repo.get_by(UserToken, token: token)
       assert user_token.authenticated_at == user.authenticated_at

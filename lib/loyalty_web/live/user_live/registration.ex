@@ -44,7 +44,7 @@ defmodule LoyaltyWeb.UserLive.Registration do
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_scope: %{user: user}}} = socket)
-      when not is_nil(user) do
+      when user != nil do
     {:ok, redirect(socket, to: LoyaltyWeb.UserAuth.signed_in_path(socket))}
   end
 

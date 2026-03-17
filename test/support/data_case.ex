@@ -21,8 +21,7 @@ defmodule Loyalty.DataCase do
       alias Loyalty.Repo
 
       import Ecto
-      import Ecto.Changeset
-      import Ecto.Query
+      import Ecto.{Changeset, Query}
       import Loyalty.DataCase
     end
   end

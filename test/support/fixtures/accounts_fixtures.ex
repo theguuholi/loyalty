@@ -64,12 +64,8 @@ defmodule Loyalty.AccountsFixtures do
   end
 
   def override_token_authenticated_at(token, authenticated_at) when is_binary(token) do
-    Loyalty.Repo.update_all(
-      from(t in Accounts.UserToken,
-        where: t.token == ^token
-      ),
-      set: [authenticated_at: authenticated_at]
-    )
+    from(t in Accounts.UserToken, where: t.token == ^token)
+    |> Loyalty.Repo.update_all(set: [authenticated_at: authenticated_at])
   end
 
   def generate_user_magic_link_token(user) do
@@ -79,11 +75,10 @@ defmodule Loyalty.AccountsFixtures do
   end
 
   def offset_user_token(token, amount_to_add, unit) do
-    dt = DateTime.add(DateTime.utc_now(:second), amount_to_add, unit)
+    base_time = DateTime.utc_now(:second)
+    dt = base_time |> DateTime.add(amount_to_add, unit)
 
-    Loyalty.Repo.update_all(
-      from(ut in Accounts.UserToken, where: ut.token == ^token),
-      set: [inserted_at: dt, authenticated_at: dt]
-    )
+    from(ut in Accounts.UserToken, where: ut.token == ^token)
+    |> Loyalty.Repo.update_all(set: [inserted_at: dt, authenticated_at: dt])
   end
 end

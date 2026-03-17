@@ -1,9 +1,10 @@
 defmodule LoyaltyWeb.UserLive.SettingsTest do
   use LoyaltyWeb.ConnCase, async: true
 
-  alias Loyalty.Accounts
-  import Phoenix.LiveViewTest
   import Loyalty.AccountsFixtures
+  import Phoenix.LiveViewTest
+
+  alias Loyalty.Accounts
 
   describe "Settings page" do
     test "renders settings page", %{conn: conn} do
@@ -25,11 +26,12 @@ defmodule LoyaltyWeb.UserLive.SettingsTest do
     end
 
     test "redirects if user is not in sudo mode", %{conn: conn} do
+      base_time = DateTime.utc_now(:second)
+      token_authenticated_at = base_time |> DateTime.add(-11, :minute)
+
       {:ok, conn} =
         conn
-        |> log_in_user(user_fixture(),
-          token_authenticated_at: DateTime.add(DateTime.utc_now(:second), -11, :minute)
-        )
+        |> log_in_user(user_fixture(), token_authenticated_at: token_authenticated_at)
         |> live(~p"/users/settings")
         |> follow_redirect(conn, ~p"/users/log-in")
 

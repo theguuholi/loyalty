@@ -1,12 +1,12 @@
 defmodule LoyaltyWeb.UserAuthTest do
   use LoyaltyWeb.ConnCase, async: true
 
-  alias Phoenix.LiveView
+  import Loyalty.AccountsFixtures
+
   alias Loyalty.Accounts
   alias Loyalty.Accounts.Scope
   alias LoyaltyWeb.UserAuth
-
-  import Loyalty.AccountsFixtures
+  alias Phoenix.LiveView
 
   @remember_me_cookie "_loyalty_web_user_remember_me"
   @remember_me_cookie_max_age 60 * 60 * 24 * 14
@@ -297,7 +297,8 @@ defmodule LoyaltyWeb.UserAuthTest do
     end
 
     test "redirects when authentication is too old", %{conn: conn, user: user} do
-      eleven_minutes_ago = DateTime.utc_now(:second) |> DateTime.add(-11, :minute)
+      base_time = DateTime.utc_now(:second)
+      eleven_minutes_ago = base_time |> DateTime.add(-11, :minute)
       user = %{user | authenticated_at: eleven_minutes_ago}
       user_token = Accounts.generate_user_session_token(user)
       {user, token_inserted_at} = Accounts.get_user_by_session_token(user_token)

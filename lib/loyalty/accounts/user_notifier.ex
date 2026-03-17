@@ -1,8 +1,8 @@
 defmodule Loyalty.Accounts.UserNotifier do
   import Swoosh.Email
 
-  alias Loyalty.Mailer
   alias Loyalty.Accounts.User
+  alias Loyalty.Mailer
 
   # Delivers the email using the application mailer.
   defp deliver(recipient, subject, body) do

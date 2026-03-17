@@ -69,8 +69,10 @@ defmodule LoyaltyWeb.UserLive.ConfirmationTest do
       # log out, new conn
       conn = build_conn()
 
+      result = live(conn, ~p"/users/log-in/#{token}")
+
       {:ok, _lv, html} =
-        live(conn, ~p"/users/log-in/#{token}")
+        result
         |> follow_redirect(conn, ~p"/users/log-in")
 
       assert html =~ "Magic link is invalid or it has expired"
@@ -100,16 +102,20 @@ defmodule LoyaltyWeb.UserLive.ConfirmationTest do
       # log out, new conn
       conn = build_conn()
 
+      result = live(conn, ~p"/users/log-in/#{token}")
+
       {:ok, _lv, html} =
-        live(conn, ~p"/users/log-in/#{token}")
+        result
         |> follow_redirect(conn, ~p"/users/log-in")
 
       assert html =~ "Magic link is invalid or it has expired"
     end
 
     test "raises error for invalid token", %{conn: conn} do
+      result = live(conn, ~p"/users/log-in/invalid-token")
+
       {:ok, _lv, html} =
-        live(conn, ~p"/users/log-in/invalid-token")
+        result
         |> follow_redirect(conn, ~p"/users/log-in")
 
       assert html =~ "Magic link is invalid or it has expired"

@@ -42,8 +42,10 @@ defmodule LoyaltyWeb.UserLive.RegistrationTest do
       email = unique_user_email()
       form = form(lv, "#registration_form", user: valid_user_attributes(email: email))
 
+      submitted = render_submit(form)
+
       {:ok, _lv, html} =
-        render_submit(form)
+        submitted
         |> follow_redirect(conn, ~p"/users/log-in")
 
       assert html =~
