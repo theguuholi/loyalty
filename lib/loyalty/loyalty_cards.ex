@@ -40,7 +40,9 @@ defmodule Loyalty.LoyaltyCards do
 
   """
   def list_loyalty_cards(%Scope{} = scope) do
-    Repo.all_by(LoyaltyCard, establishment_id: scope.establishment.id)
+    LoyaltyCard
+    |> Repo.all_by(establishment_id: scope.establishment.id)
+    |> Repo.preload([:customer, :establishment, :loyalty_program])
   end
 
   @doc """
