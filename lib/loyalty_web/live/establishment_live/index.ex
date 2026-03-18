@@ -10,9 +10,15 @@ defmodule LoyaltyWeb.EstablishmentLive.Index do
       <.header>
         Listing Establishments
         <:actions>
-          <.button variant="primary" navigate={~p"/establishments/new"}>
-            <.icon name="hero-plus" /> New Establishment
-          </.button>
+          <%= if @can_create_establishment do %>
+            <.button variant="primary" navigate={~p"/establishments/new"}>
+              <.icon name="hero-plus" /> New Establishment
+            </.button>
+          <% else %>
+            <span class="rounded-full border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content/70">
+              Only one establishment allowed
+            </span>
+          <% end %>
         </:actions>
       </.header>
 
@@ -28,14 +34,14 @@ defmodule LoyaltyWeb.EstablishmentLive.Index do
           </div>
           <.link navigate={~p"/establishments/#{establishment}/edit"}>Edit</.link>
         </:action>
-        <:action :let={{id, establishment}}>
+        <%!-- <:action :let={{id, establishment}}>
           <.link
             phx-click={JS.push("delete", value: %{id: establishment.id}) |> hide("##{id}")}
             data-confirm="Are you sure?"
           >
             Delete
           </.link>
-        </:action>
+        </:action> --%>
       </.table>
     </Layouts.app>
     """
@@ -50,6 +56,7 @@ defmodule LoyaltyWeb.EstablishmentLive.Index do
     {:ok,
      socket
      |> assign(:page_title, "Listing Establishments")
+     |> assign(:can_create_establishment, list_establishments(socket.assigns.current_scope) == [])
      |> stream(:establishments, list_establishments(socket.assigns.current_scope))}
   end
 
@@ -64,10 +71,12 @@ defmodule LoyaltyWeb.EstablishmentLive.Index do
   @impl true
   def handle_info({type, %Loyalty.Establishments.Establishment{}}, socket)
       when type in [:created, :updated, :deleted] do
+    establishments = list_establishments(socket.assigns.current_scope)
+
     {:noreply,
-     stream(socket, :establishments, list_establishments(socket.assigns.current_scope),
-       reset: true
-     )}
+     socket
+     |> assign(:can_create_establishment, establishments == [])
+     |> stream(:establishments, establishments, reset: true)}
   end
 
   defp list_establishments(current_scope) do

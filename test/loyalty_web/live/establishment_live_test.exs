@@ -10,20 +10,22 @@ defmodule LoyaltyWeb.EstablishmentLiveTest do
 
   setup :register_and_log_in_user
 
-  defp create_establishment(%{scope: scope}) do
-    establishment = establishment_fixture(scope)
-
-    %{establishment: establishment}
-  end
-
   describe "Index" do
-    setup [:create_establishment]
+    test "lists all establishments", %{conn: conn} do
+      {:ok, _index_live, html} = live(conn, ~p"/establishments")
 
-    test "lists all establishments", %{conn: conn, establishment: establishment} do
+      assert html =~ "Listing Establishments"
+      assert html =~ "New Establishment"
+      refute html =~ "Only one establishment allowed"
+    end
+
+    test "lists all establishments with existing data", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
       {:ok, _index_live, html} = live(conn, ~p"/establishments")
 
       assert html =~ "Listing Establishments"
       assert html =~ establishment.name
+      assert html =~ "Only one establishment allowed"
     end
 
     test "saves new establishment", %{conn: conn} do
@@ -52,7 +54,8 @@ defmodule LoyaltyWeb.EstablishmentLiveTest do
       assert html =~ "some name"
     end
 
-    test "updates establishment in listing", %{conn: conn, establishment: establishment} do
+    test "updates establishment in listing", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
       {:ok, index_live, _html} = live(conn, ~p"/establishments")
 
       assert {:ok, form_live, _html} =
@@ -78,7 +81,8 @@ defmodule LoyaltyWeb.EstablishmentLiveTest do
       assert html =~ "some updated name"
     end
 
-    test "deletes establishment in listing", %{conn: conn, establishment: establishment} do
+    test "deletes establishment in listing", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
       {:ok, index_live, _html} = live(conn, ~p"/establishments")
 
       assert index_live
@@ -87,19 +91,28 @@ defmodule LoyaltyWeb.EstablishmentLiveTest do
 
       refute has_element?(index_live, "#establishments-#{establishment.id}")
     end
+
+    test "hides the create button once an establishment exists", %{conn: conn, scope: scope} do
+      _establishment = establishment_fixture(scope)
+
+      {:ok, index_live, html} = live(conn, ~p"/establishments")
+
+      refute has_element?(index_live, "a", "New Establishment")
+      assert html =~ "Only one establishment allowed"
+    end
   end
 
   describe "Show" do
-    setup [:create_establishment]
-
-    test "displays establishment", %{conn: conn, establishment: establishment} do
+    test "displays establishment", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
       {:ok, _show_live, html} = live(conn, ~p"/establishments/#{establishment}")
 
       assert html =~ establishment.name
       assert html =~ "Ver cartões"
     end
 
-    test "updates establishment and returns to show", %{conn: conn, establishment: establishment} do
+    test "updates establishment and returns to show", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
       {:ok, show_live, _html} = live(conn, ~p"/establishments/#{establishment}")
 
       assert {:ok, form_live, _} =

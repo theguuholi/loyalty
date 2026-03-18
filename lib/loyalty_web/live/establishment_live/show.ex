@@ -17,14 +17,6 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
           <% end %>
         </:subtitle>
         <:actions>
-          <.link
-            id="dashboard-logout-link"
-            href={~p"/users/log-out"}
-            method="delete"
-            class="text-sm font-medium"
-          >
-            Sair
-          </.link>
           <.button navigate={~p"/establishments"}>
             <.icon name="hero-arrow-left" />
           </.button>
@@ -66,7 +58,7 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
         <% end %>
       </div>
 
-      <p class="text-sm font-semibold text-[#1a1d21] mb-2">Ações rápidas</p>
+      <p class="text-sm font-semibold mb-2">Ações rápidas</p>
       <div class="flex flex-wrap gap-2">
         <.link
           id="dashboard-cards-link"
