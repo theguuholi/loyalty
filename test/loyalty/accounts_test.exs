@@ -197,13 +197,13 @@ defmodule Loyalty.AccountsTest do
         Accounts.change_user_password(
           %User{},
           %{
-            "password" => "new valid password"
+            "password" => "NewValidPassword123!"
           },
           hash_password: false
         )
 
       assert changeset.valid?
-      assert get_change(changeset, :password) == "new valid password"
+      assert get_change(changeset, :password) == "NewValidPassword123!"
       assert is_nil(get_change(changeset, :hashed_password))
     end
   end
@@ -216,7 +216,7 @@ defmodule Loyalty.AccountsTest do
     test "validates password", %{user: user} do
       {:error, changeset} =
         Accounts.update_user_password(user, %{
-          password: "not valid",
+          password: "Short1!",
           password_confirmation: "another"
         })
 
@@ -238,12 +238,12 @@ defmodule Loyalty.AccountsTest do
     test "updates the password", %{user: user} do
       {:ok, {user, expired_tokens}} =
         Accounts.update_user_password(user, %{
-          password: "new valid password"
+          password: "NewValidPassword123!"
         })
 
       assert expired_tokens == []
       assert is_nil(user.password)
-      assert Accounts.get_user_by_email_and_password(user.email, "new valid password")
+      assert Accounts.get_user_by_email_and_password(user.email, "NewValidPassword123!")
     end
 
     test "deletes all tokens for the given user", %{user: user} do
@@ -251,7 +251,7 @@ defmodule Loyalty.AccountsTest do
 
       {:ok, {_, _}} =
         Accounts.update_user_password(user, %{
-          password: "new valid password"
+          password: "NewValidPassword123!"
         })
 
       refute Repo.get_by(UserToken, user_id: user.id)
