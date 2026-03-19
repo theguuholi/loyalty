@@ -1,10 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="Loyalty" suffix=" · Phoenix Framework">
+    <meta
+      name="description"
+      content={
+        assigns[:page_description] ||
+          "MyRewards ajuda estabelecimentos a vender recorrência com cartões digitais e uma experiência simples no celular."
+      }
+    />
+    <meta name="robots" content="index,follow" />
+    <meta property="og:title" content={assigns[:page_title] || "MyRewards - Fidelidade digital"} />
+    <meta
+      property="og:description"
+      content={
+        assigns[:page_description] ||
+          "MyRewards ajuda estabelecimentos a vender recorrência com cartões digitais e uma experiência simples no celular."
+      }
+    />
+    <meta property="og:type" content="website" />
+    <.live_title default="MyRewards - Fidelidade digital" suffix=" · MyRewards">
       {assigns[:page_title]}
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />

@@ -1,6 +1,7 @@
 defmodule Loyalty.Establishments.Establishment do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Loyalty.LoyaltyPrograms.LoyaltyProgram
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -8,6 +9,7 @@ defmodule Loyalty.Establishments.Establishment do
     field :name, :string
     field :user_id, :binary_id
 
+    has_one :loyalty_program, LoyaltyProgram, foreign_key: :establishment_id
     timestamps(type: :utc_datetime)
   end
 

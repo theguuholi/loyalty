@@ -4,8 +4,7 @@ defmodule LoyaltyWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
-  alias Loyalty.Accounts
-  alias Loyalty.Accounts.Scope
+  alias Loyalty.{Accounts, Accounts.Scope, Establishments}
 
   # Make the remember me cookie valid for 14 days. This should match
   # the session validity setting in UserToken.
@@ -215,11 +214,18 @@ defmodule LoyaltyWeb.UserAuth do
       end
   """
   def on_mount(:mount_current_scope, _params, session, socket) do
-    {:cont, mount_current_scope(socket, session)}
+    {:cont, socket |> put_locale_from_session(session) |> then(&mount_current_scope(&1, session))}
+  end
+
+  def on_mount(:put_locale, _params, session, socket) do
+    {:cont, put_locale_from_session(socket, session)}
   end
 
   def on_mount(:require_authenticated, _params, session, socket) do
-    socket = mount_current_scope(socket, session)
+    socket =
+      socket
+      |> put_locale_from_session(session)
+      |> then(&mount_current_scope(&1, session))
 
     if socket.assigns.current_scope && socket.assigns.current_scope.user do
       {:cont, socket}
@@ -246,6 +252,39 @@ defmodule LoyaltyWeb.UserAuth do
 
       {:halt, socket}
     end
+  end
+
+  def on_mount(
+        :assign_establishment_to_scope,
+        %{"establishment_id" => establishment_id},
+        _session,
+        socket
+      ) do
+    socket =
+      case socket.assigns.current_scope do
+        %{establishment: nil} = scope ->
+          establishment =
+            Establishments.get_establishment!(scope, establishment_id)
+
+          Phoenix.Component.assign(
+            socket,
+            :current_scope,
+            Scope.put_establishment(scope, establishment)
+          )
+
+        _ ->
+          socket
+      end
+
+    {:cont, socket}
+  end
+
+  def on_mount(:assign_establishment_to_scope, _params, _session, socket), do: {:cont, socket}
+
+  defp put_locale_from_session(socket, session) do
+    locale = session["locale"] || socket.assigns[:locale] || "en"
+    Gettext.put_locale(LoyaltyWeb.Gettext, locale)
+    Phoenix.Component.assign(socket, :locale, locale)
   end
 
   defp mount_current_scope(socket, session) do
@@ -287,4 +326,17 @@ defmodule LoyaltyWeb.UserAuth do
   end
 
   defp maybe_store_return_to(conn), do: conn
+
+  def fetch_establishment_from_scope(conn, _opts) do
+    establishment_id = conn.params["establishment_id"]
+
+    current_scope = conn.assigns.current_scope
+
+    if establishment_id do
+      establishment = Establishments.get_establishment!(current_scope, establishment_id)
+      assign(conn, :current_scope, Scope.put_establishment(current_scope, establishment))
+    else
+      conn
+    end
+  end
 end

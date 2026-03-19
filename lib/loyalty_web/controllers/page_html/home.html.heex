@@ -1,3 +1,157 @@
-<Layouts.app flash={@flash} current_scope={@current_scope}>
-  <h1>Loyalty</h1>
+<Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
+  <main id="landing-hero" class="space-y-10">
+    <section
+      aria-labelledby="landing-title"
+      class="rounded-[2rem] border-2 border-base-300 bg-gradient-to-br from-primary/10 via-base-100 to-secondary/10 p-5 shadow-sm sm:p-8 lg:p-10"
+    >
+      <header class="space-y-6 text-left">
+        <span class="inline-flex w-fit items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+          Fidelidade digital para negócios locais
+        </span>
+        <div class="space-y-4">
+          <h1
+            id="landing-title"
+            class="max-w-2xl text-3xl font-bold leading-tight text-base-content sm:text-4xl lg:text-5xl"
+          >
+            Transforme cartões de papel em recorrência com uma experiência que o cliente realmente usa.
+          </h1>
+          <p class="max-w-xl text-base leading-7 text-base-content/70 sm:text-lg">
+            MyRewards ajuda estabelecimentos a vender mais retornos e fidelizar clientes com cartões digitais, progresso visível e uma jornada simples no celular.
+          </p>
+        </div>
+
+        <nav
+          aria-label="Ações principais"
+          class="flex flex-col gap-3 sm:flex-row sm:items-center"
+        >
+          <.button
+            id="landing-cta-cards"
+            navigate={~p"/cards"}
+            variant="primary"
+          >
+            Ver meus cartões
+          </.button>
+          <.button
+            id="landing-link-establishment"
+            navigate={~p"/users/log-in"}
+          >
+            Sou estabelecimento
+          </.button>
+        </nav>
+
+        <aside
+          id="landing-social-proof"
+          class="grid gap-3 pt-2 text-sm text-base-content/70 sm:grid-cols-3"
+        >
+          <article class="rounded-2xl border border-base-300 bg-base-100/80 p-4 shadow-[0_1px_0_rgba(0,0,0,.02)]">
+            <p class="font-semibold text-base-content">Sem app extra</p>
+            <p class="mt-1">O cliente abre no navegador e vê tudo por e-mail.</p>
+          </article>
+          <article class="rounded-2xl border border-base-300 bg-base-100/80 p-4 shadow-[0_1px_0_rgba(0,0,0,.02)]">
+            <p class="font-semibold text-base-content">Assinatura simples</p>
+            <p class="mt-1">R$ 10/mês para manter o programa ativo.</p>
+          </article>
+          <article class="rounded-2xl border border-base-300 bg-base-100/80 p-4 shadow-[0_1px_0_rgba(0,0,0,.02)]">
+            <p class="font-semibold text-base-content">Pronto para vender</p>
+            <p class="mt-1">Programa, cartões e carimbos em um fluxo único.</p>
+          </article>
+        </aside>
+      </header>
+    </section>
+
+    <section id="landing-features" aria-labelledby="landing-features-title" class="space-y-4">
+      <h2
+        id="landing-features-title"
+        class="text-sm font-semibold uppercase tracking-[0.2em] text-base-content/60"
+      >
+        O que você entrega
+      </h2>
+      <div class="grid gap-4 lg:grid-cols-3">
+        <article class="rounded-3xl border-2 border-base-300 bg-base-100 p-5 shadow-sm transition-transform duration-200 hover:-translate-y-0.5">
+          <p class="text-sm font-semibold uppercase tracking-wide text-primary">
+            Para clientes
+          </p>
+          <h3 class="mt-2 text-lg font-semibold text-base-content">
+            Cartões no celular, sem perder histórico
+          </h3>
+          <p class="mt-2 text-sm leading-6 text-base-content/70">
+            O cliente entra com o e-mail e vê todos os cartões, progresso e recompensa em segundos.
+          </p>
+        </article>
+
+        <article class="rounded-3xl border-2 border-base-300 bg-base-100 p-5 shadow-sm transition-transform duration-200 hover:-translate-y-0.5">
+          <p class="text-sm font-semibold uppercase tracking-wide text-primary">
+            Para negócios
+          </p>
+          <h3 class="mt-2 text-lg font-semibold text-base-content">
+            Painel simples para fidelidade e operação
+          </h3>
+          <p class="mt-2 text-sm leading-6 text-base-content/70">
+            Cadastre clientes, ajuste o programa e adicione carimbos sem depender de planilhas ou papel.
+          </p>
+        </article>
+
+        <article class="rounded-3xl border-2 border-base-300 bg-base-100 p-5 shadow-sm transition-transform duration-200 hover:-translate-y-0.5">
+          <p class="text-sm font-semibold uppercase tracking-wide text-primary">Monetização</p>
+          <h3 class="mt-2 text-lg font-semibold text-base-content">
+            Assinatura recorrente com valor claro
+          </h3>
+          <p class="mt-2 text-sm leading-6 text-base-content/70">
+            Cobra R$ 10/mês por estabelecimento e mantenha um produto fácil de entender e vender.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="rounded-[2rem] border-2 border-primary/20 bg-primary p-6 text-primary-content shadow-sm sm:p-8">
+      <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+        <div class="space-y-3">
+          <p class="text-sm font-semibold uppercase tracking-wide text-primary-content/70">
+            Oferta simples
+          </p>
+          <h2 class="text-2xl font-bold leading-tight sm:text-3xl">
+            Venda fidelização como um produto, não como uma promessa.
+          </h2>
+          <p class="max-w-xl text-sm leading-7 text-primary-content/85">
+            Com um fluxo enxuto, o cliente entende o valor na hora: digital, fácil de usar e com recompensa visível.
+          </p>
+        </div>
+
+        <div class="rounded-2xl border border-primary-content/20 bg-primary-content/10 p-5 backdrop-blur-sm">
+          <p class="text-sm font-semibold text-primary-content/80">Inclui</p>
+          <ul class="mt-3 space-y-2 text-sm text-primary-content/90">
+            <li>• Cartões digitais por e-mail</li>
+            <li>• Painel para programa e carimbos</li>
+            <li>• Cobrança recorrente por estabelecimento</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section
+      aria-labelledby="landing-testimonial-title"
+      class="grid gap-4 lg:grid-cols-[1fr_1.1fr] lg:items-center"
+    >
+      <header class="space-y-2">
+        <p class="text-sm font-semibold uppercase tracking-wide text-primary">
+          Artesanal e confiável
+        </p>
+        <h2 id="landing-testimonial-title" class="text-2xl font-bold text-base-content">
+          Feito para parecer simples, mas vender com clareza.
+        </h2>
+        <p class="text-sm leading-6 text-base-content/70">
+          A landing prioriza leitura rápida, uma hierarquia de ofertas nítida e acabamento visual mais humano, menos “software genérico”.
+        </p>
+      </header>
+
+      <blockquote class="rounded-[2rem] border-2 border-base-300 bg-base-100 p-6 shadow-sm">
+        <p class="text-lg font-medium leading-8 text-base-content">
+          “É o tipo de produto que eu consigo explicar em 30 segundos e vender no mesmo atendimento.”
+        </p>
+        <footer class="mt-4 text-sm text-base-content/70">
+          Estabelecimento local, pronto para fidelizar mais clientes.
+        </footer>
+      </blockquote>
+    </section>
+  </main>
 </Layouts.app>

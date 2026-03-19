@@ -4,5 +4,8 @@
   Loyalty.Repo,
   LoyaltyWeb.Telemetry,
   Mix.Tasks.Coverage.Index,
-  LoyaltyWeb.ErrorHTML
+  LoyaltyWeb.ErrorHTML,
+  LoyaltyWeb.LocaleController,
+  LoyaltyWeb.Plugs.Locale,
+  LoyaltyWeb.LoyaltyProgramLive.Show
 ]
