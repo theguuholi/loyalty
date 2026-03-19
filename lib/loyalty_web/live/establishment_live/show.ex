@@ -1,7 +1,9 @@
 defmodule LoyaltyWeb.EstablishmentLive.Show do
   use LoyaltyWeb, :live_view
 
-  alias Loyalty.{Accounts.Scope, Establishments, LoyaltyPrograms}
+  alias Loyalty.{Accounts.Scope, Billing, Establishments, LoyaltyPrograms}
+  alias Loyalty.Billing.Stripe
+  alias Loyalty.Establishments.Establishment
 
   @impl true
   def render(assigns) do
@@ -10,10 +12,22 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
       <.header>
         {@establishment.name}
         <:subtitle>
+          <span class="block">
+            {@plan_label}
+            <%= if @client_limit do %>
+              · {@client_count} / {@client_limit} {gettext("clients")}
+            <% else %>
+              · {@client_count} {gettext("clients")}
+            <% end %>
+          </span>
           <%= if @loyalty_program do %>
-            {gettext("Active subscription")}
+            <span class="block mt-1 text-sm font-normal text-base-content/70">
+              {@loyalty_program.stamps_required} {gettext("stamps")} = {@loyalty_program.reward_description}
+            </span>
           <% else %>
-            {gettext("Create a loyalty program")}
+            <span class="block mt-1 text-sm font-normal text-base-content/70">
+              {gettext("Create a loyalty program")}
+            </span>
           <% end %>
         </:subtitle>
         <:actions>
@@ -28,6 +42,40 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
           </.button>
         </:actions>
       </.header>
+
+      <div
+        :if={@payment_issue}
+        class="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+        id="dashboard-payment-issue-banner"
+      >
+        {gettext(
+          "There is a problem with your subscription payment. New clients cannot be registered until billing is active. Existing cards still work."
+        )}
+      </div>
+
+      <div
+        id="dashboard-billing-card"
+        class="rounded-xl border-2 border-[#e2e5e8] bg-white p-4 shadow-sm mb-4"
+      >
+        <p class="font-semibold text-[#1a1d21]">{@plan_label}</p>
+        <p class="text-sm text-[#6b7280] mt-1">
+          <%= if @client_limit do %>
+            {gettext("Clients (loyalty cards):")} {@client_count} / {@client_limit}
+          <% else %>
+            {gettext("Clients (loyalty cards):")} {@client_count}
+          <% end %>
+        </p>
+        <%= if @show_subscribe_cta do %>
+          <.button
+            variant="primary"
+            class="mt-3"
+            phx-click="start_stripe_checkout"
+            id="dashboard-stripe-checkout"
+          >
+            {gettext("Subscribe (monthly) for more clients")}
+          </.button>
+        <% end %>
+      </div>
 
       <div
         id="dashboard-program-card"
@@ -68,13 +116,19 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
           >
             {gettext("Program and clients")}
           </.button>
-          <.link
-            id="dashboard-register-client-link"
-            navigate={~p"/establishments/#{@establishment}/loyalty_cards/new"}
-            class="btn btn-primary btn-soft"
-          >
-            <.icon name="hero-plus" /> {gettext("Register client")}
-          </.link>
+          <%= if @can_add_new_client do %>
+            <.link
+              id="dashboard-register-client-link"
+              navigate={~p"/establishments/#{@establishment}/loyalty_cards/new"}
+              class="btn btn-primary btn-soft"
+            >
+              <.icon name="hero-plus" /> {gettext("Register client")}
+            </.link>
+          <% else %>
+            <span class="rounded-lg border border-base-300 bg-base-200/50 px-3 py-2 text-sm text-base-content/70">
+              {gettext("Client limit reached or billing inactive — use Subscribe above.")}
+            </span>
+          <% end %>
         <% else %>
           <.button
             id="dashboard-create-program-link"
@@ -104,23 +158,89 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
         [] -> nil
       end
 
-    {:ok,
-     socket
-     |> assign(:page_title, establishment.name)
-     |> assign(:establishment, establishment)
-     |> assign(:loyalty_program, loyalty_program)}
+    socket =
+      socket
+      |> assign(:page_title, establishment.name)
+      |> assign(:establishment, establishment)
+      |> assign(:loyalty_program, loyalty_program)
+      |> assign_billing(establishment)
+
+    {:ok, socket}
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    socket =
+      case params["checkout"] do
+        "success" ->
+          id = socket.assigns.establishment.id
+
+          establishment =
+            Establishments.get_establishment!(socket.assigns.current_scope, id)
+
+          socket
+          |> assign(:establishment, establishment)
+          |> assign_billing(establishment)
+          |> put_flash(:info, gettext("Thank you! Your subscription should be active shortly."))
+
+        "cancel" ->
+          put_flash(socket, :info, gettext("Checkout was canceled."))
+
+        _ ->
+          socket
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("start_stripe_checkout", _params, socket) do
+    est = socket.assigns.establishment
+    base = LoyaltyWeb.Endpoint.url()
+
+    success =
+      base <>
+        "/establishments/#{est.id}?checkout=success"
+
+    cancel =
+      base <>
+        "/establishments/#{est.id}?checkout=cancel"
+
+    case Stripe.create_subscription_checkout_session(est, success, cancel) do
+      {:ok, url} ->
+        {:noreply, redirect(socket, external: url)}
+
+      {:error, :stripe_not_configured} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           gettext("Stripe is not configured. Set STRIPE_SECRET_KEY and STRIPE_PRICE_ID.")
+         )}
+
+      {:error, _} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           gettext("Could not start checkout. Try again later.")
+         )}
+    end
   end
 
   @impl true
   def handle_info(
-        {:updated, %Loyalty.Establishments.Establishment{id: id} = establishment},
+        {:updated, %Establishment{id: id} = establishment},
         %{assigns: %{establishment: %{id: id}}} = socket
       ) do
-    {:noreply, assign(socket, :establishment, establishment)}
+    {:noreply,
+     socket
+     |> assign(:establishment, establishment)
+     |> assign_billing(establishment)}
   end
 
   def handle_info(
-        {:deleted, %Loyalty.Establishments.Establishment{id: id}},
+        {:deleted, %Establishment{id: id}},
         %{assigns: %{establishment: %{id: id}}} = socket
       ) do
     {:noreply,
@@ -129,8 +249,37 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
      |> push_navigate(to: ~p"/establishments")}
   end
 
-  def handle_info({type, %Loyalty.Establishments.Establishment{}}, socket)
+  def handle_info({type, %Establishment{}}, socket)
       when type in [:created, :updated, :deleted] do
     {:noreply, socket}
+  end
+
+  defp assign_billing(socket, %Establishment{} = establishment) do
+    count = Establishments.count_loyalty_cards(establishment.id)
+    can_add = Establishments.check_new_loyalty_card_allowed(establishment) == :ok
+
+    {plan_label, limit} =
+      cond do
+        Billing.paid_subscription_allows_new_clients?(establishment) ->
+          {gettext("Paid plan"), Billing.paid_client_limit()}
+
+        Billing.on_free_plan?(establishment) ->
+          {gettext("Free plan"), Billing.free_client_limit()}
+
+        true ->
+          {gettext("Subscription inactive"), nil}
+      end
+
+    payment_issue = establishment.subscription_status in ["past_due", "unpaid"]
+
+    show_subscribe = not Billing.paid_subscription_allows_new_clients?(establishment)
+
+    socket
+    |> assign(:client_count, count)
+    |> assign(:client_limit, limit)
+    |> assign(:plan_label, plan_label)
+    |> assign(:can_add_new_client, can_add)
+    |> assign(:payment_issue, payment_issue)
+    |> assign(:show_subscribe_cta, show_subscribe)
   end
 end

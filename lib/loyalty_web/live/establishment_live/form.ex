@@ -38,10 +38,19 @@ defmodule LoyaltyWeb.EstablishmentLive.Form do
 
   @impl true
   def mount(params, _session, socket) do
-    {:ok,
-     socket
-     |> assign(:return_to, return_to(params["return_to"]))
-     |> apply_action(socket.assigns.live_action, params)}
+    socket = assign(socket, :return_to, return_to(params["return_to"]))
+
+    socket =
+      if socket.assigns.live_action == :new and
+           Establishments.list_establishments(socket.assigns.current_scope) != [] do
+        socket
+        |> put_flash(:error, gettext("You already have an establishment."))
+        |> push_navigate(to: ~p"/establishments")
+      else
+        apply_action(socket, socket.assigns.live_action, params)
+      end
+
+    {:ok, socket}
   end
 
   defp return_to("show"), do: "show"
@@ -114,6 +123,14 @@ defmodule LoyaltyWeb.EstablishmentLive.Form do
          |> put_flash(:info, gettext("Establishment created successfully."))
          |> push_navigate(
            to: return_path(socket.assigns.current_scope, socket.assigns.return_to, establishment)
+         )}
+
+      {:error, :establishment_limit_reached} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           gettext("You can only have one establishment. Contact support to change your plan.")
          )}
 
       {:error, %Ecto.Changeset{} = changeset} ->

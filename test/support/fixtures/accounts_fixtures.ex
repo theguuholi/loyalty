@@ -5,8 +5,6 @@ defmodule Loyalty.AccountsFixtures do
   """
 
   import Ecto.Query
-  import Loyalty.EstablishmentsFixtures, only: [establishment_fixture: 1]
-
   alias Loyalty.Accounts
   alias Loyalty.Accounts.Scope
 
@@ -84,7 +82,7 @@ defmodule Loyalty.AccountsFixtures do
   end
 
   def establishment_scope_fixture(scope \\ user_scope_fixture()) do
-    establishment = establishment_fixture(scope)
+    establishment = Loyalty.EstablishmentsFixtures.establishment_fixture(scope)
     Scope.put_establishment(scope, establishment)
   end
 end

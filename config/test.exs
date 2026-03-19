@@ -38,3 +38,8 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable helpful, but potentially expensive runtime checks
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
+
+config :loyalty, :stripe,
+  secret_key: "sk_test_dummy",
+  webhook_secret: "whsec_" <> Base.encode64("01234567890123456789012345678901"),
+  price_id: "price_test_dummy"

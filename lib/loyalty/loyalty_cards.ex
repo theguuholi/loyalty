@@ -6,7 +6,14 @@ defmodule Loyalty.LoyaltyCards do
   import Ecto.Query, warn: false
   alias Loyalty.Repo
 
-  alias Loyalty.{Accounts.Scope, Customers, LoyaltyCards.LoyaltyCard, LoyaltyPrograms.Customer}
+  alias Loyalty.{
+    Accounts.Scope,
+    Customers,
+    Establishments,
+    Establishments.Establishment,
+    LoyaltyCards.LoyaltyCard,
+    LoyaltyPrograms.Customer
+  }
 
   @doc """
   Subscribes to scoped notifications about any loyalty_card changes.
@@ -76,12 +83,40 @@ defmodule Loyalty.LoyaltyCards do
 
   """
   def create_loyalty_card(%Scope{} = scope, attrs) do
-    with {:ok, loyalty_card = %LoyaltyCard{}} <-
-           %LoyaltyCard{}
-           |> LoyaltyCard.changeset(attrs, scope)
-           |> Repo.insert() do
-      broadcast_loyalty_card(scope, {:created, loyalty_card})
-      {:ok, loyalty_card}
+    establishment = Repo.get!(Establishment, scope.establishment.id)
+
+    customer_id = attrs["customer_id"] || attrs[:customer_id]
+
+    if is_binary(customer_id) do
+      existing =
+        Repo.get_by(LoyaltyCard,
+          establishment_id: establishment.id,
+          customer_id: customer_id
+        )
+
+      if existing do
+        {:ok, existing}
+      else
+        do_create_loyalty_card(scope, establishment, attrs)
+      end
+    else
+      do_create_loyalty_card(scope, establishment, attrs)
+    end
+  end
+
+  defp do_create_loyalty_card(%Scope{} = scope, %Establishment{} = establishment, attrs) do
+    case Establishments.check_new_loyalty_card_allowed(establishment) do
+      :ok ->
+        with {:ok, loyalty_card = %LoyaltyCard{}} <-
+               %LoyaltyCard{}
+               |> LoyaltyCard.changeset(attrs, scope)
+               |> Repo.insert() do
+          broadcast_loyalty_card(scope, {:created, loyalty_card})
+          {:ok, loyalty_card}
+        end
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 

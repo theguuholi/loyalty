@@ -6,6 +6,7 @@ defmodule Loyalty.LoyaltyCardsTest do
   describe "loyalty_cards" do
     alias Loyalty.LoyaltyCards.LoyaltyCard
 
+    import Loyalty.AccountsFixtures, only: [user_scope_fixture: 0]
     import Loyalty.EstablishmentsFixtures, only: [establishment_scope_fixture: 0]
     import Loyalty.LoyaltyCardsFixtures
 
@@ -140,6 +141,82 @@ defmodule Loyalty.LoyaltyCardsTest do
       before = loyalty_card.stamps_current
       assert {:ok, updated} = LoyaltyCards.add_stamp(scope, loyalty_card)
       assert updated.stamps_current == before + 1
+    end
+
+    test "create_loyalty_card/2 when free plan at client limit returns client_limit_reached" do
+      scope = user_scope_fixture()
+
+      establishment =
+        Loyalty.EstablishmentsFixtures.establishment_fixture(scope, %{subscription_status: nil})
+
+      scope_with_est = Loyalty.Accounts.Scope.put_establishment(scope, establishment)
+      program = Loyalty.LoyaltyProgramsFixtures.loyalty_program_fixture(scope_with_est)
+
+      for i <- 0..(Loyalty.Billing.free_client_limit() - 1) do
+        {:ok, customer} =
+          Loyalty.Customers.get_or_create_customer_by_email("limit-card#{i}@example.com")
+
+        assert {:ok, _} =
+                 LoyaltyCards.create_loyalty_card(scope_with_est, %{
+                   customer_id: customer.id,
+                   loyalty_program_id: program.id,
+                   stamps_current: 0,
+                   stamps_required: 10
+                 })
+      end
+
+      {:ok, extra_customer} =
+        Loyalty.Customers.get_or_create_customer_by_email("limit-extra@example.com")
+
+      assert {:error, :client_limit_reached} =
+               LoyaltyCards.create_loyalty_card(scope_with_est, %{
+                 customer_id: extra_customer.id,
+                 loyalty_program_id: program.id,
+                 stamps_current: 0,
+                 stamps_required: 10
+               })
+    end
+
+    test "create_loyalty_card/2 when subscription inactive returns subscription_inactive" do
+      scope = user_scope_fixture()
+
+      establishment =
+        Loyalty.EstablishmentsFixtures.establishment_fixture(scope, %{
+          subscription_status: "past_due"
+        })
+
+      scope_with_est = Loyalty.Accounts.Scope.put_establishment(scope, establishment)
+      program = Loyalty.LoyaltyProgramsFixtures.loyalty_program_fixture(scope_with_est)
+      {:ok, customer} = Loyalty.Customers.get_or_create_customer_by_email("inactive@example.com")
+
+      assert {:error, :subscription_inactive} =
+               LoyaltyCards.create_loyalty_card(scope_with_est, %{
+                 customer_id: customer.id,
+                 loyalty_program_id: program.id,
+                 stamps_current: 0,
+                 stamps_required: 10
+               })
+    end
+
+    test "create_loyalty_card/2 idempotent for same customer and establishment returns existing" do
+      scope = establishment_scope_fixture()
+
+      {:ok, customer} =
+        Loyalty.Customers.get_or_create_customer_by_email("idempotent@example.com")
+
+      program = Loyalty.LoyaltyProgramsFixtures.loyalty_program_fixture(scope)
+
+      attrs = %{
+        customer_id: customer.id,
+        loyalty_program_id: program.id,
+        stamps_current: 1,
+        stamps_required: 10
+      }
+
+      assert {:ok, card1} = LoyaltyCards.create_loyalty_card(scope, attrs)
+      assert {:ok, card2} = LoyaltyCards.create_loyalty_card(scope, attrs)
+      assert card1.id == card2.id
+      assert card1.stamps_current == card2.stamps_current
     end
   end
 end

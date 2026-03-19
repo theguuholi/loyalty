@@ -1,7 +1,7 @@
 defmodule LoyaltyWeb.LoyaltyCardLive.Index do
   use LoyaltyWeb, :live_view
 
-  alias Loyalty.LoyaltyCards
+  alias Loyalty.{Establishments, LoyaltyCards}
 
   @impl true
   def render(assigns) do
@@ -14,12 +14,14 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Index do
           <.button navigate={~p"/establishments/#{@current_scope.establishment.id}/"}>
             <.icon name="hero-arrow-left" /> {gettext("Back")}
           </.button>
-          <.button
-            variant="primary"
-            navigate={~p"/establishments/#{@current_scope.establishment.id}/loyalty_cards/new"}
-          >
-            <.icon name="hero-plus" /> {gettext("Register client")}
-          </.button>
+          <%= if @can_add_new_client do %>
+            <.button
+              variant="primary"
+              navigate={~p"/establishments/#{@current_scope.establishment.id}/loyalty_cards/new"}
+            >
+              <.icon name="hero-plus" /> {gettext("Register client")}
+            </.button>
+          <% end %>
         </:actions>
       </.header>
 
@@ -33,13 +35,21 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Index do
         <p class="text-sm text-base-content/60 mb-6">
           {gettext("Register a client by email to create their first loyalty card.")}
         </p>
-        <.button
-          id="loyalty-cards-empty-cta"
-          variant="primary"
-          navigate={~p"/establishments/#{@current_scope.establishment.id}/loyalty_cards/new"}
-        >
-          <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Register first client")}
-        </.button>
+        <%= if @can_add_new_client do %>
+          <.button
+            id="loyalty-cards-empty-cta"
+            variant="primary"
+            navigate={~p"/establishments/#{@current_scope.establishment.id}/loyalty_cards/new"}
+          >
+            <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Register first client")}
+          </.button>
+        <% else %>
+          <p class="text-sm text-base-content/60">
+            {gettext(
+              "You cannot register new clients until you subscribe or fix billing. Open your establishment dashboard."
+            )}
+          </p>
+        <% end %>
       </div>
 
       <div :if={not @cards_empty?} class="space-y-4">
@@ -125,12 +135,19 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Index do
       LoyaltyCards.subscribe_loyalty_cards(socket.assigns.current_scope)
     end
 
-    list = list_loyalty_cards(socket.assigns.current_scope)
+    scope = socket.assigns.current_scope
+
+    establishment =
+      Establishments.get_establishment!(scope, scope.establishment.id)
+
+    can_add = Establishments.check_new_loyalty_card_allowed(establishment) == :ok
+    list = list_loyalty_cards(scope)
 
     {:ok,
      socket
      |> assign(:page_title, gettext("Clients and cards"))
      |> assign(:cards_empty?, list == [])
+     |> assign(:can_add_new_client, can_add)
      |> stream(:loyalty_cards, list)}
   end
 
@@ -139,11 +156,16 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Index do
     loyalty_card = LoyaltyCards.get_loyalty_card!(socket.assigns.current_scope, id)
     {:ok, _} = LoyaltyCards.delete_loyalty_card(socket.assigns.current_scope, loyalty_card)
 
-    list_after = list_loyalty_cards(socket.assigns.current_scope)
+    scope = socket.assigns.current_scope
+    list_after = list_loyalty_cards(scope)
+
+    establishment = Establishments.get_establishment!(scope, scope.establishment.id)
+    can_add = Establishments.check_new_loyalty_card_allowed(establishment) == :ok
 
     {:noreply,
      socket
      |> assign(:cards_empty?, list_after == [])
+     |> assign(:can_add_new_client, can_add)
      |> stream_delete(:loyalty_cards, loyalty_card)}
   end
 
@@ -168,11 +190,16 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Index do
   @impl true
   def handle_info({type, %Loyalty.LoyaltyCards.LoyaltyCard{}}, socket)
       when type in [:created, :updated, :deleted] do
-    list = list_loyalty_cards(socket.assigns.current_scope)
+    scope = socket.assigns.current_scope
+    list = list_loyalty_cards(scope)
+
+    establishment = Establishments.get_establishment!(scope, scope.establishment.id)
+    can_add = Establishments.check_new_loyalty_card_allowed(establishment) == :ok
 
     {:noreply,
      socket
      |> assign(:cards_empty?, list == [])
+     |> assign(:can_add_new_client, can_add)
      |> stream(:loyalty_cards, list, reset: true)}
   end
 

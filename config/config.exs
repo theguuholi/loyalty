@@ -36,6 +36,11 @@ config :loyalty,
   ecto_repos: [Loyalty.Repo],
   generators: [timestamp_type: :utc_datetime, binary_id: true]
 
+config :loyalty, :stripe,
+  secret_key: nil,
+  webhook_secret: nil,
+  price_id: nil
+
 # Configures the endpoint
 config :loyalty, LoyaltyWeb.Endpoint,
   url: [host: "localhost"],

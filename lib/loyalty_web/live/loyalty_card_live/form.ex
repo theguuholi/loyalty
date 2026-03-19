@@ -1,7 +1,13 @@
 defmodule LoyaltyWeb.LoyaltyCardLive.Form do
   use LoyaltyWeb, :live_view
 
-  alias Loyalty.{Customers, LoyaltyCards, LoyaltyCards.LoyaltyCard, LoyaltyPrograms}
+  alias Loyalty.{
+    Customers,
+    Establishments,
+    LoyaltyCards,
+    LoyaltyCards.LoyaltyCard,
+    LoyaltyPrograms
+  }
 
   @impl true
   def render(assigns) do
@@ -115,15 +121,29 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
   end
 
   defp apply_action(socket, :new, _params) do
-    loyalty_card = %LoyaltyCard{establishment_id: socket.assigns.current_scope.establishment.id}
-    attrs = %{"email" => "", "stamps_current" => "0", "stamps_required" => "10"}
+    scope = socket.assigns.current_scope
+    establishment = Establishments.get_establishment!(scope, scope.establishment.id)
 
-    socket
-    |> assign(:page_title, gettext("Register client"))
-    |> assign(:form_subtitle, gettext("Register a new client to start their loyalty card."))
-    |> assign(:client_email, nil)
-    |> assign(:loyalty_card, loyalty_card)
-    |> assign(:form, to_form(attrs, as: :loyalty_card))
+    if Establishments.check_new_loyalty_card_allowed(establishment) != :ok do
+      socket
+      |> put_flash(
+        :error,
+        gettext(
+          "You cannot register new clients right now (plan limit or billing). Open your establishment dashboard to subscribe."
+        )
+      )
+      |> push_navigate(to: ~p"/establishments/#{establishment.id}/loyalty_cards")
+    else
+      loyalty_card = %LoyaltyCard{establishment_id: scope.establishment.id}
+      attrs = %{"email" => "", "stamps_current" => "0", "stamps_required" => "10"}
+
+      socket
+      |> assign(:page_title, gettext("Register client"))
+      |> assign(:form_subtitle, gettext("Register a new client to start their loyalty card."))
+      |> assign(:client_email, nil)
+      |> assign(:loyalty_card, loyalty_card)
+      |> assign(:form, to_form(attrs, as: :loyalty_card))
+    end
   end
 
   @impl true
@@ -180,6 +200,28 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
                to:
                  ~p"/establishments/#{socket.assigns.current_scope.establishment.id}/loyalty_cards"
              )}
+
+          {:error, :client_limit_reached} ->
+            {:noreply,
+             socket
+             |> put_flash(
+               :error,
+               gettext(
+                 "Client limit reached for your plan. Subscribe on the establishment page to add more clients."
+               )
+             )
+             |> assign(:form, to_form(loyalty_card_params, as: :loyalty_card))}
+
+          {:error, :subscription_inactive} ->
+            {:noreply,
+             socket
+             |> put_flash(
+               :error,
+               gettext(
+                 "Billing is not active. Fix your subscription on the establishment page before adding clients."
+               )
+             )
+             |> assign(:form, to_form(loyalty_card_params, as: :loyalty_card))}
 
           {:error, %Ecto.Changeset{}} ->
             {:noreply, assign(socket, form: to_form(loyalty_card_params, as: :loyalty_card))}

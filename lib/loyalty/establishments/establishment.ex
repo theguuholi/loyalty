@@ -8,6 +8,9 @@ defmodule Loyalty.Establishments.Establishment do
   schema "establishments" do
     field :name, :string
     field :user_id, :binary_id
+    field :stripe_customer_id, :string
+    field :stripe_subscription_id, :string
+    field :subscription_status, :string
 
     has_one :loyalty_program, LoyaltyProgram, foreign_key: :establishment_id
     timestamps(type: :utc_datetime)

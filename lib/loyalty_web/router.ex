@@ -26,6 +26,12 @@ defmodule LoyaltyWeb.Router do
     get "/locale", LocaleController, :switch
   end
 
+  scope "/webhooks", LoyaltyWeb do
+    pipe_through :api
+
+    post "/stripe", StripeWebhookController, :create
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", LoyaltyWeb do
   #   pipe_through :api
