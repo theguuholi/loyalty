@@ -36,4 +36,9 @@ defmodule Loyalty.EstablishmentsFixtures do
     establishment = establishment_fixture(scope)
     Scope.put_establishment(scope, establishment)
   end
+
+  def establishment_scope_fixture(scope \\ user_scope_fixture()) do
+    establishment = establishment_fixture(scope)
+    Scope.put_establishment(scope, establishment)
+  end
 end
