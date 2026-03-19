@@ -5,12 +5,11 @@ defmodule Loyalty.AccountsFixtures do
   """
 
   import Ecto.Query
-
   alias Loyalty.Accounts
   alias Loyalty.Accounts.Scope
 
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
-  def valid_user_password, do: "hello world!"
+  def valid_user_password, do: "HelloWorld123!"
 
   def valid_user_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
@@ -80,5 +79,10 @@ defmodule Loyalty.AccountsFixtures do
 
     from(ut in Accounts.UserToken, where: ut.token == ^token)
     |> Loyalty.Repo.update_all(set: [inserted_at: dt, authenticated_at: dt])
+  end
+
+  def establishment_scope_fixture(scope \\ user_scope_fixture()) do
+    establishment = Loyalty.EstablishmentsFixtures.establishment_fixture(scope)
+    Scope.put_establishment(scope, establishment)
   end
 end

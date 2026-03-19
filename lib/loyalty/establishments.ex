@@ -6,8 +6,7 @@ defmodule Loyalty.Establishments do
   import Ecto.Query, warn: false
   alias Loyalty.Repo
 
-  alias Loyalty.Accounts.Scope
-  alias Loyalty.Establishments.Establishment
+  alias Loyalty.{Accounts.Scope, Billing, Establishments.Establishment, LoyaltyCards.LoyaltyCard}
 
   @doc """
   Subscribes to scoped notifications about any establishment changes.
@@ -75,13 +74,96 @@ defmodule Loyalty.Establishments do
 
   """
   def create_establishment(%Scope{} = scope, attrs) do
-    with {:ok, establishment = %Establishment{}} <-
-           %Establishment{}
-           |> Establishment.changeset(attrs, scope)
-           |> Repo.insert() do
-      broadcast_establishment(scope, {:created, establishment})
-      {:ok, establishment}
+    if list_establishments(scope) != [] do
+      {:error, :establishment_limit_reached}
+    else
+      with {:ok, establishment = %Establishment{}} <-
+             %Establishment{}
+             |> Establishment.changeset(attrs, scope)
+             |> Repo.insert() do
+        broadcast_establishment(scope, {:created, establishment})
+        {:ok, establishment}
+      end
     end
+  end
+
+  @doc """
+  Counts loyalty cards for an establishment (each card = one tracked client slot).
+  """
+  def count_loyalty_cards(establishment_id) when is_binary(establishment_id) do
+    from(c in LoyaltyCard,
+      where: c.establishment_id == ^establishment_id,
+      select: count(c.id)
+    )
+    |> Repo.one!()
+  end
+
+  @doc """
+  Returns `:ok` if a **new** loyalty card may be created for this establishment.
+
+  Free plan: up to `Billing.free_client_limit/0` cards.
+  Paid plan (`active` / `trialing`): up to `Billing.paid_client_limit/0` cards.
+  Other subscription states: `{:error, :subscription_inactive}`.
+  """
+  def check_new_loyalty_card_allowed(%Establishment{} = establishment) do
+    n = count_loyalty_cards(establishment.id)
+    free? = Billing.on_free_plan?(establishment)
+    paid_ok? = Billing.paid_subscription_allows_new_clients?(establishment)
+
+    cond do
+      free? and n < Billing.free_client_limit() ->
+        :ok
+
+      free? ->
+        {:error, :client_limit_reached}
+
+      paid_ok? and n < Billing.paid_client_limit() ->
+        :ok
+
+      paid_ok? ->
+        {:error, :client_limit_reached}
+
+      true ->
+        {:error, :subscription_inactive}
+    end
+  end
+
+  @doc """
+  Updates Stripe billing fields on an establishment (webhooks only). Does not use user scope.
+  """
+  def apply_stripe_billing_attrs(establishment_id, attrs)
+      when is_binary(establishment_id) and is_map(attrs) do
+    allowed = [:stripe_customer_id, :stripe_subscription_id, :subscription_status]
+
+    case Repo.get(Establishment, establishment_id) do
+      nil ->
+        {:error, :not_found}
+
+      est ->
+        case est
+             |> Ecto.Changeset.cast(attrs, allowed)
+             |> Repo.update() do
+          {:ok, updated} ->
+            Phoenix.PubSub.broadcast(
+              Loyalty.PubSub,
+              "user:#{updated.user_id}:establishments",
+              {:updated, updated}
+            )
+
+            {:ok, updated}
+
+          {:error, changeset} ->
+            {:error, changeset}
+        end
+    end
+  end
+
+  @doc """
+  Finds an establishment by Stripe subscription id (for subscription webhooks).
+  """
+  def get_establishment_by_stripe_subscription_id(subscription_id)
+      when is_binary(subscription_id) do
+    Repo.get_by(Establishment, stripe_subscription_id: subscription_id)
   end
 
   @doc """

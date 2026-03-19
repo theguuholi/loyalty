@@ -67,6 +67,11 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  config :loyalty, :stripe,
+    secret_key: System.get_env("STRIPE_SECRET_KEY"),
+    webhook_secret: System.get_env("STRIPE_WEBHOOK_SECRET"),
+    price_id: System.get_env("STRIPE_PRICE_ID")
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

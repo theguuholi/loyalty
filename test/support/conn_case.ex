@@ -76,4 +76,9 @@ defmodule LoyaltyWeb.ConnCase do
   defp maybe_set_token_authenticated_at(token, authenticated_at) do
     Loyalty.AccountsFixtures.override_token_authenticated_at(token, authenticated_at)
   end
+
+  def register_and_log_in_user_with_establishment(context) do
+    %{conn: conn, user: _user, scope: scope} = register_and_log_in_user(context)
+    %{conn: conn, scope: Loyalty.AccountsFixtures.establishment_scope_fixture(scope)}
+  end
 end

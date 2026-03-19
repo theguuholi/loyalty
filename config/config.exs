@@ -18,11 +18,28 @@ config :loyalty, :scopes,
     schema_table: :users,
     test_data_fixture: Loyalty.AccountsFixtures,
     test_setup_helper: :register_and_log_in_user
+  ],
+  establishment: [
+    module: Loyalty.Establishments.Scope,
+    assign_key: :current_scope,
+    access_path: [:establishment, :id],
+    route_prefix: "/establishments/:establishment_id",
+    route_access_path: [:establishment, :id],
+    schema_key: :establishment_id,
+    schema_type: :binary_id,
+    schema_table: :establishments,
+    test_data_fixture: Loyalty.EstablishmentsFixtures,
+    test_setup_helper: :register_and_log_in_user_with_establishment
   ]
 
 config :loyalty,
   ecto_repos: [Loyalty.Repo],
   generators: [timestamp_type: :utc_datetime, binary_id: true]
+
+config :loyalty, :stripe,
+  secret_key: nil,
+  webhook_secret: nil,
+  price_id: nil
 
 # Configures the endpoint
 config :loyalty, LoyaltyWeb.Endpoint,

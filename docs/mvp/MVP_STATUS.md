@@ -13,13 +13,13 @@ Resumo do que já está implementado e do que falta para o MVP (incluindo cobran
 | **Schemas** | User, Establishment, LoyaltyProgram, Customer, LoyaltyCard |
 | **Context Accounts** | User auth (register, login, session) – phx.gen.auth |
 | **Context Establishments** | list_establishments_by_user, create_establishment, get_establishment!, change_establishment, update_subscription_attrs, get_establishment_by_stripe_subscription_id |
-| **Context Loyalty** | MyRewards.Loyalty com get_or_create_customer_by_email, create_loyalty_card, add_stamp, list_loyalty_cards_*, get_loyalty_program_*, create_or_update_loyalty_program |
+| **Context Loyalty** | Loyalty.Customers (get_or_create_customer_by_email, get_customer_by_email), LoyaltyCards (create_loyalty_card, add_stamp, list_loyalty_cards_by_customer_email, list_loyalty_cards) |
 | **Auth** | User (conta) com login/registro; rotas protegidas para `/establishments` |
 | **Landing** | GET `/` com título/copy MyRewards, "Ver meus cartões" → `/cards`, "Sou estabelecimento" → `/users/log-in`; IDs para testes |
 | **Meus cartões** | GET `/cards` (form e-mail + lista/empty); IDs conforme SCREENS.md |
-| **Establishment LiveViews** | Index, New, Show, ProgramEdit, CardsIndex, AddStampShow – com templates .html.heex |
+| **Establishment LiveViews** | Index, New, Show (dashboard com IDs SCREENS), LoyaltyPrograms (Index/Form/Show), LoyaltyCards (Index/Form/Show com add-stamp e IDs SCREENS) |
 | **Stripe** | Checkout após criar estabelecimento; webhook POST `/webhooks/stripe`; subscription_status no banco |
-| **Rotas** | `/`, `/cards`, `/users/*`, `/establishments`, `/establishments/:id`, `/establishments/:id/program/edit`, `/establishments/:id/cards`, `/establishments/:id/cards/:card_id`, `/webhooks/stripe` |
+| **Rotas** | `/`, `/cards`, `/users/*`, `/establishments`, `/establishments/:id`, `/establishments/:id/loyalty_programs`, `/establishments/:id/loyalty_cards`, `/establishments/:id/loyalty_cards/:card_id` (add stamp), `/webhooks/stripe` |
 
 ---
 

@@ -7,17 +7,29 @@ defmodule LoyaltyWeb.EstablishmentLive.Form do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
       <.header>
         {@page_title}
-        <:subtitle>Use this form to manage establishment records in your database.</:subtitle>
+        <:subtitle>{gettext("Manage establishment name.")}</:subtitle>
+        <:actions>
+          <.button navigate={return_path(@current_scope, @return_to, @establishment)}>
+            <.icon name="hero-arrow-left" /> {gettext("Back")}
+          </.button>
+        </:actions>
       </.header>
 
       <.form for={@form} id="establishment-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:name]} type="text" label="Name" />
-        <footer>
-          <.button phx-disable-with="Saving..." variant="primary">Save Establishment</.button>
-          <.button navigate={return_path(@current_scope, @return_to, @establishment)}>Cancel</.button>
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
+        <footer class="flex flex-wrap gap-3 pt-4">
+          <.button phx-disable-with={gettext("Saving...")} variant="primary">
+            {gettext("Save")}
+          </.button>
+          <.link
+            navigate={return_path(@current_scope, @return_to, @establishment)}
+            class="btn btn-primary btn-soft"
+          >
+            {gettext("Back to list")}
+          </.link>
         </footer>
       </.form>
     </Layouts.app>
@@ -26,10 +38,19 @@ defmodule LoyaltyWeb.EstablishmentLive.Form do
 
   @impl true
   def mount(params, _session, socket) do
-    {:ok,
-     socket
-     |> assign(:return_to, return_to(params["return_to"]))
-     |> apply_action(socket.assigns.live_action, params)}
+    socket = assign(socket, :return_to, return_to(params["return_to"]))
+
+    socket =
+      if socket.assigns.live_action == :new and
+           Establishments.list_establishments(socket.assigns.current_scope) != [] do
+        socket
+        |> put_flash(:error, gettext("You already have an establishment."))
+        |> push_navigate(to: ~p"/establishments")
+      else
+        apply_action(socket, socket.assigns.live_action, params)
+      end
+
+    {:ok, socket}
   end
 
   defp return_to("show"), do: "show"
@@ -39,7 +60,7 @@ defmodule LoyaltyWeb.EstablishmentLive.Form do
     establishment = Establishments.get_establishment!(socket.assigns.current_scope, id)
 
     socket
-    |> assign(:page_title, "Edit Establishment")
+    |> assign(:page_title, gettext("Edit establishment"))
     |> assign(:establishment, establishment)
     |> assign(
       :form,
@@ -51,7 +72,7 @@ defmodule LoyaltyWeb.EstablishmentLive.Form do
     establishment = %Establishment{user_id: socket.assigns.current_scope.user.id}
 
     socket
-    |> assign(:page_title, "New Establishment")
+    |> assign(:page_title, gettext("New establishment"))
     |> assign(:establishment, establishment)
     |> assign(
       :form,
@@ -84,7 +105,7 @@ defmodule LoyaltyWeb.EstablishmentLive.Form do
       {:ok, establishment} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Establishment updated successfully")
+         |> put_flash(:info, gettext("Establishment updated successfully."))
          |> push_navigate(
            to: return_path(socket.assigns.current_scope, socket.assigns.return_to, establishment)
          )}
@@ -99,9 +120,17 @@ defmodule LoyaltyWeb.EstablishmentLive.Form do
       {:ok, establishment} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Establishment created successfully")
+         |> put_flash(:info, gettext("Establishment created successfully."))
          |> push_navigate(
            to: return_path(socket.assigns.current_scope, socket.assigns.return_to, establishment)
+         )}
+
+      {:error, :establishment_limit_reached} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           gettext("You can only have one establishment. Contact support to change your plan.")
          )}
 
       {:error, %Ecto.Changeset{} = changeset} ->
