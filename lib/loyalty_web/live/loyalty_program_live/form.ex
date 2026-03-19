@@ -7,21 +7,31 @@ defmodule LoyaltyWeb.LoyaltyProgramLive.Form do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
       <.header>
         {@page_title}
-        <:subtitle>Use this form to manage loyalty_program records in your database.</:subtitle>
+        <:subtitle>{gettext("Manage program name, stamps required and reward.")}</:subtitle>
+        <:actions>
+          <.button navigate={return_path(@current_scope, @return_to, @loyalty_program)}>
+            <.icon name="hero-arrow-left" /> {gettext("Back")}
+          </.button>
+        </:actions>
       </.header>
 
       <.form for={@form} id="loyalty_program-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:name]} type="text" label="Name" />
-        <.input field={@form[:stamps_required]} type="number" label="Stamps required" />
-        <.input field={@form[:reward_description]} type="text" label="Reward description" />
-        <footer>
-          <.button phx-disable-with="Saving..." variant="primary">Save Loyalty program</.button>
-          <.button navigate={return_path(@current_scope, @return_to, @loyalty_program)}>
-            Cancel
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
+        <.input field={@form[:stamps_required]} type="number" label={gettext("Stamps required")} />
+        <.input field={@form[:reward_description]} type="text" label={gettext("Reward description")} />
+        <footer class="flex flex-wrap gap-3 pt-4">
+          <.button phx-disable-with={gettext("Saving...")} variant="primary">
+            {gettext("Save")}
           </.button>
+          <.link
+            navigate={return_path(@current_scope, @return_to, @loyalty_program)}
+            class="btn btn-primary btn-soft"
+          >
+            {gettext("Back to list")}
+          </.link>
         </footer>
       </.form>
     </Layouts.app>
@@ -43,7 +53,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLive.Form do
     loyalty_program = LoyaltyPrograms.get_loyalty_program!(socket.assigns.current_scope, id)
 
     socket
-    |> assign(:page_title, "Edit Loyalty program")
+    |> assign(:page_title, gettext("Edit program"))
     |> assign(:loyalty_program, loyalty_program)
     |> assign(
       :form,
@@ -59,7 +69,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLive.Form do
     }
 
     socket
-    |> assign(:page_title, "New Loyalty program")
+    |> assign(:page_title, gettext("New program"))
     |> assign(:loyalty_program, loyalty_program)
     |> assign(
       :form,
@@ -94,7 +104,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLive.Form do
       {:ok, loyalty_program} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Loyalty program updated successfully")
+         |> put_flash(:info, gettext("Program updated successfully."))
          |> push_navigate(
            to:
              return_path(socket.assigns.current_scope, socket.assigns.return_to, loyalty_program)
@@ -113,7 +123,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLive.Form do
       {:ok, loyalty_program} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Loyalty program created successfully")
+         |> put_flash(:info, gettext("Program created successfully."))
          |> push_navigate(
            to:
              return_path(socket.assigns.current_scope, socket.assigns.return_to, loyalty_program)

@@ -6,6 +6,7 @@ defmodule LoyaltyWeb.Router do
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
+    plug LoyaltyWeb.Plugs.Locale
     plug :fetch_live_flash
     plug :put_root_layout, html: {LoyaltyWeb.Layouts, :root}
     plug :protect_from_forgery
@@ -22,6 +23,7 @@ defmodule LoyaltyWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/locale", LocaleController, :switch
   end
 
   # Other scopes may use custom stacks.
@@ -72,7 +74,6 @@ defmodule LoyaltyWeb.Router do
 
         live "/loyalty_cards", LoyaltyCardLive.Index, :index
         live "/loyalty_cards/new", LoyaltyCardLive.Form, :new
-        live "/loyalty_cards/:id", LoyaltyCardLive.Show, :show
         live "/loyalty_cards/:id/edit", LoyaltyCardLive.Form, :edit
       end
     end

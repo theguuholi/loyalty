@@ -214,11 +214,18 @@ defmodule LoyaltyWeb.UserAuth do
       end
   """
   def on_mount(:mount_current_scope, _params, session, socket) do
-    {:cont, mount_current_scope(socket, session)}
+    {:cont, socket |> put_locale_from_session(session) |> then(&mount_current_scope(&1, session))}
+  end
+
+  def on_mount(:put_locale, _params, session, socket) do
+    {:cont, put_locale_from_session(socket, session)}
   end
 
   def on_mount(:require_authenticated, _params, session, socket) do
-    socket = mount_current_scope(socket, session)
+    socket =
+      socket
+      |> put_locale_from_session(session)
+      |> then(&mount_current_scope(&1, session))
 
     if socket.assigns.current_scope && socket.assigns.current_scope.user do
       {:cont, socket}
@@ -273,6 +280,12 @@ defmodule LoyaltyWeb.UserAuth do
   end
 
   def on_mount(:assign_establishment_to_scope, _params, _session, socket), do: {:cont, socket}
+
+  defp put_locale_from_session(socket, session) do
+    locale = session["locale"] || socket.assigns[:locale] || "en"
+    Gettext.put_locale(LoyaltyWeb.Gettext, locale)
+    Phoenix.Component.assign(socket, :locale, locale)
+  end
 
   defp mount_current_scope(socket, session) do
     Phoenix.Component.assign_new(socket, :current_scope, fn ->

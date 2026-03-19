@@ -6,43 +6,107 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
       <.header>
         {@page_title}
-        <:subtitle>Use this form to manage loyalty_card records in your database.</:subtitle>
+        <:subtitle>{@form_subtitle}</:subtitle>
+        <:actions>
+          <.link
+            navigate={~p"/establishments/#{@current_scope.establishment.id}/loyalty_cards"}
+            class="btn btn-primary btn-soft"
+          >
+            <.icon name="hero-arrow-left" /> {gettext("Back to list")}
+          </.link>
+        </:actions>
       </.header>
 
-      <.form for={@form} id="loyalty_card-form" phx-change="validate" phx-submit="save">
-        <%= if @live_action == :new do %>
-          <.input field={@form[:email]} type="email" label="Customer email" required />
-        <% end %>
-        <.input field={@form[:stamps_current]} type="number" label="Stamps current" />
-        <.input field={@form[:stamps_required]} type="number" label="Stamps required" />
-        <footer>
-          <.button phx-disable-with="Saving..." variant="primary">Save Loyalty card</.button>
-          <.button navigate={return_path(@current_scope, @return_to, @loyalty_card)}>Cancel</.button>
-        </footer>
-      </.form>
+      <div class="rounded-xl border-2 border-base-300 bg-base-100 p-6 shadow-sm">
+        <.form
+          for={@form}
+          id="loyalty_card-form"
+          phx-change="validate"
+          phx-submit="save"
+          class="space-y-6"
+        >
+          <%= if @live_action == :new do %>
+            <div>
+              <.input
+                field={@form[:email]}
+                type="email"
+                label={gettext("Client email")}
+                placeholder="client@example.com"
+                required
+              />
+              <p class="mt-1.5 text-sm text-base-content/60">
+                {gettext(
+                  "Enter the client's email. A new loyalty card will be created. You can adjust stamps below if needed."
+                )}
+              </p>
+            </div>
+            <details class="rounded-lg border border-base-300 bg-base-200/50 p-4">
+              <summary class="cursor-pointer text-sm font-medium text-base-content/80">
+                {gettext("Initial stamps (optional)")}
+              </summary>
+              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <.input
+                  field={@form[:stamps_current]}
+                  type="number"
+                  label={gettext("Stamps current")}
+                />
+                <.input
+                  field={@form[:stamps_required]}
+                  type="number"
+                  label={gettext("Stamps required")}
+                />
+              </div>
+            </details>
+          <% else %>
+            <p class="mb-4 text-sm font-medium text-base-content/70">
+              {gettext("Client")}: {@client_email}
+            </p>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <.input field={@form[:stamps_current]} type="number" label={gettext("Stamps current")} />
+              <.input
+                field={@form[:stamps_required]}
+                type="number"
+                label={gettext("Stamps required")}
+              />
+            </div>
+          <% end %>
+          <footer class="flex flex-wrap gap-3 border-t border-base-300 pt-6">
+            <.button phx-disable-with={gettext("Saving...")} variant="primary">
+              {gettext("Save")}
+            </.button>
+            <.link
+              navigate={~p"/establishments/#{@current_scope.establishment.id}/loyalty_cards"}
+              class="btn btn-primary btn-soft"
+            >
+              {gettext("Back to list")}
+            </.link>
+          </footer>
+        </.form>
+      </div>
     </Layouts.app>
     """
   end
 
   @impl true
   def mount(params, _session, socket) do
-    {:ok,
-     socket
-     |> assign(:return_to, return_to(params["return_to"]))
-     |> apply_action(socket.assigns.live_action, params)}
+    {:ok, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  defp return_to("show"), do: "show"
-  defp return_to(_), do: "index"
-
   defp apply_action(socket, :edit, %{"id" => id}) do
-    loyalty_card = LoyaltyCards.get_loyalty_card!(socket.assigns.current_scope, id)
+    scope = socket.assigns.current_scope
+
+    loyalty_card =
+      scope
+      |> LoyaltyCards.get_loyalty_card!(id)
+      |> Loyalty.Repo.preload(:customer)
 
     socket
-    |> assign(:page_title, "Edit Loyalty card")
+    |> assign(:page_title, gettext("Edit card"))
+    |> assign(:form_subtitle, gettext("Update this client's stamp progress."))
+    |> assign(:client_email, loyalty_card.customer.email)
     |> assign(:loyalty_card, loyalty_card)
     |> assign(
       :form,
@@ -55,7 +119,9 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
     attrs = %{"email" => "", "stamps_current" => "0", "stamps_required" => "10"}
 
     socket
-    |> assign(:page_title, "New Loyalty card")
+    |> assign(:page_title, gettext("Register client"))
+    |> assign(:form_subtitle, gettext("Register a new client to start their loyalty card."))
+    |> assign(:client_email, nil)
     |> assign(:loyalty_card, loyalty_card)
     |> assign(:form, to_form(attrs, as: :loyalty_card))
   end
@@ -89,12 +155,12 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
            socket.assigns.loyalty_card,
            loyalty_card_params
          ) do
-      {:ok, loyalty_card} ->
+      {:ok, _loyalty_card} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Loyalty card updated successfully")
+         |> put_flash(:info, gettext("Loyalty card updated successfully"))
          |> push_navigate(
-           to: return_path(socket.assigns.current_scope, socket.assigns.return_to, loyalty_card)
+           to: ~p"/establishments/#{socket.assigns.current_scope.establishment.id}/loyalty_cards"
          )}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -106,13 +172,13 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
     case prepare_new_card_attrs(socket, loyalty_card_params) do
       {:ok, attrs} ->
         case LoyaltyCards.create_loyalty_card(socket.assigns.current_scope, attrs) do
-          {:ok, loyalty_card} ->
+          {:ok, _loyalty_card} ->
             {:noreply,
              socket
-             |> put_flash(:info, "Loyalty card created successfully")
+             |> put_flash(:info, gettext("Loyalty card created successfully"))
              |> push_navigate(
                to:
-                 return_path(socket.assigns.current_scope, socket.assigns.return_to, loyalty_card)
+                 ~p"/establishments/#{socket.assigns.current_scope.establishment.id}/loyalty_cards"
              )}
 
           {:error, %Ecto.Changeset{}} ->
@@ -122,7 +188,7 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
       {:error, :email_required} ->
         {:noreply,
          socket
-         |> put_flash(:error, "Customer email is required.")
+         |> put_flash(:error, gettext("Customer email is required."))
          |> assign(:form, to_form(loyalty_card_params, as: :loyalty_card))}
     end
   end
@@ -164,10 +230,4 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
         program
     end
   end
-
-  defp return_path(scope, "index", _loyalty_card),
-    do: ~p"/establishments/#{scope.establishment.id}/loyalty_cards"
-
-  defp return_path(scope, "show", loyalty_card),
-    do: ~p"/establishments/#{scope.establishment.id}/loyalty_cards/#{loyalty_card}"
 end

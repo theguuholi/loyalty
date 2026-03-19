@@ -6,7 +6,7 @@ defmodule LoyaltyWeb.EstablishmentLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
       <.header>
         Listing Establishments
         <:actions>
@@ -28,20 +28,18 @@ defmodule LoyaltyWeb.EstablishmentLive.Index do
         row_click={fn {_id, establishment} -> JS.navigate(~p"/establishments/#{establishment}") end}
       >
         <:col :let={{_id, establishment}} label="Name">{establishment.name}</:col>
-        <:action :let={{_id, establishment}}>
+        <:action :let={{id, establishment}}>
           <div class="sr-only">
             <.link navigate={~p"/establishments/#{establishment}"}>Show</.link>
           </div>
           <.link navigate={~p"/establishments/#{establishment}/edit"}>Edit</.link>
-        </:action>
-        <%!-- <:action :let={{id, establishment}}>
           <.link
             phx-click={JS.push("delete", value: %{id: establishment.id}) |> hide("##{id}")}
             data-confirm="Are you sure?"
           >
             Delete
           </.link>
-        </:action> --%>
+        </:action>
       </.table>
     </Layouts.app>
     """

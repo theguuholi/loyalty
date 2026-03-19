@@ -35,7 +35,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLiveTest do
       {:ok, _index_live, html} =
         live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_programs")
 
-      assert html =~ "Listing Loyalty programs"
+      assert html =~ "Loyalty programs"
       assert html =~ loyalty_program.name
     end
 
@@ -45,14 +45,14 @@ defmodule LoyaltyWeb.LoyaltyProgramLiveTest do
 
       assert {:ok, form_live, _} =
                index_live
-               |> element("a", "New Loyalty program")
+               |> element("a", "New program")
                |> render_click()
                |> follow_redirect(
                  conn,
                  ~p"/establishments/#{scope.establishment.id}/loyalty_programs/new"
                )
 
-      assert render(form_live) =~ "New Loyalty program"
+      assert render(form_live) =~ "New program"
 
       assert form_live
              |> form("#loyalty_program-form", loyalty_program: @invalid_attrs)
@@ -68,7 +68,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLiveTest do
                )
 
       html = render(index_live)
-      assert html =~ "Loyalty program created successfully"
+      assert html =~ "Program created successfully."
       assert html =~ "some name"
     end
 
@@ -82,14 +82,14 @@ defmodule LoyaltyWeb.LoyaltyProgramLiveTest do
 
       assert {:ok, form_live, _html} =
                index_live
-               |> element("#loyalty_programs-#{loyalty_program.id} a", "Edit")
+               |> element("table a", "Edit")
                |> render_click()
                |> follow_redirect(
                  conn,
                  ~p"/establishments/#{scope.establishment.id}/loyalty_programs/#{loyalty_program}/edit"
                )
 
-      assert render(form_live) =~ "Edit Loyalty program"
+      assert render(form_live) =~ "Edit program"
 
       assert form_live
              |> form("#loyalty_program-form", loyalty_program: @invalid_attrs)
@@ -105,23 +105,19 @@ defmodule LoyaltyWeb.LoyaltyProgramLiveTest do
                )
 
       html = render(index_live)
-      assert html =~ "Loyalty program updated successfully"
+      assert html =~ "Program updated successfully."
       assert html =~ "some updated name"
     end
 
-    test "deletes loyalty_program in listing", %{
-      conn: conn,
-      loyalty_program: loyalty_program,
-      scope: scope
-    } do
+    test "deletes loyalty_program in listing", %{conn: conn, scope: scope} do
       {:ok, index_live, _html} =
         live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_programs")
 
       assert index_live
-             |> element("#loyalty_programs-#{loyalty_program.id} a", "Delete")
+             |> element("table a", "Delete")
              |> render_click()
 
-      refute has_element?(index_live, "#loyalty_programs-#{loyalty_program.id}")
+      refute has_element?(index_live, "table tbody tr")
     end
   end
 
@@ -135,7 +131,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLiveTest do
           ~p"/establishments/#{scope.establishment.id}/loyalty_programs/#{loyalty_program}"
         )
 
-      assert html =~ "Show Loyalty program"
+      assert html =~ "Clients and cards"
       assert html =~ loyalty_program.name
     end
 
@@ -152,14 +148,14 @@ defmodule LoyaltyWeb.LoyaltyProgramLiveTest do
 
       assert {:ok, form_live, _} =
                show_live
-               |> element("a", "Edit")
+               |> element("a", "Edit program")
                |> render_click()
                |> follow_redirect(
                  conn,
                  ~p"/establishments/#{scope.establishment.id}/loyalty_programs/#{loyalty_program}/edit?return_to=show"
                )
 
-      assert render(form_live) =~ "Edit Loyalty program"
+      assert render(form_live) =~ "Edit program"
 
       assert form_live
              |> form("#loyalty_program-form", loyalty_program: @invalid_attrs)
@@ -175,7 +171,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLiveTest do
                )
 
       html = render(show_live)
-      assert html =~ "Loyalty program updated successfully"
+      assert html =~ "Program updated successfully."
       assert html =~ "some updated name"
     end
   end

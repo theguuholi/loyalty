@@ -6,15 +6,19 @@ defmodule LoyaltyWeb.LoyaltyProgramLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
       <.header>
-        Listing Loyalty programs
+        {gettext("Loyalty programs")}
+        <:subtitle>{@current_scope.establishment.name}</:subtitle>
         <:actions>
+          <.button navigate={~p"/establishments/#{@current_scope.establishment.id}"}>
+            <.icon name="hero-arrow-left" /> {gettext("Back")}
+          </.button>
           <.button
             variant="primary"
             navigate={~p"/establishments/#{@current_scope.establishment.id}/loyalty_programs/new"}
           >
-            <.icon name="hero-plus" /> New Loyalty program
+            <.icon name="hero-plus" /> {gettext("New program")}
           </.button>
         </:actions>
       </.header>
@@ -30,33 +34,30 @@ defmodule LoyaltyWeb.LoyaltyProgramLive.Index do
           end
         }
       >
-        <:col :let={{_id, loyalty_program}} label="Name">{loyalty_program.name}</:col>
-        <:col :let={{_id, loyalty_program}} label="Stamps required">
+        <:col :let={{_id, loyalty_program}} label={gettext("Name")}>{loyalty_program.name}</:col>
+        <:col :let={{_id, loyalty_program}} label={gettext("Stamps required")}>
           {loyalty_program.stamps_required}
         </:col>
-        <:col :let={{_id, loyalty_program}} label="Reward description">
+        <:col :let={{_id, loyalty_program}} label={gettext("Reward description")}>
           {loyalty_program.reward_description}
         </:col>
         <:action :let={{_id, loyalty_program}}>
-          <div class="sr-only">
-            <.link navigate={
-              ~p"/establishments/#{@current_scope.establishment.id}/loyalty_programs/#{loyalty_program}"
-            }>
-              Show
-            </.link>
-          </div>
-          <.link navigate={
-            ~p"/establishments/#{@current_scope.establishment.id}/loyalty_programs/#{loyalty_program}/edit"
-          }>
-            Edit
+          <.link
+            navigate={
+              ~p"/establishments/#{@current_scope.establishment.id}/loyalty_programs/#{loyalty_program}/edit"
+            }
+            class="btn btn-ghost btn-sm"
+          >
+            {gettext("Edit")}
           </.link>
         </:action>
         <:action :let={{id, loyalty_program}}>
           <.link
             phx-click={JS.push("delete", value: %{id: loyalty_program.id}) |> hide("##{id}")}
-            data-confirm="Are you sure?"
+            data-confirm={gettext("Are you sure?")}
+            class="btn btn-ghost btn-sm text-error"
           >
-            Delete
+            {gettext("Delete")}
           </.link>
         </:action>
       </.table>
@@ -72,7 +73,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLive.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, "Listing Loyalty programs")
+     |> assign(:page_title, gettext("Loyalty programs"))
      |> stream(:loyalty_programs, list_loyalty_programs(socket.assigns.current_scope))}
   end
 

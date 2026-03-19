@@ -44,7 +44,7 @@ defmodule LoyaltyWeb.CardsLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
       <div class="space-y-6">
         <h1 class="text-xl font-semibold text-[#1a1d21]">Meus cartões</h1>
 

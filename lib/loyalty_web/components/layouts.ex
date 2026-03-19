@@ -31,6 +31,8 @@ defmodule LoyaltyWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
+  attr :locale, :string, default: "en", doc: "current locale for the language switcher"
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -44,6 +46,9 @@ defmodule LoyaltyWeb.Layouts do
       <div class="flex-none">
         <ul class="flex flex-column px-1 space-x-4 items-center">
           <li>
+            <.locale_switcher locale={@locale} />
+          </li>
+          <li>
             <.theme_toggle />
           </li>
           <li></li>
@@ -53,21 +58,21 @@ defmodule LoyaltyWeb.Layouts do
             </li>
             <li>
               <.link href={~p"/establishments"}>
-                Establishments
+                {gettext("Establishments")}
               </.link>
             </li>
             <li>
-              <.link href={~p"/users/settings"}>Settings</.link>
+              <.link href={~p"/users/settings"}>{gettext("Settings")}</.link>
             </li>
             <li>
-              <.link href={~p"/users/log-out"} method="delete">Log out</.link>
+              <.link href={~p"/users/log-out"} method="delete">{gettext("Log out")}</.link>
             </li>
           <% else %>
             <li>
-              <.link href={~p"/users/register"} class="btn btn-primary">Register</.link>
+              <.link href={~p"/users/register"} class="btn btn-primary">{gettext("Register")}</.link>
             </li>
             <li>
-              <.link href={~p"/users/log-in"}>Log in</.link>
+              <.link href={~p"/users/log-in"}>{gettext("Log in")}</.link>
             </li>
           <% end %>
         </ul>
@@ -124,6 +129,31 @@ defmodule LoyaltyWeb.Layouts do
         <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
       </.flash>
     </div>
+    """
+  end
+
+  @doc """
+  Language switcher: EN | PT links that set session locale and reload.
+  """
+  attr :locale, :string, required: true
+
+  def locale_switcher(assigns) do
+    ~H"""
+    <span class="flex items-center gap-1 text-sm">
+      <a
+        href={~p"/locale?locale=en"}
+        class={["px-2 py-1 rounded", @locale == "en" && "font-semibold bg-base-300"]}
+      >
+        EN
+      </a>
+      <span aria-hidden="true">|</span>
+      <a
+        href={~p"/locale?locale=pt_BR"}
+        class={["px-2 py-1 rounded", @locale == "pt_BR" && "font-semibold bg-base-300"]}
+      >
+        PT
+      </a>
+    </span>
     """
   end
 

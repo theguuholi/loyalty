@@ -16,8 +16,12 @@ defmodule Loyalty.LoyaltyCardsTest do
       other_scope = establishment_scope_fixture()
       loyalty_card = loyalty_card_fixture(scope)
       other_loyalty_card = loyalty_card_fixture(other_scope)
-      assert LoyaltyCards.list_loyalty_cards(scope) == [loyalty_card]
-      assert LoyaltyCards.list_loyalty_cards(other_scope) == [other_loyalty_card]
+
+      assert [loyalty_card.id] ==
+               scope |> LoyaltyCards.list_loyalty_cards() |> Enum.map(& &1.id)
+
+      assert [other_loyalty_card.id] ==
+               other_scope |> LoyaltyCards.list_loyalty_cards() |> Enum.map(& &1.id)
     end
 
     test "get_loyalty_card!/2 returns the loyalty_card with given id" do

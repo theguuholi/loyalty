@@ -6,25 +6,25 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
       <.header>
         {@establishment.name}
         <:subtitle>
           <%= if @loyalty_program do %>
-            Assinatura ativa
+            {gettext("Active subscription")}
           <% else %>
-            Crie um programa de fidelidade
+            {gettext("Create a loyalty program")}
           <% end %>
         </:subtitle>
         <:actions>
           <.button navigate={~p"/establishments"}>
-            <.icon name="hero-arrow-left" />
+            <.icon name="hero-arrow-left" /> {gettext("Back")}
           </.button>
           <.button
             variant="primary"
             navigate={~p"/establishments/#{@establishment}/edit?return_to=show"}
           >
-            <.icon name="hero-pencil-square" /> Editar estabelecimento
+            <.icon name="hero-pencil-square" /> {gettext("Edit establishment")}
           </.button>
         </:actions>
       </.header>
@@ -34,46 +34,56 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
         class="rounded-xl border-2 border-[#e2e5e8] bg-white p-4 shadow-sm mb-4"
       >
         <%= if @loyalty_program do %>
-          <p class="font-semibold text-[#1a1d21]">Programa ativo</p>
+          <p class="font-semibold text-[#1a1d21]">{gettext("Active program")}</p>
           <p class="text-sm text-[#6b7280] mt-1">
-            {@loyalty_program.stamps_required} carimbos = {@loyalty_program.reward_description}
+            {@loyalty_program.stamps_required} {gettext("stamps")} = {@loyalty_program.reward_description}
           </p>
           <.link
             id="dashboard-edit-program-link"
             navigate={
               ~p"/establishments/#{@establishment}/loyalty_programs/#{@loyalty_program}/edit?return_to=show"
             }
-            class="text-sm text-[#1b4d3e] hover:underline mt-2 inline-block"
+            class="btn btn-primary btn-soft btn-sm"
           >
-            Editar programa →
+            {gettext("Edit program")}
           </.link>
         <% else %>
-          <p class="text-[#6b7280]">Nenhum programa ainda.</p>
+          <p class="text-[#6b7280]">{gettext("No program yet.")}</p>
           <.link
-            navigate={~p"/establishments/#{@establishment}/loyalty_programs/new"}
-            class="text-sm text-[#1b4d3e] hover:underline mt-2 inline-block"
+            navigate={~p"/establishments/#{@establishment}/loyalty_programs/new?return_to=show"}
+            class="btn btn-primary btn-soft btn-sm"
           >
-            Criar programa →
+            {gettext("Create program")}
           </.link>
         <% end %>
       </div>
 
-      <p class="text-sm font-semibold mb-2">Ações rápidas</p>
+      <p class="text-sm font-semibold mb-2">{gettext("Quick actions")}</p>
       <div class="flex flex-wrap gap-2">
-        <.link
-          id="dashboard-cards-link"
-          navigate={~p"/establishments/#{@establishment}/loyalty_cards"}
-          class="btn btn-primary btn-soft"
-        >
-          Ver cartões / Clientes
-        </.link>
-        <.link
-          id="dashboard-add-stamp-link"
-          navigate={~p"/establishments/#{@establishment}/loyalty_cards"}
-          class="btn btn-primary btn-soft"
-        >
-          Adicionar carimbo
-        </.link>
+        <%= if @loyalty_program do %>
+          <.button
+            id="dashboard-program-and-clients-link"
+            variant="primary"
+            navigate={~p"/establishments/#{@establishment}/loyalty_programs/#{@loyalty_program}"}
+          >
+            {gettext("Program and clients")}
+          </.button>
+          <.link
+            id="dashboard-register-client-link"
+            navigate={~p"/establishments/#{@establishment}/loyalty_cards/new"}
+            class="btn btn-primary btn-soft"
+          >
+            <.icon name="hero-plus" /> {gettext("Register client")}
+          </.link>
+        <% else %>
+          <.button
+            id="dashboard-create-program-link"
+            variant="primary"
+            navigate={~p"/establishments/#{@establishment}/loyalty_programs/new"}
+          >
+            <.icon name="hero-plus" /> {gettext("Create program")}
+          </.button>
+        <% end %>
       </div>
     </Layouts.app>
     """
@@ -115,7 +125,7 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
       ) do
     {:noreply,
      socket
-     |> put_flash(:error, "The current establishment was deleted.")
+     |> put_flash(:error, gettext("The current establishment was deleted."))
      |> push_navigate(to: ~p"/establishments")}
   end
 
