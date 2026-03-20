@@ -9,7 +9,7 @@ defmodule Loyalty.Accounts.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"Loyalty", "contact@example.com"})
+      |> from({"Loyalty", "g.92oliveira@gmail.com"})
       |> subject(subject)
       |> text_body(body)
 
