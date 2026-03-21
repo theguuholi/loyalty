@@ -33,7 +33,12 @@ defmodule LoyaltyWeb.ConnCase do
 
   setup tags do
     Loyalty.DataCase.setup_sandbox(tags)
-    {:ok, conn: Phoenix.ConnTest.build_conn()}
+
+    conn =
+      Phoenix.ConnTest.build_conn()
+      |> Plug.Test.init_test_session(%{"locale" => "en"})
+
+    {:ok, conn: conn}
   end
 
   @doc """

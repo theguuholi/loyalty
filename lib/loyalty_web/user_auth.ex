@@ -282,7 +282,7 @@ defmodule LoyaltyWeb.UserAuth do
   def on_mount(:assign_establishment_to_scope, _params, _session, socket), do: {:cont, socket}
 
   defp put_locale_from_session(socket, session) do
-    locale = session["locale"] || socket.assigns[:locale] || "en"
+    locale = session["locale"] || socket.assigns[:locale] || "pt_BR"
     Gettext.put_locale(LoyaltyWeb.Gettext, locale)
     Phoenix.Component.assign(socket, :locale, locale)
   end

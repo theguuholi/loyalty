@@ -31,7 +31,7 @@ defmodule LoyaltyWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
-  attr :locale, :string, default: "en", doc: "current locale for the language switcher"
+  attr :locale, :string, default: "pt_BR", doc: "current locale for the language switcher"
 
   slot :inner_block, required: true
 
