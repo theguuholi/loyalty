@@ -39,7 +39,12 @@ defmodule Seeds do
     paid_user = ensure_user("paid.demo@test.com")
     paid_est = user_establishment(paid_user, "Demo — plano pago (assinatura ativa)")
     paid_est = apply_paid_subscription(paid_est)
-    paid_scope = Scope.for_user(paid_user) |> Scope.put_establishment(paid_est)
+
+    paid_scope =
+      paid_user
+      |> Scope.for_user()
+      |> Scope.put_establishment(paid_est)
+
     ensure_program(paid_scope, "Programa VIP", 12, "Desconto especial")
 
     c1 = ensure_customer("cliente1@test.com")
