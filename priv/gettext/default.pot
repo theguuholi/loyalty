@@ -16,18 +16,18 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: lib/loyalty_web/components/layouts.ex:116
-#: lib/loyalty_web/components/layouts.ex:128
+#: lib/loyalty_web/components/layouts.ex:138
+#: lib/loyalty_web/components/layouts.ex:150
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr ""
 
-#: lib/loyalty_web/components/layouts.ex:123
+#: lib/loyalty_web/components/layouts.ex:145
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr ""
 
-#: lib/loyalty_web/components/layouts.ex:111
+#: lib/loyalty_web/components/layouts.ex:133
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr ""
@@ -114,17 +114,17 @@ msgstr ""
 msgid "Edit program"
 msgstr ""
 
-#: lib/loyalty_web/components/layouts.ex:61
+#: lib/loyalty_web/components/layouts.ex:77
 #, elixir-autogen, elixir-format
 msgid "Establishments"
 msgstr ""
 
-#: lib/loyalty_web/components/layouts.ex:75
+#: lib/loyalty_web/components/layouts.ex:96
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr ""
 
-#: lib/loyalty_web/components/layouts.ex:68
+#: lib/loyalty_web/components/layouts.ex:84
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr ""
@@ -155,7 +155,7 @@ msgstr ""
 msgid "Quick actions"
 msgstr ""
 
-#: lib/loyalty_web/components/layouts.ex:72
+#: lib/loyalty_web/components/layouts.ex:92
 #, elixir-autogen, elixir-format
 msgid "Register"
 msgstr ""
@@ -181,7 +181,7 @@ msgstr ""
 msgid "Saving..."
 msgstr ""
 
-#: lib/loyalty_web/components/layouts.ex:65
+#: lib/loyalty_web/components/layouts.ex:81
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr ""
@@ -492,4 +492,9 @@ msgstr ""
 #: lib/loyalty_web/live/establishment_live/show.ex:20
 #, elixir-autogen, elixir-format
 msgid "clients"
+msgstr ""
+
+#: lib/loyalty_web/components/layouts.ex:64
+#, elixir-autogen, elixir-format
+msgid "Account menu"
 msgstr ""
