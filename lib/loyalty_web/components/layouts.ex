@@ -41,7 +41,7 @@ defmodule LoyaltyWeb.Layouts do
       <div class="mx-auto flex w-full max-w-7xl min-w-0 flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div class="min-w-0 shrink-0">
           <a href="/" class="inline-flex w-fit items-center gap-2">
-            <span class="text-sm font-semibold">Loyalty</span>
+            <span class="text-sm font-semibold">{gettext("MyRewards")}</span>
           </a>
         </div>
         <div class="flex min-w-0 flex-1 flex-row flex-wrap items-center justify-end gap-x-3 gap-y-2 sm:gap-x-4">

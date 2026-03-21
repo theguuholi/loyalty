@@ -16,18 +16,18 @@ msgstr ""
 msgid "Actions"
 msgstr "Ações"
 
-#: lib/loyalty_web/components/layouts.ex:138
-#: lib/loyalty_web/components/layouts.ex:150
+#: lib/loyalty_web/components/layouts.ex:136
+#: lib/loyalty_web/components/layouts.ex:148
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr "Tentando reconectar"
 
-#: lib/loyalty_web/components/layouts.ex:145
+#: lib/loyalty_web/components/layouts.ex:143
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr "Algo deu errado!"
 
-#: lib/loyalty_web/components/layouts.ex:133
+#: lib/loyalty_web/components/layouts.ex:131
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr "Não encontramos a internet"
@@ -114,17 +114,17 @@ msgstr "Editar estabelecimento"
 msgid "Edit program"
 msgstr "Editar programa"
 
-#: lib/loyalty_web/components/layouts.ex:77
+#: lib/loyalty_web/components/layouts.ex:75
 #, elixir-autogen, elixir-format
 msgid "Establishments"
 msgstr "Estabelecimentos"
 
-#: lib/loyalty_web/components/layouts.ex:96
+#: lib/loyalty_web/components/layouts.ex:94
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr "Entrar"
 
-#: lib/loyalty_web/components/layouts.ex:84
+#: lib/loyalty_web/components/layouts.ex:82
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr "Sair"
@@ -155,7 +155,7 @@ msgstr "Nenhum programa ainda."
 msgid "Quick actions"
 msgstr "Ações rápidas"
 
-#: lib/loyalty_web/components/layouts.ex:92
+#: lib/loyalty_web/components/layouts.ex:90
 #, elixir-autogen, elixir-format
 msgid "Register"
 msgstr "Cadastrar"
@@ -181,7 +181,7 @@ msgstr "Cadastrar primeiro cliente"
 msgid "Saving..."
 msgstr "Salvando..."
 
-#: lib/loyalty_web/components/layouts.ex:81
+#: lib/loyalty_web/components/layouts.ex:79
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr "Configurações"
@@ -494,7 +494,23 @@ msgstr "Não é possível cadastrar novos clientes até assinar ou regularizar a
 msgid "clients"
 msgstr "clientes"
 
-#: lib/loyalty_web/components/layouts.ex:64
+#: lib/loyalty_web/components/layouts.ex:62
 #, elixir-autogen, elixir-format
 msgid "Account menu"
 msgstr "Menu da conta"
+
+#: lib/loyalty_web/components/layouts.ex:44
+#, elixir-autogen, elixir-format
+msgid "MyRewards"
+msgstr "MyRewards"
+
+#: lib/loyalty_web/user_auth.ex:236
+#: lib/loyalty_web/user_auth.ex:318
+#, elixir-autogen, elixir-format
+msgid "You must log in to access this page."
+msgstr "Você precisa entrar para acessar esta página."
+
+#: lib/loyalty_web/user_auth.ex:251
+#, elixir-autogen, elixir-format
+msgid "You must re-authenticate to access this page."
+msgstr "Você precisa autenticar-se novamente para acessar esta página."

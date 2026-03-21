@@ -203,7 +203,7 @@ defmodule LoyaltyWeb.UserLive.SettingsTest do
     end
 
     test "redirects if user is not logged in", %{token: token} do
-      conn = build_conn()
+      conn = build_conn() |> Plug.Test.init_test_session(%{"locale" => "en"})
       {:error, redirect} = live(conn, ~p"/users/settings/confirm-email/#{token}")
       assert {:redirect, %{to: path, flash: flash}} = redirect
       assert path == ~p"/users/log-in"
