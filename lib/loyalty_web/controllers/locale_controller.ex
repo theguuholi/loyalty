@@ -19,5 +19,5 @@ defmodule LoyaltyWeb.LocaleController do
   defp normalize_locale(locale) when locale in @supported_locales, do: locale
   defp normalize_locale("pt-BR"), do: "pt_BR"
   defp normalize_locale("pt"), do: "pt_BR"
-  defp normalize_locale(_), do: "en"
+  defp normalize_locale(_), do: "pt_BR"
 end

@@ -31,51 +31,71 @@ defmodule LoyaltyWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
-  attr :locale, :string, default: "en", doc: "current locale for the language switcher"
+  attr :locale, :string, default: "pt_BR", doc: "current locale for the language switcher"
 
   slot :inner_block, required: true
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <span class="text-sm font-semibold">Loyalty</span>
-        </a>
-      </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <.locale_switcher locale={@locale} />
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li></li>
-          <%= if @current_scope do %>
-            <li>
-              {@current_scope.user.email}
-            </li>
-            <li>
-              <.link href={~p"/establishments"}>
-                {gettext("Establishments")}
-              </.link>
-            </li>
-            <li>
-              <.link href={~p"/users/settings"}>{gettext("Settings")}</.link>
-            </li>
-            <li>
-              <.link href={~p"/users/log-out"} method="delete">{gettext("Log out")}</.link>
-            </li>
-          <% else %>
-            <li>
-              <.link href={~p"/users/register"} class="btn btn-primary">{gettext("Register")}</.link>
-            </li>
-            <li>
-              <.link href={~p"/users/log-in"}>{gettext("Log in")}</.link>
-            </li>
-          <% end %>
-        </ul>
+    <header class="w-full min-w-0 border-b border-base-300 bg-base-100 px-4 py-3 sm:px-6 lg:px-8">
+      <div class="mx-auto flex w-full max-w-7xl min-w-0 flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <div class="min-w-0 shrink-0">
+          <a href="/" class="inline-flex w-fit items-center gap-2">
+            <span class="text-sm font-semibold">{gettext("MyRewards")}</span>
+          </a>
+        </div>
+        <div class="flex min-w-0 flex-1 flex-row flex-wrap items-center justify-end gap-x-3 gap-y-2 sm:gap-x-4">
+          <.locale_switcher locale={@locale} />
+          <.theme_toggle />
+          <ul class="m-0 flex min-w-0 list-none flex-row flex-wrap items-center gap-x-3 gap-y-2 p-0 sm:gap-x-4">
+            <%= if @current_scope do %>
+              <li class="min-w-0">
+                <div class="dropdown dropdown-end">
+                  <div
+                    tabindex="0"
+                    role="button"
+                    class={[
+                      "btn btn-ghost btn-sm h-auto min-h-9 min-w-0 max-w-[min(100vw-10rem,14rem)] justify-between gap-2 sm:max-w-xs",
+                      "border border-base-300 bg-base-100 font-normal normal-case"
+                    ]}
+                    aria-haspopup="menu"
+                    aria-label={gettext("Account menu")}
+                  >
+                    <span class="truncate text-left text-sm" title={@current_scope.user.email}>
+                      {@current_scope.user.email}
+                    </span>
+                    <.icon name="hero-arrow-small-down" class="size-4 shrink-0 opacity-60" />
+                  </div>
+                  <ul
+                    tabindex="0"
+                    class="dropdown-content menu menu-sm z-[100] mt-1 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow-md"
+                  >
+                    <li>
+                      <.link href={~p"/establishments"}>
+                        {gettext("Establishments")}
+                      </.link>
+                    </li>
+                    <li>
+                      <.link href={~p"/users/settings"}>{gettext("Settings")}</.link>
+                    </li>
+                    <li>
+                      <.link href={~p"/users/log-out"} method="delete">{gettext("Log out")}</.link>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            <% else %>
+              <li>
+                <.link href={~p"/users/register"} class="btn btn-primary">
+                  {gettext("Register")}
+                </.link>
+              </li>
+              <li>
+                <.link href={~p"/users/log-in"}>{gettext("Log in")}</.link>
+              </li>
+            <% end %>
+          </ul>
+        </div>
       </div>
     </header>
 

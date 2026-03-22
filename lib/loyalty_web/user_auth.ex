@@ -1,5 +1,6 @@
 defmodule LoyaltyWeb.UserAuth do
   use LoyaltyWeb, :verified_routes
+  use Gettext, backend: LoyaltyWeb.Gettext
 
   import Plug.Conn
   import Phoenix.Controller
@@ -232,7 +233,7 @@ defmodule LoyaltyWeb.UserAuth do
     else
       socket =
         socket
-        |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
+        |> Phoenix.LiveView.put_flash(:error, gettext("You must log in to access this page."))
         |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
 
       {:halt, socket}
@@ -247,7 +248,10 @@ defmodule LoyaltyWeb.UserAuth do
     else
       socket =
         socket
-        |> Phoenix.LiveView.put_flash(:error, "You must re-authenticate to access this page.")
+        |> Phoenix.LiveView.put_flash(
+          :error,
+          gettext("You must re-authenticate to access this page.")
+        )
         |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
 
       {:halt, socket}
@@ -282,7 +286,7 @@ defmodule LoyaltyWeb.UserAuth do
   def on_mount(:assign_establishment_to_scope, _params, _session, socket), do: {:cont, socket}
 
   defp put_locale_from_session(socket, session) do
-    locale = session["locale"] || socket.assigns[:locale] || "en"
+    locale = session["locale"] || socket.assigns[:locale] || "pt_BR"
     Gettext.put_locale(LoyaltyWeb.Gettext, locale)
     Phoenix.Component.assign(socket, :locale, locale)
   end
@@ -314,7 +318,7 @@ defmodule LoyaltyWeb.UserAuth do
       conn
     else
       conn
-      |> put_flash(:error, "You must log in to access this page.")
+      |> put_flash(:error, gettext("You must log in to access this page."))
       |> maybe_store_return_to()
       |> redirect(to: ~p"/users/log-in")
       |> halt()

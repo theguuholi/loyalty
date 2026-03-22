@@ -6,7 +6,7 @@ defmodule LoyaltyWeb.PageController do
       page_title: "MyRewards - Fidelidade digital para negócios locais",
       page_description:
         "Transforme cartões de papel em recorrência com cartões digitais, progresso visível e cobrança simples por estabelecimento.",
-      locale: conn.assigns[:locale] || "en"
+      locale: conn.assigns[:locale] || "pt_BR"
     )
   end
 end

@@ -5,7 +5,7 @@ defmodule LoyaltyWeb.Plugs.Locale do
   """
   import Plug.Conn
 
-  @default_locale "en"
+  @default_locale "pt_BR"
 
   def init(opts), do: opts
 

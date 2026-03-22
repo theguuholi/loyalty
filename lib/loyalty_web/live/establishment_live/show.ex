@@ -55,54 +55,79 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
 
       <div
         id="dashboard-billing-card"
-        class="rounded-xl border-2 border-[#e2e5e8] bg-white p-4 shadow-sm mb-4"
+        class="mb-4 rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm"
       >
-        <p class="font-semibold text-[#1a1d21]">{@plan_label}</p>
-        <p class="text-sm text-[#6b7280] mt-1">
+        <p class="font-semibold text-base-content">{@plan_label}</p>
+        <p class="mt-1 text-sm text-base-content/70">
           <%= if @client_limit do %>
             {gettext("Clients (loyalty cards):")} {@client_count} / {@client_limit}
           <% else %>
             {gettext("Clients (loyalty cards):")} {@client_count}
           <% end %>
         </p>
-        <%= if @show_subscribe_cta do %>
-          <.button
-            variant="primary"
-            class="mt-3"
-            phx-click="start_stripe_checkout"
-            id="dashboard-stripe-checkout"
+        <%= if @on_free_plan and @show_subscribe_cta do %>
+          <p class="mt-2 text-sm text-base-content/70">
+            {gettext(
+              "The free plan allows up to %{count} loyalty cards (clients). More clients require the monthly paid plan.",
+              count: @client_limit
+            )}
+          </p>
+        <% end %>
+        <%= if @show_free_plan_near_limit_hint do %>
+          <p
+            class="mt-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-base-content"
+            id="dashboard-free-plan-near-limit"
+            role="status"
           >
-            {gettext("Subscribe (monthly) for more clients")}
-          </.button>
+            {gettext("You're close to the free plan limit — subscribe to add more clients.")}
+          </p>
+        <% end %>
+        <%= if @show_subscribe_cta do %>
+          <div class="mt-3">
+            <.button
+              variant="primary"
+              phx-click="start_stripe_checkout"
+              id="dashboard-stripe-checkout"
+            >
+              {gettext("Subscribe (monthly) for more clients")}
+            </.button>
+          </div>
         <% end %>
       </div>
 
       <div
         id="dashboard-program-card"
-        class="rounded-xl border-2 border-[#e2e5e8] bg-white p-4 shadow-sm mb-4"
+        class="mb-4 rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm"
       >
         <%= if @loyalty_program do %>
-          <p class="font-semibold text-[#1a1d21]">{gettext("Active program")}</p>
-          <p class="text-sm text-[#6b7280] mt-1">
+          <p class="font-semibold text-base-content">{gettext("Active program")}</p>
+          <p class="mt-1 text-sm text-base-content/70">
             {@loyalty_program.stamps_required} {gettext("stamps")} = {@loyalty_program.reward_description}
           </p>
-          <.link
-            id="dashboard-edit-program-link"
-            navigate={
-              ~p"/establishments/#{@establishment}/loyalty_programs/#{@loyalty_program}/edit?return_to=show"
-            }
-            class="btn btn-primary btn-soft btn-sm"
-          >
-            {gettext("Edit program")}
-          </.link>
+          <div class="mt-3">
+            <.button
+              variant="primary"
+              id="dashboard-edit-program-link"
+              navigate={
+                ~p"/establishments/#{@establishment}/loyalty_programs/#{@loyalty_program}/edit?return_to=show"
+              }
+              class="btn btn-primary btn-sm"
+            >
+              {gettext("Edit program")}
+            </.button>
+          </div>
         <% else %>
-          <p class="text-[#6b7280]">{gettext("No program yet.")}</p>
-          <.link
-            navigate={~p"/establishments/#{@establishment}/loyalty_programs/new?return_to=show"}
-            class="btn btn-primary btn-soft btn-sm"
-          >
-            {gettext("Create program")}
-          </.link>
+          <p class="font-semibold text-base-content">{gettext("Program")}</p>
+          <p class="mt-1 text-sm text-base-content/70">{gettext("No program yet.")}</p>
+          <div class="mt-3">
+            <.button
+              variant="primary"
+              navigate={~p"/establishments/#{@establishment}/loyalty_programs/new?return_to=show"}
+              class="btn btn-primary btn-sm"
+            >
+              {gettext("Create program")}
+            </.button>
+          </div>
         <% end %>
       </div>
 
@@ -273,6 +298,12 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
     payment_issue = establishment.subscription_status in ["past_due", "unpaid"]
 
     show_subscribe = not Billing.paid_subscription_allows_new_clients?(establishment)
+    on_free = Billing.on_free_plan?(establishment)
+    free_limit = Billing.free_client_limit()
+
+    near_limit_hint =
+      on_free && show_subscribe && limit == free_limit &&
+        count >= free_limit - 2
 
     socket
     |> assign(:client_count, count)
@@ -281,5 +312,7 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
     |> assign(:can_add_new_client, can_add)
     |> assign(:payment_issue, payment_issue)
     |> assign(:show_subscribe_cta, show_subscribe)
+    |> assign(:on_free_plan, on_free)
+    |> assign(:show_free_plan_near_limit_hint, near_limit_hint)
   end
 end

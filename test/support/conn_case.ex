@@ -33,7 +33,14 @@ defmodule LoyaltyWeb.ConnCase do
 
   setup tags do
     Loyalty.DataCase.setup_sandbox(tags)
-    {:ok, conn: Phoenix.ConnTest.build_conn()}
+
+    conn =
+      Phoenix.ConnTest.build_conn()
+      |> Plug.Test.init_test_session(%{"locale" => "en"})
+
+    Gettext.put_locale(LoyaltyWeb.Gettext, "en")
+
+    {:ok, conn: conn}
   end
 
   @doc """
@@ -63,13 +70,18 @@ defmodule LoyaltyWeb.ConnCase do
   """
   def log_in_user(conn, user, opts \\ []) do
     token = Loyalty.Accounts.generate_user_session_token(user)
+    locale = Plug.Conn.get_session(conn, "locale")
 
     maybe_set_token_authenticated_at(token, opts[:token_authenticated_at])
 
     conn
     |> Phoenix.ConnTest.init_test_session(%{})
     |> Plug.Conn.put_session(:user_token, token)
+    |> maybe_put_session_locale(locale)
   end
+
+  defp maybe_put_session_locale(conn, nil), do: conn
+  defp maybe_put_session_locale(conn, locale), do: Plug.Conn.put_session(conn, "locale", locale)
 
   defp maybe_set_token_authenticated_at(_token, nil), do: nil
 

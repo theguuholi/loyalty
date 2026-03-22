@@ -14,6 +14,7 @@ defmodule Seeds do
   alias Loyalty.{
     Accounts,
     Accounts.Scope,
+    Billing,
     Customers,
     Establishments,
     LoyaltyCards,
@@ -24,34 +25,82 @@ defmodule Seeds do
   def run do
     IO.puts("Seeding MyRewards demo data...")
 
-    email = "owner@test.com"
-    user = ensure_user("owner@test.com", email <> "M1@")
-    scope = Scope.for_user(user)
+    free_user = ensure_user("free.demo@test.com")
+    free_scope = user_scope_with_establishment(free_user, "Demo — plano gratuito (uso baixo)")
+    ensure_program(free_scope, "Programa fidelidade", 10, "1 recompensa grátis")
 
-    barbershop = ensure_establishment(scope, "Barbearia do João")
-    coffee_shop = ensure_establishment(scope, "Café Central")
+    limit_user = ensure_user("free_limit.demo@test.com")
 
-    barbershop_scope = Scope.put_establishment(scope, barbershop)
-    coffee_scope = Scope.put_establishment(scope, coffee_shop)
+    limit_scope =
+      user_scope_with_establishment(limit_user, "Demo — plano gratuito (20/20, migrar)")
 
-    ensure_program(barbershop_scope, "Programa da Barbearia", 10, "1 corte grátis")
-    ensure_program(coffee_scope, "Programa do Café", 6, "1 café grátis")
+    ensure_program(limit_scope, "Programa cartão", 8, "Brinde ao completar")
 
-    customer_1 = ensure_customer("cliente@myrewards.local")
-    customer_2 = ensure_customer("ana@example.com")
-    customer_3 = ensure_customer("paulo@example.com")
+    paid_user = ensure_user("paid.demo@test.com")
+    paid_est = user_establishment(paid_user, "Demo — plano pago (assinatura ativa)")
+    paid_est = apply_paid_subscription(paid_est)
 
-    ensure_card(barbershop_scope, customer_1, 7, 10)
-    ensure_card(coffee_scope, customer_1, 3, 6)
-    ensure_card(barbershop_scope, customer_2, 10, 10)
-    ensure_card(coffee_scope, customer_3, 1, 6)
+    paid_scope =
+      paid_user
+      |> Scope.for_user()
+      |> Scope.put_establishment(paid_est)
 
-    IO.puts("Seeded demo user: #{user.email} / #{@demo_password}")
-    IO.puts("Seeded establishments: #{barbershop.name}, #{coffee_shop.name}")
-    IO.puts("Seeded customers: #{customer_1.email}, #{customer_2.email}, #{customer_3.email}")
+    ensure_program(paid_scope, "Programa VIP", 12, "Desconto especial")
+
+    c1 = ensure_customer("cliente1@test.com")
+    c2 = ensure_customer("cliente2@test.com")
+    c3 = ensure_customer("cliente3@test.com")
+    ensure_card(free_scope, c1, 3, 10)
+    ensure_card(free_scope, c2, 5, 10)
+    ensure_card(free_scope, c3, 10, 10)
+
+    for i <- 1..Billing.free_client_limit() do
+      c = ensure_customer("full_client_#{i}@test.com")
+      ensure_card(limit_scope, c, 0, 8)
+    end
+
+    ensure_card(paid_scope, ensure_customer("vip@test.com"), 4, 12)
+
+    IO.puts("")
+    IO.puts("--- Demo accounts (password for each: <email>M1@) ---")
+    IO.puts("1) Free - under limit:     #{free_user.email}")
+
+    IO.puts(
+      "2) Free - #{Billing.free_client_limit()}/#{Billing.free_client_limit()} (upgrade / migrate): #{limit_user.email}"
+    )
+
+    IO.puts(
+      "   -> Dashboard shows subscribe CTA, near-limit hint, and client limit when adding clients."
+    )
+
+    IO.puts("3) Paid - active subscription: #{paid_user.email}")
+    IO.puts("")
   end
 
-  defp ensure_user(email, password) do
+  defp user_scope_with_establishment(user, establishment_name) do
+    scope = Scope.for_user(user)
+    est = ensure_establishment(scope, establishment_name)
+    Scope.put_establishment(scope, est)
+  end
+
+  defp user_establishment(user, establishment_name) do
+    scope = Scope.for_user(user)
+    ensure_establishment(scope, establishment_name)
+  end
+
+  defp apply_paid_subscription(%Loyalty.Establishments.Establishment{} = establishment) do
+    establishment
+    |> Ecto.Changeset.change(%{
+      subscription_status: "active",
+      stripe_customer_id: "cus_seed_" <> String.slice(establishment.id, 0, 8),
+      stripe_subscription_id: "sub_seed_" <> String.replace(establishment.id, "-", "")
+    })
+    |> Repo.update!()
+  end
+
+  defp ensure_user(email) do
+    password = email <> "M1@"
+
     case Accounts.get_user_by_email(email) do
       nil ->
         {:ok, user} = Accounts.register_user(%{email: email})
