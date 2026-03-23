@@ -11,11 +11,20 @@ defmodule Loyalty.Billing.StripeWebhook do
       "checkout.session.completed" ->
         handle_checkout_completed(object)
 
+      "customer.subscription.created" ->
+        handle_subscription_created(object)
+
       "customer.subscription.updated" ->
         handle_subscription_updated(object)
 
       "customer.subscription.deleted" ->
         handle_subscription_deleted(object)
+
+      "invoice.paid" ->
+        handle_invoice_paid(object)
+
+      "invoice.payment_succeeded" ->
+        handle_invoice_paid(object)
 
       _ ->
         :ok
@@ -46,6 +55,27 @@ defmodule Loyalty.Billing.StripeWebhook do
     end
   end
 
+  defp handle_subscription_created(sub) do
+    establishment_id = get_in(sub, ["metadata", "establishment_id"])
+    sub_id = sub["id"]
+    customer_id = sub["customer"]
+    status = sub["status"]
+
+    if establishment_id && sub_id && customer_id && is_binary(status) do
+      case Establishments.apply_stripe_billing_attrs(establishment_id, %{
+             stripe_customer_id: customer_id,
+             stripe_subscription_id: sub_id,
+             subscription_status: status
+           }) do
+        {:ok, _} -> :ok
+        {:error, :not_found} -> :ok
+        {:error, other} -> {:error, other}
+      end
+    else
+      :ok
+    end
+  end
+
   defp handle_subscription_updated(sub) do
     sub_id = sub["id"]
     status = sub["status"]
@@ -64,6 +94,39 @@ defmodule Loyalty.Billing.StripeWebhook do
       apply_billing_by_subscription(sub_id, %{subscription_status: "canceled"})
     else
       :ok
+    end
+  end
+
+  defp handle_invoice_paid(invoice) do
+    establishment_id = establishment_id_from_invoice(invoice)
+    customer_id = invoice["customer"]
+    subscription_id = subscription_id_from_invoice(invoice)
+    paid? = invoice["paid"] == true
+
+    if establishment_id && customer_id && subscription_id && paid? do
+      case Establishments.apply_stripe_billing_attrs(establishment_id, %{
+             stripe_customer_id: customer_id,
+             stripe_subscription_id: subscription_id,
+             subscription_status: "active"
+           }) do
+        {:ok, _} -> :ok
+        {:error, :not_found} -> :ok
+        {:error, other} -> {:error, other}
+      end
+    else
+      :ok
+    end
+  end
+
+  defp establishment_id_from_invoice(invoice) do
+    get_in(invoice, ["subscription_details", "metadata", "establishment_id"]) ||
+      get_in(invoice, ["metadata", "establishment_id"])
+  end
+
+  defp subscription_id_from_invoice(invoice) do
+    case invoice["subscription"] do
+      id when is_binary(id) -> id
+      _ -> nil
     end
   end
 

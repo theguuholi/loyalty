@@ -7,32 +7,62 @@ defmodule Loyalty.Billing.StripeSignature do
   Verifies the raw JSON body against the signing secret (`whsec_...`).
 
   Returns `:ok` or `{:error, reason}`.
+
+  If verification fails on the exact bytes, tries a compact JSON re-encoding when
+  the payload parses as JSON and differs from the raw string (whitespace-only
+  differences vs what Stripe signed).
   """
-  def verify(_, _, secret) when secret in [nil, ""], do: {:error, :webhook_secret_not_configured}
+  def verify(raw_body, signature_header, secret) do
+    secret = String.trim(secret || "")
 
-  def verify(raw_body, signature_header, secret)
-      when is_binary(raw_body) and is_binary(signature_header) and is_binary(secret) do
-    with {:ok, timestamp, v1_list} <- parse_header(signature_header),
-         :ok <- verify_timestamp(timestamp),
-         signing_key <- decode_signing_secret(secret) do
-      signed_payload = "#{timestamp}.#{raw_body}"
+    cond do
+      secret == "" ->
+        {:error, :webhook_secret_not_configured}
 
-      mac = :crypto.mac(:hmac, :sha256, signing_key, signed_payload)
-      expected = Base.encode16(mac, case: :lower)
+      not (is_binary(raw_body) and is_binary(signature_header)) ->
+        {:error, :invalid_arguments}
 
-      if Enum.any?(v1_list, &secure_compare_hex?(&1, expected)) do
-        :ok
-      else
-        {:error, :invalid_signature}
-      end
-    else
-      {:error, reason} -> {:error, reason}
+      true ->
+        verify_signed_payload(raw_body, signature_header, secret)
     end
   end
 
-  def verify(_, _, _), do: {:error, :invalid_arguments}
+  defp verify_signed_payload(raw_body, signature_header, secret) do
+    with {:ok, timestamp, v1_list} <- parse_header(signature_header),
+         :ok <- verify_timestamp(timestamp),
+         {:ok, signing_key} <- decode_signing_secret(secret) do
+      cond do
+        hmac_matches?(timestamp, raw_body, v1_list, signing_key) ->
+          :ok
 
-  defp parse_header(header) do
+        match_compact_json?(timestamp, raw_body, v1_list, signing_key) ->
+          :ok
+
+        true ->
+          {:error, :invalid_signature}
+      end
+    end
+  end
+
+  defp match_compact_json?(timestamp, raw_body, v1_list, signing_key) do
+    case Jason.decode(raw_body) do
+      {:ok, data} ->
+        compact = Jason.encode!(data)
+        compact != raw_body and hmac_matches?(timestamp, compact, v1_list, signing_key)
+
+      _ ->
+        false
+    end
+  end
+
+  defp hmac_matches?(timestamp, payload, v1_list, signing_key) do
+    signed_payload = "#{timestamp}.#{payload}"
+    mac = :crypto.mac(:hmac, :sha256, signing_key, signed_payload)
+    expected = Base.encode16(mac, case: :lower)
+    Enum.any?(v1_list, &secure_compare_hex?(&1, expected))
+  end
+
+  defp parse_header(header) when is_binary(header) do
     parts =
       header
       |> String.split(",")
@@ -50,7 +80,7 @@ defmodule Loyalty.Billing.StripeSignature do
     v1s =
       parts
       |> Enum.filter(&String.starts_with?(&1, "v1="))
-      |> Enum.map(fn "v1=" <> sig -> sig end)
+      |> Enum.map(fn "v1=" <> sig -> sig |> String.trim() |> String.downcase() end)
 
     if is_binary(t) and t != "" and v1s != [] do
       {:ok, t, v1s}
@@ -58,6 +88,8 @@ defmodule Loyalty.Billing.StripeSignature do
       {:error, :invalid_header}
     end
   end
+
+  defp parse_header(_), do: {:error, :invalid_header}
 
   defp verify_timestamp(t_str) do
     case Integer.parse(t_str) do
@@ -75,11 +107,31 @@ defmodule Loyalty.Billing.StripeSignature do
     end
   end
 
-  defp decode_signing_secret("whsec_" <> encoded) do
-    Base.decode64!(encoded)
+  defp decode_signing_secret("whsec_" <> rest) do
+    decode_whsec_payload(String.trim(rest))
   end
 
-  defp decode_signing_secret(raw), do: raw
+  defp decode_signing_secret(raw) when is_binary(raw), do: {:ok, raw}
+
+  defp decode_whsec_payload("") do
+    {:error, :invalid_webhook_secret}
+  end
+
+  defp decode_whsec_payload(encoded) do
+    case Base.decode64(encoded, padding: false) do
+      {:ok, bin} ->
+        {:ok, bin}
+
+      :error ->
+        pad = rem(4 - rem(byte_size(encoded), 4), 4)
+        padded = encoded <> :binary.copy("=", pad)
+
+        case Base.decode64(padded, padding: false) do
+          {:ok, bin} -> {:ok, bin}
+          :error -> {:error, :invalid_webhook_secret}
+        end
+    end
+  end
 
   defp secure_compare_hex?(a, b) when byte_size(a) == byte_size(b) do
     Plug.Crypto.secure_compare(a, b)

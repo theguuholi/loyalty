@@ -5,10 +5,14 @@ defmodule LoyaltyWeb.StripeWebhookController do
 
   def create(conn, _params) do
     raw = conn.assigns[:raw_body] || ""
-    secret = Application.get_env(:loyalty, :stripe, [])[:webhook_secret]
+
+    secret =
+      Application.get_env(:loyalty, :stripe, [])[:webhook_secret] ||
+        System.get_env("STRIPE_WEBHOOK_SECRET") ||
+        ""
 
     with [sig | _] <- get_req_header(conn, "stripe-signature"),
-         :ok <- StripeSignature.verify(raw, sig, secret || ""),
+         :ok <- StripeSignature.verify(raw, sig, secret),
          {:ok, event} <- Jason.decode(raw) do
       case StripeWebhook.handle_event(event) do
         :ok ->

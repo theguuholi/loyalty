@@ -8,6 +8,12 @@ defmodule LoyaltyWeb.Router do
     plug :fetch_session
     plug LoyaltyWeb.Plugs.Locale
     plug :fetch_live_flash
+
+    plug Plug.Parsers,
+      parsers: [:urlencoded, :multipart, :json],
+      pass: ["*/*"],
+      json_decoder: Phoenix.json_library()
+
     plug :put_root_layout, html: {LoyaltyWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
@@ -15,8 +21,10 @@ defmodule LoyaltyWeb.Router do
     plug :fetch_establishment_from_scope
   end
 
-  pipeline :api do
+  # No Plug.Parsers: raw body must stay untouched for Stripe-Signature verification.
+  pipeline :stripe_webhook do
     plug :accepts, ["json"]
+    plug LoyaltyWeb.Plugs.RawBody
   end
 
   scope "/", LoyaltyWeb do
@@ -27,7 +35,7 @@ defmodule LoyaltyWeb.Router do
   end
 
   scope "/webhooks", LoyaltyWeb do
-    pipe_through :api
+    pipe_through :stripe_webhook
 
     post "/stripe", StripeWebhookController, :create
   end
