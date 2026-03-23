@@ -34,7 +34,8 @@ defmodule Loyalty.Billing.Stripe do
         {"client_reference_id", id},
         {"line_items[0][price]", price_id},
         {"line_items[0][quantity]", "1"},
-        {"metadata[establishment_id]", id}
+        {"metadata[establishment_id]", id},
+        {"subscription_data[metadata][establishment_id]", id}
       ]
 
       base_req = [

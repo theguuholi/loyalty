@@ -22,6 +22,27 @@ defmodule Loyalty.Billing.StripeSignatureTest do
       assert :ok == StripeSignature.verify(body, header, @secret)
     end
 
+    test "accepts secret with surrounding whitespace" do
+      body = ~s({"x":1})
+      {_t, header} = sign(body)
+      assert :ok == StripeSignature.verify(body, header, "  \n#{@secret}\t")
+    end
+
+    test "accepts pretty-printed JSON when signature was computed on compact JSON" do
+      compact = ~s({"x":1})
+      pretty = "{\n  \"x\": 1\n}"
+      {_t, header} = sign(compact)
+      assert :ok == StripeSignature.verify(pretty, header, @secret)
+    end
+
+    test "rejects invalid whsec_ payload" do
+      body = ~s({"x":1})
+      {_t, header} = sign(body)
+
+      assert {:error, :invalid_webhook_secret} ==
+               StripeSignature.verify(body, header, "whsec_!!!not-base64!!!")
+    end
+
     test "rejects wrong body" do
       {_t, header} = sign(~s({"x":1}))
       assert {:error, :invalid_signature} == StripeSignature.verify(~s({"x":2}), header, @secret)

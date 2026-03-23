@@ -9,7 +9,7 @@ Set these in development (e.g. `.env` or `config/dev.exs`) and in production (e.
 | Variable | Description |
 |----------|-------------|
 | `STRIPE_SECRET_KEY` | Stripe secret key (e.g. `sk_test_...` or `sk_live_...`) |
-| `STRIPE_WEBHOOK_SECRET` | Signing secret for the webhook endpoint (e.g. `whsec_...`) |
+| `STRIPE_WEBHOOK_SECRET` | Signing secret for the webhook endpoint (e.g. `whsec_...`). Must match **how** you receive webhooks (see below). |
 | `STRIPE_PRICE_ID` | ID of the **recurring monthly** Price (e.g. `price_...`) |
 
 Without `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID`, the “Subscribe” button will show an error. Without `STRIPE_WEBHOOK_SECRET`, webhook requests will be rejected (503).
@@ -32,8 +32,10 @@ The app receives Stripe events at:
 1. In Stripe Dashboard go to **Developers → Webhooks** and add an endpoint with the URL above.
 2. Subscribe to at least:
    - `checkout.session.completed`
+   - `customer.subscription.created`
    - `customer.subscription.updated`
    - `customer.subscription.deleted`
+   - `invoice.paid` or `invoice.payment_succeeded` (fallback if other events are delayed)
 3. Copy the **Signing secret** (`whsec_...`) into `STRIPE_WEBHOOK_SECRET`.
 
 ### Local development with Stripe CLI
@@ -42,7 +44,10 @@ To test webhooks locally:
 
 1. Install [Stripe CLI](https://stripe.com/docs/stripe-cli).
 2. Run: `stripe listen --forward-to localhost:4000/webhooks/stripe`
-3. Use the printed signing secret (e.g. `whsec_...`) as `STRIPE_WEBHOOK_SECRET` in your dev config.
+3. Copy the **`whsec_...` shown in the CLI output** into `STRIPE_WEBHOOK_SECRET`. This value is **different** from the signing secret of a Dashboard webhook endpoint; each `stripe listen` session has its own secret.
+4. Restart the Phoenix server after changing the env var (config is read at startup).
+
+Trim the secret when pasting (no leading/trailing spaces or newlines).
 
 ## Flow (overview)
 
