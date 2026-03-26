@@ -15,11 +15,11 @@ defmodule Loyalty.Billing.StripeSignature do
   def verify(payload, signature_header, webhook_secret) do
     with :ok <- validate_arguments(payload, signature_header),
          :ok <- check_secret_configured(webhook_secret),
-         {:ok, signing_key} <- decode_secret(webhook_secret),
          {:ok, %{"t" => timestamp, "v1" => signature}} <-
            parse_signature_header(signature_header),
          :ok <- verify_timestamp(timestamp) do
-      verify_signature(payload, timestamp, signature, signing_key)
+      key = String.trim(webhook_secret)
+      verify_signature(payload, timestamp, signature, key)
     end
   end
 
@@ -31,22 +31,6 @@ defmodule Loyalty.Billing.StripeSignature do
   defp check_secret_configured(nil), do: {:error, :webhook_secret_not_configured}
   defp check_secret_configured(""), do: {:error, :webhook_secret_not_configured}
   defp check_secret_configured(_), do: :ok
-
-  defp decode_secret(secret) do
-    secret = String.trim(secret)
-
-    raw =
-      if String.starts_with?(secret, "whsec_") do
-        String.trim_leading(secret, "whsec_")
-      else
-        secret
-      end
-
-    case Base.decode64(raw) do
-      {:ok, key} -> {:ok, key}
-      :error -> {:error, :invalid_webhook_secret}
-    end
-  end
 
   defp parse_signature_header(nil), do: {:error, :invalid_header}
 

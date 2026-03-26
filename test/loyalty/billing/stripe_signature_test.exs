@@ -3,14 +3,12 @@ defmodule Loyalty.Billing.StripeSignatureTest do
 
   alias Loyalty.Billing.StripeSignature
 
-  @secret "whsec_" <> Base.encode64("01234567890123456789012345678901")
+  @secret "whsec_c90c66e720722386a7c3ee4216cc5c24aaa8259bfc219c21f50f39428d96fb19"
 
-  defp signing_key, do: "01234567890123456789012345678901"
-
-  defp sign(raw_body) do
+  defp sign(raw_body, key \\ @secret) do
     t = System.system_time(:second)
     payload = "#{t}.#{raw_body}"
-    mac = :crypto.mac(:hmac, :sha256, signing_key(), payload)
+    mac = :crypto.mac(:hmac, :sha256, key, payload)
     sig = Base.encode16(mac, case: :lower)
     {t, "t=#{t},v1=#{sig}"}
   end
@@ -35,14 +33,6 @@ defmodule Loyalty.Billing.StripeSignatureTest do
       assert :ok == StripeSignature.verify(pretty, header, @secret)
     end
 
-    test "rejects invalid whsec_ payload" do
-      body = ~s({"x":1})
-      {_t, header} = sign(body)
-
-      assert {:error, :invalid_webhook_secret} ==
-               StripeSignature.verify(body, header, "whsec_!!!not-base64!!!")
-    end
-
     test "rejects wrong body" do
       {_t, header} = sign(~s({"x":1}))
       assert {:error, :invalid_signature} == StripeSignature.verify(~s({"x":2}), header, @secret)
@@ -62,7 +52,7 @@ defmodule Loyalty.Billing.StripeSignatureTest do
       old = System.system_time(:second) - 9999
       body = "{}"
       payload = "#{old}.#{body}"
-      mac = :crypto.mac(:hmac, :sha256, signing_key(), payload)
+      mac = :crypto.mac(:hmac, :sha256, @secret, payload)
       sig = Base.encode16(mac, case: :lower)
       header = "t=#{old},v1=#{sig}"
       assert {:error, :timestamp_out_of_range} == StripeSignature.verify(body, header, @secret)
@@ -78,13 +68,6 @@ defmodule Loyalty.Billing.StripeSignatureTest do
 
     test "rejects invalid argument types" do
       assert {:error, :invalid_arguments} == StripeSignature.verify(:not_bin, "t=1,v1=a", @secret)
-    end
-
-    test "accepts plain base64 secret without whsec_ prefix" do
-      plain_secret = Base.encode64("01234567890123456789012345678901")
-      body = ~s({"x":1})
-      {_t, header} = sign(body)
-      assert :ok == StripeSignature.verify(body, header, plain_secret)
     end
 
     test "rejects nil signature header" do
