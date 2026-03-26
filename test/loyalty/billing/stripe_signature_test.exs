@@ -79,5 +79,16 @@ defmodule Loyalty.Billing.StripeSignatureTest do
     test "rejects invalid argument types" do
       assert {:error, :invalid_arguments} == StripeSignature.verify(:not_bin, "t=1,v1=a", @secret)
     end
+
+    test "accepts plain base64 secret without whsec_ prefix" do
+      plain_secret = Base.encode64("01234567890123456789012345678901")
+      body = ~s({"x":1})
+      {_t, header} = sign(body)
+      assert :ok == StripeSignature.verify(body, header, plain_secret)
+    end
+
+    test "rejects nil signature header" do
+      assert {:error, :invalid_header} == StripeSignature.verify("{}", nil, @secret)
+    end
   end
 end

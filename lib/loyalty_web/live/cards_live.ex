@@ -1,6 +1,6 @@
 defmodule LoyaltyWeb.CardsLive do
   @moduledoc """
-  Public "Meus cartões" flow: customer enters email and sees their loyalty cards (or empty state).
+  Public "Meus cartões" flow: customer enters email or WhatsApp and sees their loyalty cards.
   """
   use LoyaltyWeb, :live_view
 
@@ -11,7 +11,8 @@ defmodule LoyaltyWeb.CardsLive do
     {:ok,
      socket
      |> assign(:page_title, "Meus cartões")
-     |> assign(:email, nil)
+     |> assign(:contact_type, :email)
+     |> assign(:identifier, nil)
      |> assign(:cards, [])
      |> assign(:show_list?, false)
      |> assign(:form, to_form(%{"email" => ""}, as: :cards_entry))}
@@ -19,26 +20,52 @@ defmodule LoyaltyWeb.CardsLive do
 
   @impl true
   def handle_params(params, _uri, socket) do
-    email = (params["email"] || "") |> String.trim()
-    show_list? = email != ""
+    cond do
+      email = params["email"] ->
+        email = String.trim(email)
 
-    socket =
-      if show_list? do
-        cards = LoyaltyCards.list_loyalty_cards_by_customer_email(email)
+        if email != "" do
+          cards = LoyaltyCards.list_loyalty_cards_by_customer_email(email)
 
-        socket
-        |> assign(:email, email)
-        |> assign(:cards, cards)
-        |> assign(:show_list?, true)
-      else
-        socket
-        |> assign(:email, nil)
-        |> assign(:cards, [])
-        |> assign(:show_list?, false)
-        |> assign(:form, to_form(%{"email" => params["email"] || ""}, as: :cards_entry))
-      end
+          {:noreply,
+           socket
+           |> assign(:contact_type, :email)
+           |> assign(:identifier, email)
+           |> assign(:cards, cards)
+           |> assign(:show_list?, true)}
+        else
+          {:noreply, assign_reset(socket, :email)}
+        end
 
-    {:noreply, socket}
+      whatsapp = params["whatsapp"] ->
+        number = String.trim(whatsapp)
+
+        if number != "" do
+          cards = LoyaltyCards.list_loyalty_cards_by_customer_whatsapp(number)
+
+          {:noreply,
+           socket
+           |> assign(:contact_type, :whatsapp)
+           |> assign(:identifier, number)
+           |> assign(:cards, cards)
+           |> assign(:show_list?, true)}
+        else
+          {:noreply, assign_reset(socket, :whatsapp)}
+        end
+
+      true ->
+        {:noreply, assign_reset(socket, socket.assigns.contact_type)}
+    end
+  end
+
+  defp assign_reset(socket, contact_type) do
+    form_key = if contact_type == :whatsapp, do: "whatsapp_number", else: "email"
+
+    socket
+    |> assign(:identifier, nil)
+    |> assign(:cards, [])
+    |> assign(:show_list?, false)
+    |> assign(:form, to_form(%{form_key => ""}, as: :cards_entry))
   end
 
   @impl true
@@ -49,9 +76,9 @@ defmodule LoyaltyWeb.CardsLive do
         <h1 class="text-xl font-semibold text-[#1a1d21]">Meus cartões</h1>
 
         <%= if @show_list? do %>
-          <.list_view email={@email} cards={@cards} />
+          <.list_view identifier={@identifier} cards={@cards} contact_type={@contact_type} />
         <% else %>
-          <.entry_form form={@form} />
+          <.entry_form form={@form} contact_type={@contact_type} />
         <% end %>
       </div>
     </Layouts.app>
@@ -61,23 +88,68 @@ defmodule LoyaltyWeb.CardsLive do
   defp entry_form(assigns) do
     ~H"""
     <div>
+      <%!-- Contact type toggle --%>
+      <div class="flex gap-2 mb-4">
+        <button
+          type="button"
+          id="lookup-type-email"
+          phx-click="set_contact_type"
+          phx-value-type="email"
+          class={[
+            "btn btn-sm",
+            if(@contact_type == :email, do: "btn-primary", else: "btn-ghost border border-base-300")
+          ]}
+        >
+          E-mail
+        </button>
+        <button
+          type="button"
+          id="lookup-type-whatsapp"
+          phx-click="set_contact_type"
+          phx-value-type="whatsapp"
+          class={[
+            "btn btn-sm",
+            if(@contact_type == :whatsapp,
+              do: "btn-primary",
+              else: "btn-ghost border border-base-300"
+            )
+          ]}
+        >
+          WhatsApp
+        </button>
+      </div>
+
       <p class="text-[#6b7280] mb-4">
-        Digite seu e-mail para ver todos os cartões de fidelidade.
+        <%= if @contact_type == :email do %>
+          Digite seu e-mail para ver todos os cartões de fidelidade.
+        <% else %>
+          Digite seu número de WhatsApp para ver todos os cartões de fidelidade.
+        <% end %>
       </p>
+
       <.form
         id="cards-entry-form"
         for={@form}
-        phx-submit="submit_email"
+        phx-submit="lookup"
         class="space-y-4"
       >
-        <.input
-          id="cards-entry-email"
-          field={@form[:email]}
-          type="email"
-          label="E-mail"
-          placeholder="seu@email.com"
-          required
-        />
+        <%= if @contact_type == :email do %>
+          <.input
+            id="cards-entry-email"
+            field={@form[:email]}
+            type="email"
+            label="E-mail"
+            placeholder="seu@email.com"
+          />
+        <% else %>
+          <.input
+            id="cards-entry-whatsapp"
+            field={@form[:whatsapp_number]}
+            type="tel"
+            label="WhatsApp"
+            placeholder="+5511999999999"
+          />
+        <% end %>
         <button type="submit" id="cards-entry-submit" class="btn btn-primary w-full max-w-xs">
           Ver cartões
         </button>
@@ -89,18 +161,18 @@ defmodule LoyaltyWeb.CardsLive do
   defp list_view(assigns) do
     ~H"""
     <div>
-      <p class="text-[#6b7280] mb-4">{@email}</p>
+      <p class="text-[#6b7280] mb-4">{@identifier}</p>
       <.link
-        id="cards-change-email-link"
+        id="cards-change-contact-link"
         patch={~p"/cards"}
         class="text-sm text-[#1b4d3e] hover:underline mb-4 inline-block"
       >
-        Trocar e-mail
+        {if @contact_type == :email, do: "Trocar e-mail", else: "Trocar número"}
       </.link>
 
       <%= if @cards == [] do %>
         <p id="cards-empty-message" class="text-[#6b7280]">
-          Nenhum cartão encontrado para este e-mail.
+          Nenhum cartão encontrado.
         </p>
       <% else %>
         <div id="cards-list" class="space-y-4">
@@ -138,30 +210,60 @@ defmodule LoyaltyWeb.CardsLive do
   end
 
   @impl true
-  def handle_event("submit_email", params, socket) do
-    email =
-      (get_in(params, ["cards_entry", "email"]) || params["email"] || "")
-      |> String.trim()
+  def handle_event("set_contact_type", %{"type" => type}, socket) do
+    contact_type = if type == "whatsapp", do: :whatsapp, else: :email
+    form_key = if contact_type == :whatsapp, do: "whatsapp_number", else: "email"
+
+    {:noreply,
+     socket
+     |> assign(:contact_type, contact_type)
+     |> assign(:form, to_form(%{form_key => ""}, as: :cards_entry))}
+  end
+
+  def handle_event("lookup", params, socket) do
+    entry = params["cards_entry"] || %{}
+
+    case socket.assigns.contact_type do
+      :email -> lookup_by_email(socket, entry)
+      :whatsapp -> lookup_by_whatsapp(socket, entry)
+    end
+  end
+
+  defp lookup_by_email(socket, entry) do
+    email = (entry["email"] || "") |> String.trim()
 
     cond do
       email == "" ->
-        {:noreply,
-         socket
-         |> put_flash(:error, "Informe seu e-mail.")
-         |> assign(:form, to_form(%{"email" => ""}, as: :cards_entry))}
+        {:noreply, put_flash(socket, :error, "Informe seu e-mail.")}
 
       not valid_email?(email) ->
-        {:noreply,
-         socket
-         |> put_flash(:error, "E-mail inválido.")
-         |> assign(:form, to_form(%{"email" => email}, as: :cards_entry))}
+        {:noreply, put_flash(socket, :error, "E-mail inválido.")}
 
       true ->
         {:noreply, push_patch(socket, to: "/cards?email=" <> URI.encode_www_form(email))}
     end
   end
 
+  defp lookup_by_whatsapp(socket, entry) do
+    number = (entry["whatsapp_number"] || "") |> String.trim()
+
+    cond do
+      number == "" ->
+        {:noreply, put_flash(socket, :error, "Informe seu número de WhatsApp.")}
+
+      not valid_whatsapp?(number) ->
+        {:noreply, put_flash(socket, :error, "Número inválido. Use o formato +5511999999999.")}
+
+      true ->
+        {:noreply, push_patch(socket, to: "/cards?whatsapp=" <> URI.encode_www_form(number))}
+    end
+  end
+
   defp valid_email?(email) do
-    ~r/^[^\s]+@[^\s]+\.[^\s]+$/ |> Regex.match?(email)
+    Regex.match?(~r/^[^\s]+@[^\s]+\.[^\s]+$/, email)
+  end
+
+  defp valid_whatsapp?(number) do
+    Regex.match?(~r/^\+[1-9]\d{7,14}$/, number)
   end
 end

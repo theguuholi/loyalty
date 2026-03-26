@@ -104,5 +104,41 @@ defmodule LoyaltyWeb.AdminLiveTest do
       {:ok, _lv, html} = live(conn, ~p"/admin")
       assert html =~ "Free"
     end
+
+    test "renders status badge for active subscription", %{conn: conn} do
+      user = user_fixture()
+      scope = Loyalty.Accounts.Scope.for_user(user)
+      establishment_fixture(scope, %{subscription_status: "active"})
+
+      {:ok, _lv, html} = live(conn, ~p"/admin")
+      assert html =~ "Active"
+    end
+
+    test "renders status badge for past_due subscription", %{conn: conn} do
+      user = user_fixture()
+      scope = Loyalty.Accounts.Scope.for_user(user)
+      establishment_fixture(scope, %{subscription_status: "past_due"})
+
+      {:ok, _lv, html} = live(conn, ~p"/admin")
+      assert html =~ "Past due"
+    end
+
+    test "renders status badge for unpaid subscription", %{conn: conn} do
+      user = user_fixture()
+      scope = Loyalty.Accounts.Scope.for_user(user)
+      establishment_fixture(scope, %{subscription_status: "unpaid"})
+
+      {:ok, _lv, html} = live(conn, ~p"/admin")
+      assert html =~ "Unpaid"
+    end
+
+    test "renders status badge for canceled subscription", %{conn: conn} do
+      user = user_fixture()
+      scope = Loyalty.Accounts.Scope.for_user(user)
+      establishment_fixture(scope, %{subscription_status: "canceled"})
+
+      {:ok, _lv, html} = live(conn, ~p"/admin")
+      assert html =~ "Canceled"
+    end
   end
 end

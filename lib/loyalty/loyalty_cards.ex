@@ -12,7 +12,8 @@ defmodule Loyalty.LoyaltyCards do
     Establishments,
     Establishments.Establishment,
     LoyaltyCards.LoyaltyCard,
-    LoyaltyPrograms.Customer
+    LoyaltyPrograms.Customer,
+    WhatsApp
   }
 
   @doc """
@@ -201,6 +202,24 @@ defmodule Loyalty.LoyaltyCards do
   end
 
   @doc """
+  Returns all loyalty cards for the customer with the given WhatsApp number.
+  Returns an empty list if no customer exists for that number.
+  """
+  @spec list_loyalty_cards_by_customer_whatsapp(String.t()) :: [LoyaltyCard.t()]
+  def list_loyalty_cards_by_customer_whatsapp(number) when is_binary(number) do
+    case Customers.get_customer_by_whatsapp(number) do
+      nil ->
+        []
+
+      %Customer{id: customer_id} ->
+        LoyaltyCard
+        |> Ecto.Query.where([c], c.customer_id == ^customer_id)
+        |> Ecto.Query.preload([:establishment, :loyalty_program])
+        |> Repo.all()
+    end
+  end
+
+  @doc """
   Adds one stamp to the given loyalty card. Returns `{:ok, updated_card}` or `{:error, changeset}`.
   The card must belong to the scope's establishment.
   """
@@ -210,6 +229,34 @@ defmodule Loyalty.LoyaltyCards do
     true = loyalty_card.establishment_id == scope.establishment.id
 
     attrs = %{stamps_current: (loyalty_card.stamps_current || 0) + 1}
-    update_loyalty_card(scope, loyalty_card, attrs)
+
+    with {:ok, updated_card} <- update_loyalty_card(scope, loyalty_card, attrs) do
+      notify_whatsapp(updated_card)
+      {:ok, updated_card}
+    end
+  end
+
+  defp notify_whatsapp(%LoyaltyCard{} = card) do
+    card = Repo.preload(card, [:customer, :establishment, :loyalty_program])
+
+    if is_binary(card.customer.whatsapp_number) do
+      stamps_current = card.stamps_current || 0
+      stamps_required = card.stamps_required
+      reward = card.loyalty_program.reward_description
+      establishment_name = card.establishment.name
+      whatsapp_number = card.customer.whatsapp_number
+
+      Task.start(fn ->
+        WhatsApp.send_stamp_update(
+          whatsapp_number,
+          stamps_current,
+          stamps_required,
+          reward,
+          establishment_name
+        )
+      end)
+    end
+
+    :ok
   end
 end

@@ -35,20 +35,68 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
           class="space-y-6"
         >
           <%= if @live_action == :new do %>
+            <%!-- Contact type toggle --%>
             <div>
-              <.input
-                field={@form[:email]}
-                type="email"
-                label={gettext("Client email")}
-                placeholder="client@example.com"
-                required
-              />
+              <p class="mb-2 text-sm font-medium text-base-content/70">
+                {gettext("Register client by")}
+              </p>
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  id="contact-type-email"
+                  phx-click="set_contact_type"
+                  phx-value-type="email"
+                  class={[
+                    "btn btn-sm",
+                    if(@contact_type == :email,
+                      do: "btn-primary",
+                      else: "btn-ghost border border-base-300"
+                    )
+                  ]}
+                >
+                  <.icon name="hero-envelope" class="w-4 h-4" /> {gettext("Email")}
+                </button>
+                <button
+                  type="button"
+                  id="contact-type-whatsapp"
+                  phx-click="set_contact_type"
+                  phx-value-type="whatsapp"
+                  class={[
+                    "btn btn-sm",
+                    if(@contact_type == :whatsapp,
+                      do: "btn-primary",
+                      else: "btn-ghost border border-base-300"
+                    )
+                  ]}
+                >
+                  <.icon name="hero-chat-bubble-left-ellipsis" class="w-4 h-4" /> WhatsApp
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <%= if @contact_type == :email do %>
+                <.input
+                  field={@form[:email]}
+                  type="email"
+                  label={gettext("Client email")}
+                  placeholder="client@example.com"
+                />
+              <% else %>
+                <.input
+                  field={@form[:whatsapp_number]}
+                  type="tel"
+                  label={gettext("Client WhatsApp number")}
+                  placeholder="+5511999999999"
+                />
+              <% end %>
               <p class="mt-1.5 text-sm text-base-content/60">
                 {gettext(
-                  "Enter the client's email. A new loyalty card will be created. You can adjust stamps below if needed."
+                  "Enter the client's contact. A new loyalty card will be created. You can adjust stamps below if needed."
                 )}
               </p>
             </div>
+
             <details class="rounded-lg border border-base-300 bg-base-200/50 p-4">
               <summary class="cursor-pointer text-sm font-medium text-base-content/80">
                 {gettext("Initial stamps (optional)")}
@@ -68,7 +116,7 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
             </details>
           <% else %>
             <p class="mb-4 text-sm font-medium text-base-content/70">
-              {gettext("Client")}: {@client_email}
+              {gettext("Client")}: {@client_label}
             </p>
             <div class="grid gap-4 sm:grid-cols-2">
               <.input field={@form[:stamps_current]} type="number" label={gettext("Stamps current")} />
@@ -109,10 +157,20 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
       |> LoyaltyCards.get_loyalty_card!(id)
       |> Loyalty.Repo.preload(:customer)
 
+    customer = loyalty_card.customer
+
+    client_label =
+      cond do
+        is_binary(customer.email) -> customer.email
+        is_binary(customer.whatsapp_number) -> customer.whatsapp_number
+        true -> "—"
+      end
+
     socket
     |> assign(:page_title, gettext("Edit card"))
     |> assign(:form_subtitle, gettext("Update this client's stamp progress."))
-    |> assign(:client_email, loyalty_card.customer.email)
+    |> assign(:client_label, client_label)
+    |> assign(:contact_type, :email)
     |> assign(:loyalty_card, loyalty_card)
     |> assign(
       :form,
@@ -135,18 +193,30 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
       |> push_navigate(to: ~p"/establishments/#{establishment.id}/loyalty_cards")
     else
       loyalty_card = %LoyaltyCard{establishment_id: scope.establishment.id}
-      attrs = %{"email" => "", "stamps_current" => "0", "stamps_required" => "10"}
+
+      attrs = %{
+        "email" => "",
+        "whatsapp_number" => "",
+        "stamps_current" => "0",
+        "stamps_required" => "10"
+      }
 
       socket
       |> assign(:page_title, gettext("Register client"))
       |> assign(:form_subtitle, gettext("Register a new client to start their loyalty card."))
-      |> assign(:client_email, nil)
+      |> assign(:client_label, nil)
+      |> assign(:contact_type, :email)
       |> assign(:loyalty_card, loyalty_card)
       |> assign(:form, to_form(attrs, as: :loyalty_card))
     end
   end
 
   @impl true
+  def handle_event("set_contact_type", %{"type" => type}, socket) do
+    contact_type = if type == "whatsapp", do: :whatsapp, else: :email
+    {:noreply, assign(socket, contact_type: contact_type)}
+  end
+
   def handle_event("validate", %{"loyalty_card" => loyalty_card_params}, socket) do
     form =
       if socket.assigns.live_action == :new do
@@ -227,33 +297,47 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
             {:noreply, assign(socket, form: to_form(loyalty_card_params, as: :loyalty_card))}
         end
 
-      {:error, :email_required} ->
+      {:error, :contact_required} ->
         {:noreply,
          socket
-         |> put_flash(:error, gettext("Customer email is required."))
+         |> put_flash(:error, gettext("Email or WhatsApp number is required."))
          |> assign(:form, to_form(loyalty_card_params, as: :loyalty_card))}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply,
+         socket
+         |> assign(:form, to_form(changeset, as: :loyalty_card))}
     end
   end
 
   defp prepare_new_card_attrs(socket, params) when is_map(params) do
-    scope = socket.assigns.current_scope
-    email = (params["email"] || params[:email] || "") |> String.trim()
+    with {:ok, customer} <- resolve_customer(socket.assigns.contact_type, params) do
+      program = program_for_scope(socket.assigns.current_scope)
 
-    if email == "" do
-      {:error, :email_required}
-    else
-      {:ok, customer} = Customers.get_or_create_customer_by_email(email)
-      program = program_for_scope(scope)
-
-      attrs = %{
-        "customer_id" => customer.id,
-        "loyalty_program_id" => program.id,
-        "stamps_current" => params["stamps_current"] || params[:stamps_current] || 0,
-        "stamps_required" => params["stamps_required"] || params[:stamps_required] || 10
-      }
-
-      {:ok, attrs}
+      {:ok,
+       %{
+         "customer_id" => customer.id,
+         "loyalty_program_id" => program.id,
+         "stamps_current" => params["stamps_current"] || params[:stamps_current] || 0,
+         "stamps_required" => params["stamps_required"] || params[:stamps_required] || 10
+       }}
     end
+  end
+
+  defp resolve_customer(:email, params) do
+    email = (params["email"] || "") |> String.trim()
+
+    if email == "",
+      do: {:error, :contact_required},
+      else: Customers.get_or_create_customer_by_email(email)
+  end
+
+  defp resolve_customer(:whatsapp, params) do
+    number = (params["whatsapp_number"] || "") |> String.trim()
+
+    if number == "",
+      do: {:error, :contact_required},
+      else: Customers.get_or_create_customer_by_whatsapp(number)
   end
 
   defp program_for_scope(scope) do

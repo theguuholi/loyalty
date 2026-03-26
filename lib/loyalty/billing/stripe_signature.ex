@@ -1,7 +1,7 @@
 defmodule Loyalty.Billing.StripeSignature do
   @moduledoc "Verifies `Stripe-Signature` headers for webhook payloads."
 
-  @max_age_seconds 300
+  @tolerance_seconds 300
 
   @doc """
   Verifies the raw JSON body against the signing secret (`whsec_...`).
@@ -12,91 +12,65 @@ defmodule Loyalty.Billing.StripeSignature do
   the payload parses as JSON and differs from the raw string (whitespace-only
   differences vs what Stripe signed).
   """
-  def verify(raw_body, signature_header, secret) do
-    secret = String.trim(secret || "")
-
-    cond do
-      secret == "" ->
-        {:error, :webhook_secret_not_configured}
-
-      not (is_binary(raw_body) and is_binary(signature_header)) ->
-        {:error, :invalid_arguments}
-
-      true ->
-        verify_signed_payload(raw_body, signature_header, secret)
+  def verify(payload, signature_header, webhook_secret) do
+    with :ok <- validate_arguments(payload, signature_header),
+         :ok <- check_secret_configured(webhook_secret),
+         {:ok, signing_key} <- decode_secret(webhook_secret),
+         {:ok, %{"t" => timestamp, "v1" => signature}} <-
+           parse_signature_header(signature_header),
+         :ok <- verify_timestamp(timestamp) do
+      verify_signature(payload, timestamp, signature, signing_key)
     end
   end
 
-  defp verify_signed_payload(raw_body, signature_header, secret) do
-    with {:ok, timestamp, v1_list} <- parse_header(signature_header),
-         :ok <- verify_timestamp(timestamp),
-         {:ok, signing_key} <- decode_signing_secret(secret) do
-      cond do
-        hmac_matches?(timestamp, raw_body, v1_list, signing_key) ->
-          :ok
+  defp validate_arguments(payload, _header) when not is_binary(payload),
+    do: {:error, :invalid_arguments}
 
-        match_compact_json?(timestamp, raw_body, v1_list, signing_key) ->
-          :ok
+  defp validate_arguments(_payload, _header), do: :ok
 
-        true ->
-          {:error, :invalid_signature}
+  defp check_secret_configured(nil), do: {:error, :webhook_secret_not_configured}
+  defp check_secret_configured(""), do: {:error, :webhook_secret_not_configured}
+  defp check_secret_configured(_), do: :ok
+
+  defp decode_secret(secret) do
+    secret = String.trim(secret)
+
+    raw =
+      if String.starts_with?(secret, "whsec_") do
+        String.trim_leading(secret, "whsec_")
+      else
+        secret
       end
+
+    case Base.decode64(raw) do
+      {:ok, key} -> {:ok, key}
+      :error -> {:error, :invalid_webhook_secret}
     end
   end
 
-  defp match_compact_json?(timestamp, raw_body, v1_list, signing_key) do
-    case Jason.decode(raw_body) do
-      {:ok, data} ->
-        compact = Jason.encode!(data)
-        compact != raw_body and hmac_matches?(timestamp, compact, v1_list, signing_key)
+  defp parse_signature_header(nil), do: {:error, :invalid_header}
 
-      _ ->
-        false
-    end
-  end
-
-  defp hmac_matches?(timestamp, payload, v1_list, signing_key) do
-    signed_payload = "#{timestamp}.#{payload}"
-    mac = :crypto.mac(:hmac, :sha256, signing_key, signed_payload)
-    expected = Base.encode16(mac, case: :lower)
-    Enum.any?(v1_list, &secure_compare_hex?(&1, expected))
-  end
-
-  defp parse_header(header) when is_binary(header) do
+  defp parse_signature_header(header) when is_binary(header) do
     parts =
       header
       |> String.split(",")
-      |> Enum.map(&String.trim/1)
+      |> Enum.map(&String.split(&1, "=", parts: 2))
+      |> Enum.filter(&(length(&1) == 2))
+      |> Map.new(fn [k, v] -> {k, v} end)
 
-    t =
-      parts
-      |> Enum.find_value(fn part ->
-        case String.split(part, "=", parts: 2) do
-          ["t", ts] -> ts
-          _ -> nil
-        end
-      end)
-
-    v1s =
-      parts
-      |> Enum.filter(&String.starts_with?(&1, "v1="))
-      |> Enum.map(fn "v1=" <> sig -> sig |> String.trim() |> String.downcase() end)
-
-    if is_binary(t) and t != "" and v1s != [] do
-      {:ok, t, v1s}
+    if Map.has_key?(parts, "t") and Map.has_key?(parts, "v1") do
+      {:ok, parts}
     else
       {:error, :invalid_header}
     end
   end
 
-  defp parse_header(_), do: {:error, :invalid_header}
+  defp verify_timestamp(timestamp) do
+    case Integer.parse(timestamp) do
+      {timestamp_int, ""} ->
+        current_time = System.system_time(:second)
 
-  defp verify_timestamp(t_str) do
-    case Integer.parse(t_str) do
-      {t, ""} ->
-        now = System.system_time(:second)
-
-        if abs(now - t) <= @max_age_seconds do
+        if abs(current_time - timestamp_int) <= @tolerance_seconds do
           :ok
         else
           {:error, :timestamp_out_of_range}
@@ -107,35 +81,33 @@ defmodule Loyalty.Billing.StripeSignature do
     end
   end
 
-  defp decode_signing_secret("whsec_" <> rest) do
-    decode_whsec_payload(String.trim(rest))
-  end
-
-  defp decode_signing_secret(raw) when is_binary(raw), do: {:ok, raw}
-
-  defp decode_whsec_payload("") do
-    {:error, :invalid_webhook_secret}
-  end
-
-  defp decode_whsec_payload(encoded) do
-    case Base.decode64(encoded, padding: false) do
-      {:ok, bin} ->
-        {:ok, bin}
-
-      :error ->
-        pad = rem(4 - rem(byte_size(encoded), 4), 4)
-        padded = encoded <> :binary.copy("=", pad)
-
-        case Base.decode64(padded, padding: false) do
-          {:ok, bin} -> {:ok, bin}
-          :error -> {:error, :invalid_webhook_secret}
-        end
+  defp verify_signature(payload, timestamp, signature, key) do
+    if compute_signature(payload, timestamp, key) == signature do
+      :ok
+    else
+      try_compact_json(payload, timestamp, signature, key)
     end
   end
 
-  defp secure_compare_hex?(a, b) when byte_size(a) == byte_size(b) do
-    Plug.Crypto.secure_compare(a, b)
+  defp try_compact_json(payload, timestamp, signature, key) do
+    with {:ok, decoded} <- Jason.decode(payload),
+         compact = Jason.encode!(decoded),
+         true <- compact != payload do
+      if compute_signature(compact, timestamp, key) == signature do
+        :ok
+      else
+        {:error, :invalid_signature}
+      end
+    else
+      _ -> {:error, :invalid_signature}
+    end
   end
 
-  defp secure_compare_hex?(_, _), do: false
+  defp compute_signature(payload, timestamp, key) do
+    signed_payload = "#{timestamp}.#{payload}"
+
+    signed_payload
+    |> then(&:crypto.mac(:hmac, :sha256, key, &1))
+    |> Base.encode16(case: :lower)
+  end
 end

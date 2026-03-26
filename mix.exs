@@ -14,7 +14,7 @@ defmodule Loyalty.MixProject do
       listeners: [Phoenix.CodeReloader],
       dialyzer: dialyzer(),
       test_coverage: [
-        summary: [threshold: 92],
+        summary: [threshold: 97],
         ignore_modules: ignore_coverage_modules()
       ]
     ]

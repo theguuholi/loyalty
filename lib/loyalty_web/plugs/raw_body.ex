@@ -1,9 +1,8 @@
 defmodule LoyaltyWeb.Plugs.RawBody do
   @moduledoc """
-  Reads the full request body into `conn.assigns[:raw_body]` for Stripe webhooks.
+  Plug to capture the raw request body for webhook signature verification.
 
-  Used on the webhook-only pipeline (no `Plug.Parsers`). Tests may assign
-  `:raw_body` directly to skip reading.
+  Stores the raw body in `conn.assigns[:raw_body]` before parsing.
   """
 
   @behaviour Plug
@@ -12,19 +11,27 @@ defmodule LoyaltyWeb.Plugs.RawBody do
   def init(opts), do: opts
 
   @impl true
-  def call(conn, opts) do
+  def call(conn, _opts) do
+    # In tests, raw_body might already be assigned
     if conn.assigns[:raw_body] do
       conn
     else
-      read_opts = Keyword.merge([length: 8_000_000], opts)
-
-      case LoyaltyWeb.Plugs.RawBodyReader.read_body(conn, read_opts) do
-        {:ok, _full, conn} ->
-          conn
-
-        {:error, _reason} ->
-          Plug.Conn.assign(conn, :raw_body, "")
+      case Plug.Conn.read_body(conn) do
+        {:ok, body, conn} -> Plug.Conn.assign(conn, :raw_body, body)
+        {:error, _reason} -> Plug.Conn.assign(conn, :raw_body, "")
       end
+    end
+  end
+
+  @doc """
+  Used as `body_reader` in `Plug.Parsers` to capture raw body before parsing.
+  Reads the body, stores it in `conn.assigns[:raw_body]`, and returns it for the parser.
+  """
+  def read_body(conn, opts) do
+    case Plug.Conn.read_body(conn, opts) do
+      {:ok, body, conn} -> {:ok, body, Plug.Conn.assign(conn, :raw_body, body)}
+      {:more, partial, conn} -> {:more, partial, conn}
+      {:error, reason} -> {:error, reason}
     end
   end
 end

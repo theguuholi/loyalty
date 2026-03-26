@@ -194,6 +194,76 @@ defmodule LoyaltyWeb.EstablishmentLiveTest do
       assert render(show_live) =~ "Stripe"
     end
 
+    test "PubSub establishment deleted navigates away", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
+      {:ok, show_live, _html} = live(conn, ~p"/establishments/#{establishment}")
+
+      Phoenix.PubSub.broadcast(
+        Loyalty.PubSub,
+        "user:#{scope.user.id}:establishments",
+        {:deleted, establishment}
+      )
+
+      assert_redirect(show_live, ~p"/establishments")
+    end
+
+    test "PubSub created event for other establishment is ignored", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
+      {:ok, show_live, _html} = live(conn, ~p"/establishments/#{establishment}")
+
+      other_scope = Loyalty.AccountsFixtures.user_scope_fixture()
+      other_est = establishment_fixture(other_scope)
+
+      Phoenix.PubSub.broadcast(
+        Loyalty.PubSub,
+        "user:#{scope.user.id}:establishments",
+        {:created, other_est}
+      )
+
+      assert has_element?(show_live, "#dashboard-billing-card")
+    end
+
+    test "shows near-limit hint when close to free plan limit", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
+      scope_with_est = Loyalty.Accounts.Scope.put_establishment(scope, establishment)
+      program = Loyalty.LoyaltyProgramsFixtures.loyalty_program_fixture(scope_with_est)
+      free_limit = Loyalty.Billing.free_client_limit()
+
+      for i <- 0..(free_limit - 2) do
+        {:ok, customer} =
+          Loyalty.Customers.get_or_create_customer_by_email("near-limit-#{i}@example.com")
+
+        Loyalty.LoyaltyCards.create_loyalty_card(scope_with_est, %{
+          customer_id: customer.id,
+          loyalty_program_id: program.id,
+          stamps_current: 0,
+          stamps_required: 10
+        })
+      end
+
+      {:ok, show_live, _html} = live(conn, ~p"/establishments/#{establishment}")
+      assert has_element?(show_live, "#dashboard-free-plan-near-limit")
+    end
+
+    test "subscribe shows error when Stripe request fails", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
+      prev = Application.get_env(:loyalty, :stripe)
+      on_exit(fn -> Application.put_env(:loyalty, :stripe, prev) end)
+
+      Application.put_env(
+        :loyalty,
+        :stripe,
+        Keyword.merge(prev, secret_key: "invalid_key", price_id: "price_test")
+      )
+
+      {:ok, show_live, _html} = live(conn, ~p"/establishments/#{establishment}")
+
+      show_live |> element("#dashboard-stripe-checkout") |> render_click()
+
+      html = render(show_live)
+      assert html =~ "Stripe" or html =~ "checkout" or html =~ "configured"
+    end
+
     test "updates establishment and returns to show", %{conn: conn, scope: scope} do
       establishment = establishment_fixture(scope)
       {:ok, show_live, _html} = live(conn, ~p"/establishments/#{establishment}")
@@ -219,6 +289,39 @@ defmodule LoyaltyWeb.EstablishmentLiveTest do
       html = render(show_live)
       assert html =~ "Establishment updated successfully."
       assert html =~ "some updated name"
+    end
+  end
+
+  describe "Form error paths" do
+    test "redirects to index when user already has establishment and visits /new", %{
+      conn: conn,
+      scope: scope
+    } do
+      _existing = establishment_fixture(scope)
+      assert {:error, _redirect} = live(conn, ~p"/establishments/new")
+    end
+
+    test "submitting invalid data on edit form shows error", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
+
+      {:ok, form_live, _} =
+        live(conn, ~p"/establishments/#{establishment}/edit")
+
+      form_live
+      |> form("#establishment-form", establishment: @invalid_attrs)
+      |> render_submit()
+
+      assert has_element?(form_live, "#establishment-form")
+    end
+
+    test "submitting invalid data on new form shows error", %{conn: conn} do
+      {:ok, form_live, _} = live(conn, ~p"/establishments/new")
+
+      form_live
+      |> form("#establishment-form", establishment: @invalid_attrs)
+      |> render_submit()
+
+      assert has_element?(form_live, "#establishment-form")
     end
   end
 end

@@ -8,12 +8,6 @@ defmodule LoyaltyWeb.Router do
     plug :fetch_session
     plug LoyaltyWeb.Plugs.Locale
     plug :fetch_live_flash
-
-    plug Plug.Parsers,
-      parsers: [:urlencoded, :multipart, :json],
-      pass: ["*/*"],
-      json_decoder: Phoenix.json_library()
-
     plug :put_root_layout, html: {LoyaltyWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers

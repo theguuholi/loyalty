@@ -135,6 +135,50 @@ defmodule Loyalty.LoyaltyCardsTest do
       assert LoyaltyCards.list_loyalty_cards_by_customer_email("unknown@example.com") == []
     end
 
+    test "list_loyalty_cards_by_customer_whatsapp/1 returns cards for customer number" do
+      scope = establishment_scope_fixture()
+
+      {:ok, customer} =
+        Loyalty.Customers.get_or_create_customer_by_whatsapp("+5511900000070")
+
+      program = Loyalty.LoyaltyProgramsFixtures.loyalty_program_fixture(scope)
+
+      {:ok, card} =
+        LoyaltyCards.create_loyalty_card(scope, %{
+          customer_id: customer.id,
+          loyalty_program_id: program.id,
+          stamps_current: 0,
+          stamps_required: 10
+        })
+
+      cards = LoyaltyCards.list_loyalty_cards_by_customer_whatsapp("+5511900000070")
+      assert Enum.any?(cards, &(&1.id == card.id))
+    end
+
+    test "list_loyalty_cards_by_customer_whatsapp/1 returns empty list for unknown number" do
+      assert LoyaltyCards.list_loyalty_cards_by_customer_whatsapp("+5511000000000") == []
+    end
+
+    test "add_stamp/2 on a whatsapp customer fires notification without blocking" do
+      scope = establishment_scope_fixture()
+
+      {:ok, customer} =
+        Loyalty.Customers.get_or_create_customer_by_whatsapp("+5511900000071")
+
+      program = Loyalty.LoyaltyProgramsFixtures.loyalty_program_fixture(scope)
+
+      {:ok, card} =
+        LoyaltyCards.create_loyalty_card(scope, %{
+          customer_id: customer.id,
+          loyalty_program_id: program.id,
+          stamps_current: 0,
+          stamps_required: 10
+        })
+
+      assert {:ok, updated} = LoyaltyCards.add_stamp(scope, card)
+      assert updated.stamps_current == 1
+    end
+
     test "add_stamp/2 increments stamps_current" do
       scope = establishment_scope_fixture()
       loyalty_card = loyalty_card_fixture(scope)

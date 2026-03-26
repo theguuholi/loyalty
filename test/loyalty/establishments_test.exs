@@ -226,5 +226,13 @@ defmodule Loyalty.EstablishmentsTest do
 
       assert Establishments.get_establishment_by_stripe_subscription_id("sub_other") == nil
     end
+
+    test "list_all_establishments_with_owner_emails/0 returns all with default filter" do
+      scope = user_scope_fixture()
+      establishment = establishment_fixture(scope)
+
+      rows = Establishments.list_all_establishments_with_owner_emails()
+      assert Enum.any?(rows, &(&1.id == establishment.id))
+    end
   end
 end
