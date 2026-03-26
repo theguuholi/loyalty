@@ -25,6 +25,11 @@ defmodule Seeds do
   def run do
     IO.puts("Seeding MyRewards demo data...")
 
+    admin_email = Application.fetch_env!(:loyalty, :admin_email)
+    ensure_user(admin_email)
+    IO.puts("Admin account: #{admin_email} (password: #{admin_email}M1@)")
+    IO.puts("")
+
     free_user = ensure_user("free.demo@test.com")
     free_scope = user_scope_with_establishment(free_user, "Demo — plano gratuito (uso baixo)")
     ensure_program(free_scope, "Programa fidelidade", 10, "1 recompensa grátis")

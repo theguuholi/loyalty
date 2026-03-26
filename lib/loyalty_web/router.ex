@@ -93,6 +93,14 @@ defmodule LoyaltyWeb.Router do
     end
 
     post "/users/update-password", UserSessionController, :update_password
+
+    live_session :require_admin,
+      on_mount: [
+        {LoyaltyWeb.UserAuth, :require_authenticated},
+        {LoyaltyWeb.UserAuth, :require_admin}
+      ] do
+      live "/admin", AdminLive, :index
+    end
   end
 
   scope "/", LoyaltyWeb do

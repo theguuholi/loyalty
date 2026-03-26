@@ -41,6 +41,8 @@ config :loyalty, :stripe,
   webhook_secret: nil,
   price_id: nil
 
+config :loyalty, :admin_email, System.get_env("ADMIN_EMAIL") || "admin@example.com"
+
 # Configures the endpoint
 config :loyalty, LoyaltyWeb.Endpoint,
   url: [host: "localhost"],

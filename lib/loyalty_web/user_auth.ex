@@ -7,6 +7,8 @@ defmodule LoyaltyWeb.UserAuth do
 
   alias Loyalty.{Accounts, Accounts.Scope, Establishments}
 
+  @admin_email Application.compile_env(:loyalty, :admin_email)
+
   # Make the remember me cookie valid for 14 days. This should match
   # the session validity setting in UserToken.
   @max_cookie_age_in_days 14
@@ -253,6 +255,21 @@ defmodule LoyaltyWeb.UserAuth do
           gettext("You must re-authenticate to access this page.")
         )
         |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
+
+      {:halt, socket}
+    end
+  end
+
+  def on_mount(:require_admin, _params, _session, socket) do
+    if socket.assigns.current_scope &&
+         socket.assigns.current_scope.user &&
+         socket.assigns.current_scope.user.email == @admin_email do
+      {:cont, socket}
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(:error, gettext("Not authorized."))
+        |> Phoenix.LiveView.redirect(to: ~p"/")
 
       {:halt, socket}
     end

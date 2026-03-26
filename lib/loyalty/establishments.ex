@@ -6,7 +6,13 @@ defmodule Loyalty.Establishments do
   import Ecto.Query, warn: false
   alias Loyalty.Repo
 
-  alias Loyalty.{Accounts.Scope, Billing, Establishments.Establishment, LoyaltyCards.LoyaltyCard}
+  alias Loyalty.{
+    Accounts.Scope,
+    Accounts.User,
+    Billing,
+    Establishments.Establishment,
+    LoyaltyCards.LoyaltyCard
+  }
 
   @doc """
   Subscribes to scoped notifications about any establishment changes.
@@ -210,6 +216,51 @@ defmodule Loyalty.Establishments do
       broadcast_establishment(scope, {:deleted, establishment})
       {:ok, establishment}
     end
+  end
+
+  @doc "Returns all establishments with owner email and card count. Admin only — no user scope applied."
+  def list_all_establishments_with_owner_emails(filter \\ :all) do
+    card_count_query =
+      from(c in LoyaltyCard,
+        group_by: c.establishment_id,
+        select: %{establishment_id: c.establishment_id, count: count(c.id)}
+      )
+
+    base =
+      from(e in Establishment,
+        join: u in User,
+        on: u.id == e.user_id,
+        left_join: cc in subquery(card_count_query),
+        on: cc.establishment_id == e.id,
+        select: %{
+          id: e.id,
+          name: e.name,
+          subscription_status: e.subscription_status,
+          inserted_at: e.inserted_at,
+          user_email: u.email,
+          card_count: coalesce(cc.count, 0)
+        },
+        order_by: [desc: e.inserted_at]
+      )
+
+    query =
+      case filter do
+        :active ->
+          where(base, [e], e.subscription_status == "active")
+
+        :unpaid ->
+          where(
+            base,
+            [e],
+            is_nil(e.subscription_status) or
+              e.subscription_status in ["unpaid", "past_due", "canceled"]
+          )
+
+        _ ->
+          base
+      end
+
+    Repo.all(query)
   end
 
   @doc """
