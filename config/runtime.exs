@@ -74,6 +74,11 @@ if config_env() == :prod do
     webhook_secret: System.get_env("STRIPE_WEBHOOK_SECRET"),
     price_id: System.get_env("STRIPE_PRICE_ID")
 
+  config :loyalty, Loyalty.WhatsApp,
+    account_sid: System.get_env("TWILIO_ACCOUNT_SID"),
+    auth_token: System.get_env("TWILIO_AUTH_TOKEN"),
+    from_number: System.get_env("TWILIO_WHATSAPP_FROM")
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key
