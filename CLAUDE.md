@@ -9,11 +9,18 @@ This is a Phoenix v1.8 web application with LiveView, Ecto, and `phx.gen.auth`.
 
 ## Workflow
 
-- **Always** run `mix precommit` when done with all changes and **fix every issue it reports** before opening a PR or considering work complete. A failing `mix precommit` means the work is not done.
+- **Always** run `mix precommit` before every commit and **fix every issue it reports**. A failing `mix precommit` means the work is not done — do not commit until it passes clean.
 - For HTTP requests, use the included `:req` (`Req`) library. **Never** use `:httpoison`, `:tesla`, or `:httpc`.
 - Read task docs before running unfamiliar mix tasks: `mix help task_name`
 - Debug test failures with `mix test test/my_test.exs` or `mix test --failed` for previously failed tests
 - **Never** use `mix deps.clean --all` unless there is a concrete reason
+
+### Test coverage — protected files
+
+**Never** modify these two files under any circumstances:
+
+- `mix.exs` — `summary: [threshold: 97]` line inside `test_coverage:`. This is the minimum coverage gate; lowering it is not acceptable.
+- `.test_coverage_ignore.exs` — lists modules excluded from coverage. Do not add modules here to paper over missing tests; write the tests instead.
 
 ---
 

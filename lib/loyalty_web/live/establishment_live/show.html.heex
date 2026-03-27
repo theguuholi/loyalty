@@ -169,40 +169,68 @@
         {gettext("Quick actions")}
       </h2>
       <div class="flex flex-wrap gap-2">
-        <%= if @loyalty_program do %>
-          <.button
-            id="dashboard-program-and-clients-link"
-            variant="primary"
-            navigate={~p"/establishments/#{@establishment}/loyalty_programs/#{@loyalty_program}"}
-            class="min-h-11"
-          >
-            {gettext("Program and clients")}
-          </.button>
-          <.link
-            :if={@can_add_new_client?}
-            id="dashboard-register-client-link"
-            navigate={~p"/establishments/#{@establishment}/loyalty_cards/new"}
-            class="btn btn-primary btn-soft min-h-11"
-          >
-            <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Register client")}
-          </.link>
-          <span
-            :if={not @can_add_new_client?}
-            class="rounded-xl border border-base-300 bg-base-200/50 px-4 py-2.5 text-sm text-base-content/60"
-          >
-            {gettext("Client limit reached or billing inactive — use Subscribe above.")}
-          </span>
-        <% else %>
-          <.button
-            id="dashboard-create-program-link"
-            variant="primary"
-            navigate={~p"/establishments/#{@establishment}/loyalty_programs/new"}
-            class="min-h-11"
-          >
-            <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Create program")}
-          </.button>
-        <% end %>
+        <%!-- Create program — shown only when none exists yet --%>
+        <.button
+          :if={is_nil(@loyalty_program)}
+          id="dashboard-create-program-link"
+          variant="primary"
+          navigate={~p"/establishments/#{@establishment}/loyalty_programs/new"}
+          class="min-h-11 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Create program")}
+        </.button>
+
+        <%!-- View clients (program page) — only when program exists --%>
+        <.button
+          :if={@loyalty_program}
+          id="dashboard-program-and-clients-link"
+          variant="primary"
+          navigate={~p"/establishments/#{@establishment}/loyalty_programs/#{@loyalty_program}"}
+          class="min-h-11 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <.icon name="hero-users" class="w-4 h-4" /> {gettext("View clients")}
+        </.button>
+
+        <%!-- Register client — always shown; disabled when limit reached or billing inactive --%>
+        <.link
+          :if={@loyalty_program && @can_add_new_client?}
+          id="dashboard-register-client-link"
+          navigate={~p"/establishments/#{@establishment}/loyalty_cards/new"}
+          class="btn btn-primary btn-soft min-h-11 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Register client")}
+        </.link>
+
+        <%!-- Register client — shown as disabled when no program or limit reached --%>
+        <.link
+          :if={is_nil(@loyalty_program) || not @can_add_new_client?}
+          id="dashboard-register-client-disabled"
+          navigate={
+            if(@loyalty_program,
+              do: ~p"/establishments/#{@establishment}/loyalty_cards/new",
+              else: ~p"/establishments/#{@establishment}/loyalty_programs/new"
+            )
+          }
+          class="btn btn-primary btn-soft min-h-11 opacity-50 cursor-not-allowed"
+          aria-disabled="true"
+        >
+          <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Register client")}
+        </.link>
       </div>
+
+      <%!-- Contextual hint when no program --%>
+      <p :if={is_nil(@loyalty_program)} class="mt-2 text-xs text-base-content/50">
+        {gettext("Create a loyalty program first to start registering clients.")}
+      </p>
+      <%!-- Contextual hint when limit reached --%>
+      <p
+        :if={@loyalty_program && not @can_add_new_client?}
+        class="mt-2 text-xs text-base-content/50"
+      >
+        {gettext(
+          "Client limit reached or billing inactive — subscribe above to add more clients."
+        )}
+      </p>
     </section>
   </main>
 </Layouts.app>

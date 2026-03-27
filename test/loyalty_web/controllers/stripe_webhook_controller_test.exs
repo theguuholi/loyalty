@@ -4,7 +4,7 @@ defmodule LoyaltyWeb.StripeWebhookControllerTest do
   alias Loyalty.{AccountsFixtures, Establishments, EstablishmentsFixtures}
 
   defp signing_key do
-    "01234567890123456789012345678901"
+    Application.get_env(:loyalty, :stripe)[:webhook_secret]
   end
 
   defp build_signature_header(raw_body) do

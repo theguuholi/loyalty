@@ -97,9 +97,9 @@ defmodule LoyaltyWeb.CoreComponents do
     variants = %{"primary" => "btn-primary", nil => "btn-primary btn-soft"}
 
     assigns =
-      assign_new(assigns, :class, fn ->
-        ["btn", Map.fetch!(variants, assigns[:variant])]
-      end)
+      assigns
+      |> assign_new(:class, fn -> nil end)
+      |> assign(:class, ["btn", Map.fetch!(variants, assigns[:variant]), assigns[:class]])
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
       ~H"""

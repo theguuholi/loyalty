@@ -270,7 +270,7 @@ defmodule LoyaltyWeb.EstablishmentLiveTest do
 
       assert {:ok, form_live, _} =
                show_live
-               |> element("a", "Edit establishment")
+               |> element("a[href$='edit?return_to=show']")
                |> render_click()
                |> follow_redirect(conn, ~p"/establishments/#{establishment}/edit?return_to=show")
 
@@ -322,6 +322,91 @@ defmodule LoyaltyWeb.EstablishmentLiveTest do
       |> render_submit()
 
       assert has_element?(form_live, "#establishment-form")
+    end
+
+    test "shows error when establishment limit reached during save", %{
+      conn: conn,
+      scope: scope
+    } do
+      {:ok, form_live, _} = live(conn, ~p"/establishments/new")
+
+      # Create an establishment after mount but before save (race condition)
+      establishment_fixture(scope)
+
+      form_live
+      |> form("#establishment-form", establishment: @create_attrs)
+      |> render_submit()
+
+      assert render(form_live) =~ "one establishment"
+    end
+
+    test "uploads logo and saves establishment", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
+      {:ok, form_live, _} = live(conn, ~p"/establishments/#{establishment}/edit")
+
+      logo_content = <<0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A>>
+
+      logo =
+        file_input(form_live, "#establishment-form", :logo, [
+          %{
+            name: "logo.png",
+            content: logo_content,
+            type: "image/png"
+          }
+        ])
+
+      render_upload(logo, "logo.png")
+
+      assert {:ok, index_live, _} =
+               form_live
+               |> form("#establishment-form", establishment: @update_attrs)
+               |> render_submit()
+               |> follow_redirect(conn, ~p"/establishments")
+
+      assert render(index_live) =~ "Establishment updated successfully."
+    end
+
+    test "can cancel an uploaded file entry", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
+      {:ok, form_live, _} = live(conn, ~p"/establishments/#{establishment}/edit")
+
+      logo_content = <<0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A>>
+
+      logo =
+        file_input(form_live, "#establishment-form", :logo, [
+          %{
+            name: "logo.png",
+            content: logo_content,
+            type: "image/png"
+          }
+        ])
+
+      render_upload(logo, "logo.png", 0)
+
+      # Get the entry ref from the upload struct
+      [%{"ref" => ref} | _] = logo.entries
+
+      render_click(form_live, "cancel_upload", %{"ref" => ref})
+
+      assert has_element?(form_live, "#establishment-form")
+    end
+
+    test "shows error message for rejected file type", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
+      {:ok, form_live, _} = live(conn, ~p"/establishments/#{establishment}/edit")
+
+      logo =
+        file_input(form_live, "#establishment-form", :logo, [
+          %{
+            name: "doc.pdf",
+            content: "PDF content",
+            type: "application/pdf"
+          }
+        ])
+
+      {:error, _} = render_upload(logo, "doc.pdf")
+
+      assert render(form_live) =~ "File type not allowed"
     end
   end
 end
