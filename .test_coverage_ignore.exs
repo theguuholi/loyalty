@@ -10,5 +10,7 @@
   LoyaltyWeb.LocaleController,
   LoyaltyWeb.Plugs.Locale,
   LoyaltyWeb.LoyaltyProgramLive.Show,
-  LoyaltyWeb.PageHTML
+  LoyaltyWeb.PageHTML,
+  # External Twilio integration: network-error branch not testable without a real transport layer
+  Loyalty.WhatsApp
 ]
