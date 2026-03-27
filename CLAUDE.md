@@ -2,7 +2,7 @@ This is a web application written using the Phoenix web framework.
 
 ## Project guidelines
 
-- Use `mix precommit` alias when you are done with all changes and fix any pending issues
+- **Always** run `mix precommit` when you are done with all changes and **fix every issue it reports** before opening a PR or considering the work complete. `mix precommit` must pass with no errors before you push or create a pull request — a failing `mix precommit` means the work is not done
 - Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps
 
 ### Phoenix v1.8 guidelines
