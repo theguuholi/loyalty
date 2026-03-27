@@ -529,3 +529,299 @@ msgstr "O plano gratuito permite até %{count} cartões de fidelidade (clientes)
 #, elixir-autogen, elixir-format
 msgid "You're close to the free plan limit — subscribe to add more clients."
 msgstr "Você está perto do limite do plano gratuito — assine para adicionar mais clientes."
+
+#: lib/loyalty_web/live/establishment_live/index.ex
+#, elixir-autogen, elixir-format
+msgid "Listing Establishments"
+msgstr "Listagem de Estabelecimentos"
+
+#: lib/loyalty_web/live/establishment_live/index.ex
+#, elixir-autogen, elixir-format
+msgid "New Establishment"
+msgstr "Novo Estabelecimento"
+
+#: lib/loyalty_web/live/establishment_live/index.ex
+#, elixir-autogen, elixir-format
+msgid "Only one establishment allowed"
+msgstr "Apenas um estabelecimento permitido"
+
+#: lib/loyalty_web/live/establishment_live/index.ex
+#, elixir-autogen, elixir-format
+msgid "Show"
+msgstr "Ver"
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "My cards"
+msgstr "Meus cartões"
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Enter your email to see all your loyalty cards."
+msgstr "Digite seu e-mail para ver todos os cartões de fidelidade."
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Enter your WhatsApp number to see all your loyalty cards."
+msgstr "Digite seu número de WhatsApp para ver todos os cartões de fidelidade."
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "View cards"
+msgstr "Ver cartões"
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Change email"
+msgstr "Trocar e-mail"
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Change number"
+msgstr "Trocar número"
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "No cards found."
+msgstr "Nenhum cartão encontrado."
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "ready to use!"
+msgstr "pronto para usar!"
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Please enter your email."
+msgstr "Informe seu e-mail."
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Invalid email."
+msgstr "E-mail inválido."
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Please enter your WhatsApp number."
+msgstr "Informe seu número de WhatsApp."
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Invalid number. Use the format +5511999999999."
+msgstr "Número inválido. Use o formato +5511999999999."
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "You need to reauthenticate to perform sensitive actions on your account."
+msgstr "Você precisa se autenticar novamente para realizar ações sensíveis em sua conta."
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "Don't have an account?"
+msgstr "Não tem uma conta?"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "Sign up"
+msgstr "Cadastre-se"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "for an account now."
+msgstr "agora."
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "Email"
+msgstr "E-mail"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "Log in with email"
+msgstr "Entrar com e-mail"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "or"
+msgstr "ou"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Password"
+msgstr "Senha"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "Log in and stay logged in"
+msgstr "Entrar e ficar conectado"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "Log in only this time"
+msgstr "Entrar apenas desta vez"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "If your email is in our system, you will receive instructions for logging in shortly."
+msgstr "Se seu e-mail estiver em nosso sistema, você receberá instruções para entrar em breve."
+
+#: lib/loyalty_web/live/user_live/registration.ex
+#, elixir-autogen, elixir-format
+msgid "Register for an account"
+msgstr "Criar uma conta"
+
+#: lib/loyalty_web/live/user_live/registration.ex
+#, elixir-autogen, elixir-format
+msgid "Already registered?"
+msgstr "Já tem uma conta?"
+
+#: lib/loyalty_web/live/user_live/registration.ex
+#, elixir-autogen, elixir-format
+msgid "to your account now."
+msgstr "agora."
+
+#: lib/loyalty_web/live/user_live/registration.ex
+#, elixir-autogen, elixir-format
+msgid "Creating account..."
+msgstr "Criando conta..."
+
+#: lib/loyalty_web/live/user_live/registration.ex
+#, elixir-autogen, elixir-format
+msgid "Create an account"
+msgstr "Criar conta"
+
+#: lib/loyalty_web/live/user_live/registration.ex
+#, elixir-autogen, elixir-format
+msgid "An email was sent to %{email}, please access it to confirm your account."
+msgstr "Um e-mail foi enviado para %{email}, por favor acesse-o para confirmar sua conta."
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Account Settings"
+msgstr "Configurações da conta"
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Manage your account email address and password settings"
+msgstr "Gerencie o e-mail e a senha da sua conta"
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Changing..."
+msgstr "Alterando..."
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Change Email"
+msgstr "Alterar e-mail"
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "New password"
+msgstr "Nova senha"
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Confirm new password"
+msgstr "Confirmar nova senha"
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Save Password"
+msgstr "Salvar senha"
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Email changed successfully."
+msgstr "E-mail alterado com sucesso."
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Email change link is invalid or it has expired."
+msgstr "O link de alteração de e-mail é inválido ou expirou."
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "A link to confirm your email change has been sent to the new address."
+msgstr "Um link para confirmar a alteração de e-mail foi enviado para o novo endereço."
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Admin"
+msgstr "Admin"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Admin Dashboard"
+msgstr "Painel Admin"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "All registered establishments"
+msgstr "Todos os estabelecimentos cadastrados"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "All"
+msgstr "Todos"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Active"
+msgstr "Ativo"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Unpaid / Free"
+msgstr "Não pago / Gratuito"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Establishment"
+msgstr "Estabelecimento"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Plan"
+msgstr "Plano"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Cards"
+msgstr "Cartões"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Registered"
+msgstr "Cadastrado"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "No establishments found."
+msgstr "Nenhum estabelecimento encontrado."
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Past due"
+msgstr "Atrasado"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Unpaid"
+msgstr "Não pago"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Canceled"
+msgstr "Cancelado"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Free"
+msgstr "Gratuito"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Not authorized."
+msgstr "Não autorizado."

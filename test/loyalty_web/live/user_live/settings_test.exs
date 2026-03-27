@@ -139,7 +139,7 @@ defmodule LoyaltyWeb.UserLive.SettingsTest do
         })
 
       assert result =~ "Save Password"
-      assert result =~ "should be at least 12 character(s)"
+      assert result =~ "should be at least 12 characters"
       assert result =~ "does not match password"
     end
 
@@ -157,7 +157,7 @@ defmodule LoyaltyWeb.UserLive.SettingsTest do
         |> render_submit()
 
       assert result =~ "Save Password"
-      assert result =~ "should be at least 12 character(s)"
+      assert result =~ "should be at least 12 characters"
       assert result =~ "does not match password"
     end
   end

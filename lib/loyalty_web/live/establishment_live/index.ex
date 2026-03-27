@@ -8,15 +8,15 @@ defmodule LoyaltyWeb.EstablishmentLive.Index do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
       <.header>
-        Listing Establishments
+        {gettext("Listing Establishments")}
         <:actions>
           <%= if @can_create_establishment do %>
             <.button variant="primary" navigate={~p"/establishments/new"}>
-              <.icon name="hero-plus" /> New Establishment
+              <.icon name="hero-plus" /> {gettext("New Establishment")}
             </.button>
           <% else %>
             <span class="rounded-full border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content/70">
-              Only one establishment allowed
+              {gettext("Only one establishment allowed")}
             </span>
           <% end %>
         </:actions>
@@ -27,17 +27,17 @@ defmodule LoyaltyWeb.EstablishmentLive.Index do
         rows={@streams.establishments}
         row_click={fn {_id, establishment} -> JS.navigate(~p"/establishments/#{establishment}") end}
       >
-        <:col :let={{_id, establishment}} label="Name">{establishment.name}</:col>
+        <:col :let={{_id, establishment}} label={gettext("Name")}>{establishment.name}</:col>
         <:action :let={{id, establishment}}>
           <div class="sr-only">
-            <.link navigate={~p"/establishments/#{establishment}"}>Show</.link>
+            <.link navigate={~p"/establishments/#{establishment}"}>{gettext("Show")}</.link>
           </div>
-          <.link navigate={~p"/establishments/#{establishment}/edit"}>Edit</.link>
+          <.link navigate={~p"/establishments/#{establishment}/edit"}>{gettext("Edit")}</.link>
           <.link
             phx-click={JS.push("delete", value: %{id: establishment.id}) |> hide("##{id}")}
-            data-confirm="Are you sure?"
+            data-confirm={gettext("Are you sure?")}
           >
-            Delete
+            {gettext("Delete")}
           </.link>
         </:action>
       </.table>
@@ -53,7 +53,7 @@ defmodule LoyaltyWeb.EstablishmentLive.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, "Listing Establishments")
+     |> assign(:page_title, gettext("Listing Establishments"))
      |> assign(:can_create_establishment, list_establishments(socket.assigns.current_scope) == [])
      |> stream(:establishments, list_establishments(socket.assigns.current_scope))}
   end
