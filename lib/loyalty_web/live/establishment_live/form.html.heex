@@ -1,0 +1,116 @@
+<Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
+  <main class="mx-auto max-w-lg px-4 py-8">
+    <header class="mb-8">
+      <div class="flex items-center gap-3 mb-6">
+        <.link
+          navigate={return_path(@current_scope, @return_to, @establishment)}
+          class="flex items-center justify-center w-9 h-9 rounded-xl border border-base-300 bg-base-100 hover:bg-base-200 transition-colors"
+        >
+          <.icon name="hero-arrow-left" class="w-4 h-4 text-base-content/70" />
+        </.link>
+        <div>
+          <h1 class="text-xl font-bold text-base-content">{@page_title}</h1>
+          <p class="text-sm text-base-content/60">
+            {gettext("Manage your establishment details.")}
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <.form
+      for={@form}
+      id="establishment-form"
+      phx-change="validate"
+      phx-submit="save"
+      class="space-y-6"
+    >
+      <%!-- Name field --%>
+      <section class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
+        <h2 class="text-sm font-semibold text-base-content mb-4">{gettext("Basic info")}</h2>
+        <.input field={@form[:name]} type="text" label={gettext("Establishment name")} />
+      </section>
+
+      <%!-- Logo upload --%>
+      <section class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
+        <h2 class="text-sm font-semibold text-base-content mb-4">{gettext("Logo")}</h2>
+
+        <div
+          :if={@establishment.logo_url}
+          class="flex items-center gap-3 mb-4 p-3 rounded-xl bg-base-200/50"
+        >
+          <img
+            src={@establishment.logo_url}
+            alt={gettext("Current logo")}
+            class="w-14 h-14 rounded-xl object-cover ring-2 ring-base-300 flex-shrink-0"
+          />
+          <div>
+            <p class="text-sm font-medium text-base-content">{gettext("Current logo")}</p>
+            <p class="text-xs text-base-content/50">
+              {gettext("Upload a new file to replace it")}
+            </p>
+          </div>
+        </div>
+
+        <label class="block text-xs font-medium text-base-content/70 mb-2">
+          {gettext("Upload logo")}
+        </label>
+        <.live_file_input
+          upload={@uploads.logo}
+          class="block w-full text-sm text-base-content/70
+                 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0
+                 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary
+                 hover:file:bg-primary/20 file:cursor-pointer cursor-pointer"
+        />
+        <p class="mt-1.5 text-xs text-base-content/50">PNG, JPG, GIF, WebP · max 5 MB</p>
+
+        <div
+          :for={entry <- @uploads.logo.entries}
+          class="mt-3 flex items-center gap-3 p-3 rounded-xl bg-base-200/50"
+        >
+          <.live_img_preview
+            entry={entry}
+            class="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+          />
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-base-content truncate">{entry.client_name}</p>
+            <div class="mt-1.5 h-1.5 bg-base-300 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-primary rounded-full transition-all duration-300"
+                style={"width: #{entry.progress}%"}
+              >
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            phx-click="cancel_upload"
+            phx-value-ref={entry.ref}
+            aria-label={gettext("Remove upload")}
+            class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg
+                         text-base-content/40 hover:text-error hover:bg-error/10 transition-colors"
+          >
+            <.icon name="hero-x-mark" class="w-4 h-4" />
+          </button>
+          <p
+            :for={err <- upload_errors(@uploads.logo, entry)}
+            class="text-xs text-error mt-1 col-span-full"
+          >
+            {upload_error_to_string(err)}
+          </p>
+        </div>
+      </section>
+
+      <footer class="flex flex-wrap gap-3 pt-2">
+        <.button phx-disable-with={gettext("Saving...")} variant="primary" class="min-h-11 px-6">
+          {gettext("Save changes")}
+        </.button>
+        <.link
+          navigate={return_path(@current_scope, @return_to, @establishment)}
+          class="btn btn-primary btn-soft min-h-11 px-6"
+        >
+          {gettext("Cancel")}
+        </.link>
+      </footer>
+    </.form>
+  </main>
+</Layouts.app>

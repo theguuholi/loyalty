@@ -1,0 +1,223 @@
+<Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
+  <main class="mx-auto max-w-md px-4 py-8">
+    <header class="mb-8">
+      <p class="text-xs font-semibold uppercase tracking-widest text-primary/70 mb-1">
+        MyRewards
+      </p>
+      <h1 class="text-2xl font-bold text-base-content">Meus cartões</h1>
+      <p class="text-sm text-base-content/60 mt-1">
+        Acesse seus cartões de fidelidade digitais
+      </p>
+    </header>
+
+    <%= if @show_list? do %>
+      <%!-- Results view --%>
+      <section aria-label="Seus cartões de fidelidade">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <p class="text-xs text-base-content/50 uppercase tracking-wide font-medium">
+              {if @contact_type == :email, do: "E-mail", else: "WhatsApp"}
+            </p>
+            <p class="text-sm font-semibold text-base-content truncate max-w-[220px]">
+              {@identifier}
+            </p>
+          </div>
+          <.link
+            id="cards-change-contact-link"
+            patch={~p"/cards"}
+            class="text-sm font-medium text-primary hover:underline"
+          >
+            {if @contact_type == :email, do: "Trocar e-mail", else: "Trocar número"}
+          </.link>
+        </div>
+
+        <p
+          :if={@cards == []}
+          id="cards-empty-message"
+          class="text-center py-12 text-base-content/50"
+        >
+          Nenhum cartão encontrado.
+        </p>
+
+        <ul :if={@cards != []} id="cards-list" class="space-y-4">
+          <li :for={card <- @cards} id={"card-item-#{card.id}"} class="loyalty-card-animate">
+            <article
+              class="relative rounded-2xl overflow-hidden shadow-xl"
+              style="background: linear-gradient(135deg, #1b4d3e 0%, #1e5c4a 50%, #0f3329 100%); aspect-ratio: 1.586;"
+            >
+              <%!-- Subtle dot pattern --%>
+              <div
+                class="absolute inset-0 opacity-10"
+                style="background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 24px 24px;"
+              >
+              </div>
+              <%!-- Glow --%>
+              <div
+                class="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-10"
+                style="background: radial-gradient(circle, white, transparent 70%);"
+              >
+              </div>
+
+              <%!-- Logo + Establishment name --%>
+              <header class="absolute top-4 left-4 right-4 flex items-center gap-3">
+                <%= if card.establishment.logo_url do %>
+                  <img
+                    src={card.establishment.logo_url}
+                    alt={card.establishment.name}
+                    class="w-10 h-10 rounded-xl object-cover ring-2 ring-white/20 flex-shrink-0"
+                  />
+                <% else %>
+                  <div class="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
+                    <.icon name="hero-building-storefront" class="w-5 h-5 text-white/60" />
+                  </div>
+                <% end %>
+                <div class="min-w-0">
+                  <p class="text-white font-bold text-sm leading-tight truncate">
+                    {card.establishment.name}
+                  </p>
+                  <p class="text-white/50 text-xs">Cartão fidelidade</p>
+                </div>
+                <div
+                  :if={(card.stamps_current || 0) >= card.stamps_required}
+                  class="ml-auto flex-shrink-0"
+                >
+                  <span
+                    class="text-xs font-bold px-2 py-0.5 rounded-full"
+                    style="background: rgba(212,175,55,0.2); color: #d4af37; border: 1px solid rgba(212,175,55,0.35);"
+                  >
+                    ✓ Completo
+                  </span>
+                </div>
+              </header>
+
+              <%!-- Stamps --%>
+              <div class="absolute left-4 right-4" style="bottom: 40px;">
+                <%= if card.stamps_required <= 12 do %>
+                  <div class="flex flex-wrap gap-1.5">
+                    <div
+                      :for={i <- 1..card.stamps_required}
+                      class={[
+                        "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all",
+                        if(i <= (card.stamps_current || 0),
+                          do: "border-[#d4af37]",
+                          else: "border-white/25 bg-transparent"
+                        )
+                      ]}
+                      style={
+                        if i <= (card.stamps_current || 0),
+                          do: "background: #d4af37; box-shadow: 0 0 8px rgba(212,175,55,0.55);",
+                          else: ""
+                      }
+                    >
+                      <.icon
+                        :if={i <= (card.stamps_current || 0)}
+                        name="hero-star-solid"
+                        class="w-3.5 h-3.5 text-white"
+                      />
+                    </div>
+                  </div>
+                <% else %>
+                  <div class="flex items-center gap-2">
+                    <div class="flex-1 h-2 rounded-full bg-white/20 overflow-hidden">
+                      <div
+                        class="h-full rounded-full bg-[#d4af37] transition-all"
+                        style={"width: #{min(100, div((card.stamps_current || 0) * 100, max(1, card.stamps_required)))}%"}
+                      >
+                      </div>
+                    </div>
+                    <span class="text-white/70 text-sm font-medium whitespace-nowrap">
+                      {card.stamps_current || 0}/{card.stamps_required}
+                    </span>
+                  </div>
+                <% end %>
+              </div>
+
+              <%!-- Reward --%>
+              <footer class="absolute left-4 right-4 bottom-3 flex items-center justify-between">
+                <p class="text-white/55 text-xs truncate">
+                  {card.loyalty_program.reward_description}
+                </p>
+                <span
+                  :if={(card.stamps_current || 0) >= card.stamps_required}
+                  class="text-xs font-bold whitespace-nowrap ml-2"
+                  style="color: #d4af37;"
+                >
+                  ✓ Pronto para usar!
+                </span>
+              </footer>
+            </article>
+          </li>
+        </ul>
+      </section>
+    <% else %>
+      <%!-- Lookup form --%>
+      <section aria-label="Buscar cartões">
+        <%!-- Contact type toggle --%>
+        <div
+          class="flex gap-2 mb-5 p-1 rounded-xl bg-base-200/60"
+          role="group"
+          aria-label="Tipo de contato"
+        >
+          <button
+            type="button"
+            id="lookup-type-email"
+            phx-click="set_contact_type"
+            phx-value-type="email"
+            class={[
+              "flex-1 text-sm font-semibold py-2.5 rounded-lg transition-all",
+              if(@contact_type == :email,
+                do: "bg-base-100 text-primary shadow-sm",
+                else: "text-base-content/60 hover:text-base-content"
+              )
+            ]}
+          >
+            E-mail
+          </button>
+          <button
+            type="button"
+            id="lookup-type-whatsapp"
+            phx-click="set_contact_type"
+            phx-value-type="whatsapp"
+            class={[
+              "flex-1 text-sm font-semibold py-2.5 rounded-lg transition-all",
+              if(@contact_type == :whatsapp,
+                do: "bg-base-100 text-primary shadow-sm",
+                else: "text-base-content/60 hover:text-base-content"
+              )
+            ]}
+          >
+            WhatsApp
+          </button>
+        </div>
+
+        <p class="text-sm text-base-content/60 mb-5">
+          {if @contact_type == :email,
+            do: "Digite seu e-mail para ver todos os cartões de fidelidade.",
+            else: "Digite seu número de WhatsApp para ver todos os cartões de fidelidade."}
+        </p>
+
+        <.form id="cards-entry-form" for={@form} phx-submit="lookup" class="space-y-4">
+          <.input
+            :if={@contact_type == :email}
+            id="cards-entry-email"
+            field={@form[:email]}
+            type="email"
+            label="E-mail"
+            placeholder="seu@email.com"
+          />
+          <.input
+            :if={@contact_type == :whatsapp}
+            id="cards-entry-whatsapp"
+            field={@form[:whatsapp_number]}
+            type="tel"
+            label="WhatsApp"
+            placeholder="+5511999999999"
+          />
+          <button type="submit" id="cards-entry-submit" class="btn btn-primary w-full min-h-11">
+            Ver cartões
+          </button>
+        </.form>
+      </section>
+    <% end %>
+  </main>
+</Layouts.app>

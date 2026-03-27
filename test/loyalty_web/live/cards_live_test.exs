@@ -135,7 +135,7 @@ defmodule LoyaltyWeb.CardsLiveTest do
 
       {:ok, _view, html} = live(conn, "/cards?email=#{URI.encode_www_form(email)}")
 
-      assert html =~ "ready to use!"
+      assert html =~ "Pronto para usar!"
     end
   end
 end

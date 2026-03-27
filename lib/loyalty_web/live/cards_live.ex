@@ -229,6 +229,16 @@ defmodule LoyaltyWeb.CardsLive do
     end
   end
 
+  defp assign_reset(socket, contact_type) do
+    form_key = if contact_type == :whatsapp, do: "whatsapp_number", else: "email"
+
+    socket
+    |> assign(:identifier, nil)
+    |> assign(:cards, [])
+    |> assign(:show_list?, false)
+    |> assign(:form, to_form(%{form_key => ""}, as: :cards_entry))
+  end
+
   defp lookup_by_email(socket, entry) do
     email = (entry["email"] || "") |> String.trim()
 

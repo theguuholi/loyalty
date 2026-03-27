@@ -1,0 +1,236 @@
+<Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
+  <main class="mx-auto max-w-2xl px-4 py-8 space-y-6">
+    <%!-- Brand header --%>
+    <header class="rounded-2xl overflow-hidden shadow-sm border border-base-300">
+      <div
+        class="p-5 flex items-center gap-4"
+        style="background: linear-gradient(135deg, #1b4d3e 0%, #1e5c4a 100%);"
+      >
+        <%= if @establishment.logo_url do %>
+          <img
+            src={@establishment.logo_url}
+            alt={@establishment.name}
+            class="w-16 h-16 rounded-xl object-cover ring-2 ring-white/20 flex-shrink-0 shadow-md"
+          />
+        <% else %>
+          <div class="w-16 h-16 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
+            <.icon name="hero-building-storefront" class="w-7 h-7 text-white/60" />
+          </div>
+        <% end %>
+        <div class="flex-1 min-w-0">
+          <h1 class="text-xl font-bold text-white truncate">{@establishment.name}</h1>
+          <span
+            class="inline-flex items-center gap-1.5 mt-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+            style="background: rgba(212,175,55,0.2); color: #d4af37; border: 1px solid rgba(212,175,55,0.3);"
+          >
+            {@plan_label}
+          </span>
+        </div>
+        <div class="flex-shrink-0 text-right">
+          <p class="text-3xl font-black text-white">{@client_count}</p>
+          <p class="text-xs text-white/60">
+            {if @client_limit,
+              do: "/ #{@client_limit} #{gettext("clients")}",
+              else: gettext("clients")}
+          </p>
+        </div>
+      </div>
+
+      <%!-- Action bar --%>
+      <div class="px-5 py-3 bg-base-100 border-t border-base-300 flex flex-wrap gap-2">
+        <.link navigate={~p"/establishments"} class="btn btn-ghost btn-sm gap-1 min-h-9">
+          <.icon name="hero-arrow-left" class="w-4 h-4" />
+          {gettext("Back")}
+        </.link>
+        <.link
+          navigate={~p"/establishments/#{@establishment}/edit?return_to=show"}
+          class="btn btn-primary btn-sm gap-1 min-h-9 ml-auto"
+        >
+          <.icon name="hero-pencil-square" class="w-4 h-4" />
+          {gettext("Edit")}
+        </.link>
+      </div>
+    </header>
+
+    <%!-- Payment warning --%>
+    <div
+      :if={@payment_issue?}
+      id="dashboard-payment-issue-banner"
+      role="alert"
+      class="rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-base-content"
+    >
+      <strong class="font-semibold">{gettext("Payment issue")}</strong>
+      {gettext(
+        "There is a problem with your subscription payment. New clients cannot be registered until billing is active. Existing cards still work."
+      )}
+    </div>
+
+    <%!-- Stats grid --%>
+    <section aria-label={gettext("Stats")} class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <article class="rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm text-center">
+        <p class="text-2xl font-black text-primary">{@client_count}</p>
+        <p class="text-xs text-base-content/60 mt-0.5">{gettext("clients")}</p>
+      </article>
+      <article
+        :if={@loyalty_program}
+        class="rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm text-center"
+      >
+        <p class="text-2xl font-black" style="color: #d4af37;">
+          {@loyalty_program.stamps_required}
+        </p>
+        <p class="text-xs text-base-content/60 mt-0.5">{gettext("stamps")}</p>
+      </article>
+      <article
+        :if={@client_limit}
+        class="rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm text-center col-span-2 sm:col-span-1"
+      >
+        <p class="text-2xl font-black text-base-content/70">{@client_limit}</p>
+        <p class="text-xs text-base-content/60 mt-0.5">{gettext("limit")}</p>
+      </article>
+    </section>
+
+    <%!-- Billing card --%>
+    <section
+      id="dashboard-billing-card"
+      class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm"
+    >
+      <h2 class="font-semibold text-base-content mb-1">{@plan_label}</h2>
+      <p class="text-sm text-base-content/70">
+        {if @client_limit,
+          do: "#{gettext("Clients (loyalty cards):")} #{@client_count} / #{@client_limit}",
+          else: "#{gettext("Clients (loyalty cards):")} #{@client_count}"}
+      </p>
+      <p :if={@on_free_plan? && @show_subscribe_cta?} class="mt-2 text-sm text-base-content/70">
+        {gettext(
+          "The free plan allows up to %{count} loyalty cards (clients). More clients require the monthly paid plan.",
+          count: @client_limit
+        )}
+      </p>
+      <div
+        :if={@show_free_plan_near_limit_hint?}
+        id="dashboard-free-plan-near-limit"
+        role="status"
+        class="mt-2 rounded-xl border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-base-content"
+      >
+        {gettext("You're close to the free plan limit — subscribe to add more clients.")}
+      </div>
+      <div :if={@show_subscribe_cta?} class="mt-4">
+        <.button
+          variant="primary"
+          phx-click="start_stripe_checkout"
+          id="dashboard-stripe-checkout"
+          class="min-h-11"
+        >
+          {gettext("Subscribe (monthly) for more clients")}
+        </.button>
+      </div>
+    </section>
+
+    <%!-- Loyalty program card --%>
+    <section
+      id="dashboard-program-card"
+      class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm"
+    >
+      <%= if @loyalty_program do %>
+        <h2 class="font-semibold text-base-content">{gettext("Active program")}</h2>
+        <p class="mt-1 text-sm text-base-content/70">
+          {@loyalty_program.stamps_required} {gettext("stamps")} = {@loyalty_program.reward_description}
+        </p>
+        <div class="mt-4">
+          <.button
+            variant="primary"
+            id="dashboard-edit-program-link"
+            navigate={
+              ~p"/establishments/#{@establishment}/loyalty_programs/#{@loyalty_program}/edit?return_to=show"
+            }
+            class="btn-sm min-h-9"
+          >
+            {gettext("Edit program")}
+          </.button>
+        </div>
+      <% else %>
+        <h2 class="font-semibold text-base-content">{gettext("Program")}</h2>
+        <p class="mt-1 text-sm text-base-content/70">{gettext("No program yet.")}</p>
+        <div class="mt-4">
+          <.button
+            variant="primary"
+            navigate={~p"/establishments/#{@establishment}/loyalty_programs/new?return_to=show"}
+            class="btn-sm min-h-9"
+          >
+            <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Create program")}
+          </.button>
+        </div>
+      <% end %>
+    </section>
+
+    <%!-- Quick actions --%>
+    <section aria-label={gettext("Quick actions")}>
+      <h2 class="text-sm font-semibold text-base-content/60 uppercase tracking-wide mb-3">
+        {gettext("Quick actions")}
+      </h2>
+      <div class="flex flex-wrap gap-2">
+        <%!-- Create program — shown only when none exists yet --%>
+        <.button
+          :if={is_nil(@loyalty_program)}
+          id="dashboard-create-program-link"
+          variant="primary"
+          navigate={~p"/establishments/#{@establishment}/loyalty_programs/new"}
+          class="min-h-11 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Create program")}
+        </.button>
+
+        <%!-- View clients (program page) — only when program exists --%>
+        <.button
+          :if={@loyalty_program}
+          id="dashboard-program-and-clients-link"
+          variant="primary"
+          navigate={~p"/establishments/#{@establishment}/loyalty_programs/#{@loyalty_program}"}
+          class="min-h-11 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <.icon name="hero-users" class="w-4 h-4" /> {gettext("View clients")}
+        </.button>
+
+        <%!-- Register client — always shown; disabled when limit reached or billing inactive --%>
+        <.link
+          :if={@loyalty_program && @can_add_new_client?}
+          id="dashboard-register-client-link"
+          navigate={~p"/establishments/#{@establishment}/loyalty_cards/new"}
+          class="btn btn-primary btn-soft min-h-11 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Register client")}
+        </.link>
+
+        <%!-- Register client — shown as disabled when no program or limit reached --%>
+        <.link
+          :if={is_nil(@loyalty_program) || not @can_add_new_client?}
+          id="dashboard-register-client-disabled"
+          navigate={
+            if(@loyalty_program,
+              do: ~p"/establishments/#{@establishment}/loyalty_cards/new",
+              else: ~p"/establishments/#{@establishment}/loyalty_programs/new"
+            )
+          }
+          class="btn btn-primary btn-soft min-h-11 opacity-50 cursor-not-allowed"
+          aria-disabled="true"
+        >
+          <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Register client")}
+        </.link>
+      </div>
+
+      <%!-- Contextual hint when no program --%>
+      <p :if={is_nil(@loyalty_program)} class="mt-2 text-xs text-base-content/50">
+        {gettext("Create a loyalty program first to start registering clients.")}
+      </p>
+      <%!-- Contextual hint when limit reached --%>
+      <p
+        :if={@loyalty_program && not @can_add_new_client?}
+        class="mt-2 text-xs text-base-content/50"
+      >
+        {gettext(
+          "Client limit reached or billing inactive — subscribe above to add more clients."
+        )}
+      </p>
+    </section>
+  </main>
+</Layouts.app>
