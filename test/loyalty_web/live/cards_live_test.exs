@@ -12,7 +12,7 @@ defmodule LoyaltyWeb.CardsLiveTest do
       assert has_element?(view, "#cards-entry-form")
       assert has_element?(view, "#cards-entry-email")
       assert has_element?(view, "#cards-entry-submit")
-      assert has_element?(view, "p", "Digite seu e-mail para ver todos os cartões de fidelidade.")
+      assert has_element?(view, "p", "Enter your email to see all your loyalty cards.")
     end
 
     test "given valid email when they submit then they see list or empty state", %{conn: conn} do
@@ -135,7 +135,7 @@ defmodule LoyaltyWeb.CardsLiveTest do
 
       {:ok, _view, html} = live(conn, "/cards?email=#{URI.encode_www_form(email)}")
 
-      assert html =~ "pronto para usar!"
+      assert html =~ "ready to use!"
     end
   end
 end
