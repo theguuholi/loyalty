@@ -1,6 +1,6 @@
 defmodule LoyaltyWeb.CardsLive do
   @moduledoc """
-  Public "Meus cartões" flow: customer enters email or WhatsApp and sees their loyalty cards.
+  Public "My Cards" flow: customer enters email or WhatsApp and sees their loyalty cards.
   """
   use LoyaltyWeb, :live_view
 
@@ -10,7 +10,7 @@ defmodule LoyaltyWeb.CardsLive do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:page_title, "Meus cartões")
+     |> assign(:page_title, gettext("My cards"))
      |> assign(:contact_type, :email)
      |> assign(:identifier, nil)
      |> assign(:cards, [])
@@ -73,7 +73,7 @@ defmodule LoyaltyWeb.CardsLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
       <div class="space-y-6">
-        <h1 class="text-xl font-semibold text-[#1a1d21]">Meus cartões</h1>
+        <h1 class="text-xl font-semibold text-[#1a1d21]">{gettext("My cards")}</h1>
 
         <%= if @show_list? do %>
           <.list_view identifier={@identifier} cards={@cards} contact_type={@contact_type} />
@@ -121,9 +121,9 @@ defmodule LoyaltyWeb.CardsLive do
 
       <p class="text-[#6b7280] mb-4">
         <%= if @contact_type == :email do %>
-          Digite seu e-mail para ver todos os cartões de fidelidade.
+          {gettext("Enter your email to see all your loyalty cards.")}
         <% else %>
-          Digite seu número de WhatsApp para ver todos os cartões de fidelidade.
+          {gettext("Enter your WhatsApp number to see all your loyalty cards.")}
         <% end %>
       </p>
 
@@ -151,7 +151,7 @@ defmodule LoyaltyWeb.CardsLive do
           />
         <% end %>
         <button type="submit" id="cards-entry-submit" class="btn btn-primary w-full max-w-xs">
-          Ver cartões
+          {gettext("View cards")}
         </button>
       </.form>
     </div>
@@ -167,12 +167,12 @@ defmodule LoyaltyWeb.CardsLive do
         patch={~p"/cards"}
         class="text-sm text-[#1b4d3e] hover:underline mb-4 inline-block"
       >
-        {if @contact_type == :email, do: "Trocar e-mail", else: "Trocar número"}
+        {if @contact_type == :email, do: gettext("Change email"), else: gettext("Change number")}
       </.link>
 
       <%= if @cards == [] do %>
         <p id="cards-empty-message" class="text-[#6b7280]">
-          Nenhum cartão encontrado.
+          {gettext("No cards found.")}
         </p>
       <% else %>
         <div id="cards-list" class="space-y-4">
@@ -193,13 +193,13 @@ defmodule LoyaltyWeb.CardsLive do
                 </div>
               </div>
               <span class="text-sm text-[#6b7280]">
-                {card.stamps_current || 0} de {card.stamps_required} carimbos
+                {card.stamps_current || 0} {gettext("of")} {card.stamps_required} {gettext("stamps")}
               </span>
             </div>
             <p id="card-reward" class="mt-2 text-sm text-[#40916c]">
               {card.loyalty_program.reward_description}
               <%= if (card.stamps_current || 0) >= card.stamps_required do %>
-                — pronto para usar!
+                — {gettext("ready to use!")}
               <% end %>
             </p>
           </div>
@@ -234,10 +234,10 @@ defmodule LoyaltyWeb.CardsLive do
 
     cond do
       email == "" ->
-        {:noreply, put_flash(socket, :error, "Informe seu e-mail.")}
+        {:noreply, put_flash(socket, :error, gettext("Please enter your email."))}
 
       not valid_email?(email) ->
-        {:noreply, put_flash(socket, :error, "E-mail inválido.")}
+        {:noreply, put_flash(socket, :error, gettext("Invalid email."))}
 
       true ->
         {:noreply, push_patch(socket, to: "/cards?email=" <> URI.encode_www_form(email))}
@@ -249,10 +249,15 @@ defmodule LoyaltyWeb.CardsLive do
 
     cond do
       number == "" ->
-        {:noreply, put_flash(socket, :error, "Informe seu número de WhatsApp.")}
+        {:noreply, put_flash(socket, :error, gettext("Please enter your WhatsApp number."))}
 
       not valid_whatsapp?(number) ->
-        {:noreply, put_flash(socket, :error, "Número inválido. Use o formato +5511999999999.")}
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           gettext("Invalid number. Use the format +5511999999999.")
+         )}
 
       true ->
         {:noreply, push_patch(socket, to: "/cards?whatsapp=" <> URI.encode_www_form(number))}

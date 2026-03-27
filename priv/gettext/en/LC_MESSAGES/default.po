@@ -14,46 +14,46 @@ msgstr ""
 #: lib/loyalty_web/components/core_components.ex:342
 #, elixir-autogen, elixir-format
 msgid "Actions"
-msgstr ""
+msgstr "Actions"
 
 #: lib/loyalty_web/components/layouts.ex:136
 #: lib/loyalty_web/components/layouts.ex:148
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
-msgstr ""
+msgstr "Attempting to reconnect"
 
 #: lib/loyalty_web/components/layouts.ex:143
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
-msgstr ""
+msgstr "Something went wrong!"
 
 #: lib/loyalty_web/components/layouts.ex:131
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
-msgstr ""
+msgstr "We can't find the internet"
 
 #: lib/loyalty_web/components/core_components.ex:74
 #, elixir-autogen, elixir-format
 msgid "close"
-msgstr ""
+msgstr "close"
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:84
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:118
 #, elixir-autogen, elixir-format
 msgid "+ 1 stamp"
-msgstr ""
+msgstr "+ 1 stamp"
 
 #: lib/loyalty_web/live/establishment_live/show.ex:101
 #, elixir-autogen, elixir-format
 msgid "Active program"
-msgstr ""
+msgstr "Active program"
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:96
 #: lib/loyalty_web/live/loyalty_program_live/index.ex:57
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:130
 #, elixir-autogen, elixir-format
 msgid "Are you sure?"
-msgstr ""
+msgstr "Are you sure?"
 
 #: lib/loyalty_web/live/establishment_live/form.ex:16
 #: lib/loyalty_web/live/establishment_live/show.ex:35
@@ -63,102 +63,102 @@ msgstr ""
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:18
 #, elixir-autogen, elixir-format
 msgid "Back"
-msgstr ""
+msgstr "Back"
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:186
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:201
 #, elixir-autogen, elixir-format
 msgid "Could not add stamp."
-msgstr ""
+msgstr "Could not add stamp."
 
 #: lib/loyalty_web/live/establishment_live/show.ex:29
 #, elixir-autogen, elixir-format
 msgid "Create a loyalty program"
-msgstr ""
+msgstr "Create a loyalty program"
 
 #: lib/loyalty_web/live/establishment_live/show.ex:126
 #: lib/loyalty_web/live/establishment_live/show.ex:161
 #, elixir-autogen, elixir-format
 msgid "Create program"
-msgstr ""
+msgstr "Create program"
 
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:233
 #, elixir-autogen, elixir-format
 msgid "Customer email is required."
-msgstr ""
+msgstr "Customer email is required."
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:99
 #: lib/loyalty_web/live/loyalty_program_live/index.ex:60
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:133
 #, elixir-autogen, elixir-format
 msgid "Delete"
-msgstr ""
+msgstr "Delete"
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:92
 #: lib/loyalty_web/live/loyalty_program_live/index.ex:51
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:126
 #, elixir-autogen, elixir-format
 msgid "Edit"
-msgstr ""
+msgstr "Edit"
 
 #: lib/loyalty_web/live/establishment_live/form.ex:63
 #: lib/loyalty_web/live/establishment_live/show.ex:41
 #, elixir-autogen, elixir-format
 msgid "Edit establishment"
-msgstr ""
+msgstr "Edit establishment"
 
 #: lib/loyalty_web/live/establishment_live/show.ex:114
 #: lib/loyalty_web/live/loyalty_program_live/form.ex:56
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:26
 #, elixir-autogen, elixir-format
 msgid "Edit program"
-msgstr ""
+msgstr "Edit program"
 
 #: lib/loyalty_web/components/layouts.ex:75
 #, elixir-autogen, elixir-format
 msgid "Establishments"
-msgstr ""
+msgstr "Establishments"
 
 #: lib/loyalty_web/components/layouts.ex:94
 #, elixir-autogen, elixir-format
 msgid "Log in"
-msgstr ""
+msgstr "Log in"
 
 #: lib/loyalty_web/components/layouts.ex:82
 #, elixir-autogen, elixir-format
 msgid "Log out"
-msgstr ""
+msgstr "Log out"
 
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:198
 #, elixir-autogen, elixir-format
 msgid "Loyalty card created successfully"
-msgstr ""
+msgstr "Loyalty card created successfully"
 
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:181
 #, elixir-autogen, elixir-format
 msgid "Loyalty card updated successfully"
-msgstr ""
+msgstr "Loyalty card updated successfully"
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:33
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:74
 #, elixir-autogen, elixir-format
 msgid "No cards yet."
-msgstr ""
+msgstr "No cards yet."
 
 #: lib/loyalty_web/live/establishment_live/show.ex:119
 #, elixir-autogen, elixir-format
 msgid "No program yet."
-msgstr ""
+msgstr "No program yet."
 
 #: lib/loyalty_web/live/establishment_live/show.ex:132
 #, elixir-autogen, elixir-format
 msgid "Quick actions"
-msgstr ""
+msgstr "Quick actions"
 
 #: lib/loyalty_web/components/layouts.ex:90
 #, elixir-autogen, elixir-format
 msgid "Register"
-msgstr ""
+msgstr "Register"
 
 #: lib/loyalty_web/live/establishment_live/show.ex:148
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:141
@@ -166,37 +166,37 @@ msgstr ""
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:33
 #, elixir-autogen, elixir-format
 msgid "Register client"
-msgstr ""
+msgstr "Register client"
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:44
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:85
 #, elixir-autogen, elixir-format
 msgid "Register first client"
-msgstr ""
+msgstr "Register first client"
 
 #: lib/loyalty_web/live/establishment_live/form.ex:24
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:83
 #: lib/loyalty_web/live/loyalty_program_live/form.ex:26
 #, elixir-autogen, elixir-format
 msgid "Saving..."
-msgstr ""
+msgstr "Saving..."
 
 #: lib/loyalty_web/components/layouts.ex:79
 #, elixir-autogen, elixir-format
 msgid "Settings"
-msgstr ""
+msgstr "Settings"
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:182
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:198
 #, elixir-autogen, elixir-format
 msgid "Stamp added."
-msgstr ""
+msgstr "Stamp added."
 
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:60
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:74
 #, elixir-autogen, elixir-format
 msgid "Stamps current"
-msgstr ""
+msgstr "Stamps current"
 
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:65
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:78
@@ -205,18 +205,18 @@ msgstr ""
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:41
 #, elixir-autogen, elixir-format
 msgid "Stamps required"
-msgstr ""
+msgstr "Stamps required"
 
 #: lib/loyalty_web/live/establishment_live/show.ex:271
 #, elixir-autogen, elixir-format
 msgid "The current establishment was deleted."
-msgstr ""
+msgstr "The current establishment was deleted."
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:106
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:140
 #, elixir-autogen, elixir-format
 msgid "of"
-msgstr ""
+msgstr "of"
 
 #: lib/loyalty_web/live/establishment_live/show.ex:25
 #: lib/loyalty_web/live/establishment_live/show.ex:103
@@ -225,7 +225,7 @@ msgstr ""
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:140
 #, elixir-autogen, elixir-format
 msgid "stamps"
-msgstr ""
+msgstr "stamps"
 
 #: lib/loyalty_web/live/establishment_live/form.ex:31
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:24
@@ -233,108 +233,108 @@ msgstr ""
 #: lib/loyalty_web/live/loyalty_program_live/form.ex:33
 #, elixir-autogen, elixir-format
 msgid "Back to list"
-msgstr ""
+msgstr "Back to list"
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:57
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:91
 #, elixir-autogen, elixir-format
 msgid "Click \"+ 1 stamp\" when the client earns a stamp. Edit to change progress or delete to remove the card."
-msgstr ""
+msgstr "Click \"+ 1 stamp\" when the client earns a stamp. Edit to change progress or delete to remove the card."
 
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:71
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:70
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:104
 #, elixir-autogen, elixir-format
 msgid "Client"
-msgstr ""
+msgstr "Client"
 
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:42
 #, elixir-autogen, elixir-format
 msgid "Client email"
-msgstr ""
+msgstr "Client email"
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:11
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:148
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:46
 #, elixir-autogen, elixir-format
 msgid "Clients and cards"
-msgstr ""
+msgstr "Clients and cards"
 
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:113
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Edit card"
-msgstr ""
+msgstr "Edit card"
 
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:47
 #, elixir-autogen, elixir-format
 msgid "Enter the client's email. A new loyalty card will be created. You can adjust stamps below if needed."
-msgstr ""
+msgstr "Enter the client's email. A new loyalty card will be created. You can adjust stamps below if needed."
 
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:54
 #, elixir-autogen, elixir-format
 msgid "Initial stamps (optional)"
-msgstr ""
+msgstr "Initial stamps (optional)"
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:36
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:77
 #, elixir-autogen, elixir-format
 msgid "Register a client by email to create their first loyalty card."
-msgstr ""
+msgstr "Register a client by email to create their first loyalty card."
 
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:142
 #, elixir-autogen, elixir-format
 msgid "Register a new client to start their loyalty card."
-msgstr ""
+msgstr "Register a new client to start their loyalty card."
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:123
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:157
 #, elixir-autogen, elixir-format
 msgid "Reward"
-msgstr ""
+msgstr "Reward"
 
 #: lib/loyalty_web/live/loyalty_card_live/index.ex:111
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:145
 #, elixir-autogen, elixir-format
 msgid "Reward ready!"
-msgstr ""
+msgstr "Reward ready!"
 
 #: lib/loyalty_web/live/establishment_live/form.ex:25
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:84
 #: lib/loyalty_web/live/loyalty_program_live/form.ex:27
 #, elixir-autogen, elixir-format
 msgid "Save"
-msgstr ""
+msgstr "Save"
 
 #: lib/loyalty_web/live/loyalty_card_live/form.ex:114
 #, elixir-autogen, elixir-format
 msgid "Update this client's stamp progress."
-msgstr ""
+msgstr "Update this client's stamp progress."
 
 #: lib/loyalty_web/live/establishment_live/form.ex:123
 #, elixir-autogen, elixir-format
 msgid "Establishment created successfully."
-msgstr ""
+msgstr "Establishment created successfully."
 
 #: lib/loyalty_web/live/establishment_live/form.ex:108
 #, elixir-autogen, elixir-format
 msgid "Establishment updated successfully."
-msgstr ""
+msgstr "Establishment updated successfully."
 
 #: lib/loyalty_web/live/loyalty_program_live/index.ex:11
 #: lib/loyalty_web/live/loyalty_program_live/index.ex:76
 #, elixir-autogen, elixir-format
 msgid "Loyalty programs"
-msgstr ""
+msgstr "Loyalty programs"
 
 #: lib/loyalty_web/live/establishment_live/form.ex:13
 #, elixir-autogen, elixir-format
 msgid "Manage establishment name."
-msgstr ""
+msgstr "Manage establishment name."
 
 #: lib/loyalty_web/live/loyalty_program_live/form.ex:13
 #, elixir-autogen, elixir-format
 msgid "Manage program name, stamps required and reward."
-msgstr ""
+msgstr "Manage program name, stamps required and reward."
 
 #: lib/loyalty_web/live/establishment_live/form.ex:22
 #: lib/loyalty_web/live/loyalty_program_live/form.ex:22
@@ -342,40 +342,40 @@ msgstr ""
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:40
 #, elixir-autogen, elixir-format
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #: lib/loyalty_web/live/establishment_live/form.ex:75
 #, elixir-autogen, elixir-format
 msgid "New establishment"
-msgstr ""
+msgstr "New establishment"
 
 #: lib/loyalty_web/live/loyalty_program_live/form.ex:72
 #: lib/loyalty_web/live/loyalty_program_live/index.ex:21
 #, elixir-autogen, elixir-format, fuzzy
 msgid "New program"
-msgstr ""
+msgstr "New program"
 
 #: lib/loyalty_web/live/establishment_live/show.ex:140
 #, elixir-autogen, elixir-format
 msgid "Program and clients"
-msgstr ""
+msgstr "Program and clients"
 
 #: lib/loyalty_web/live/loyalty_program_live/form.ex:126
 #, elixir-autogen, elixir-format
 msgid "Program created successfully."
-msgstr ""
+msgstr "Program created successfully."
 
 #: lib/loyalty_web/live/loyalty_program_live/form.ex:107
 #, elixir-autogen, elixir-format
 msgid "Program updated successfully."
-msgstr ""
+msgstr "Program updated successfully."
 
 #: lib/loyalty_web/live/loyalty_program_live/form.ex:24
 #: lib/loyalty_web/live/loyalty_program_live/index.ex:41
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:42
 #, elixir-autogen, elixir-format
 msgid "Reward description"
-msgstr ""
+msgstr "Reward description"
 
 #: lib/loyalty_web/live/loyalty_program_live/show.ex:237
 #, elixir-autogen, elixir-format
@@ -529,3 +529,299 @@ msgstr "The free plan allows up to %{count} loyalty cards (clients). More client
 #, elixir-autogen, elixir-format
 msgid "You're close to the free plan limit — subscribe to add more clients."
 msgstr "You're close to the free plan limit — subscribe to add more clients."
+
+#: lib/loyalty_web/live/establishment_live/index.ex
+#, elixir-autogen, elixir-format
+msgid "Listing Establishments"
+msgstr "Listing Establishments"
+
+#: lib/loyalty_web/live/establishment_live/index.ex
+#, elixir-autogen, elixir-format
+msgid "New Establishment"
+msgstr "New Establishment"
+
+#: lib/loyalty_web/live/establishment_live/index.ex
+#, elixir-autogen, elixir-format
+msgid "Only one establishment allowed"
+msgstr "Only one establishment allowed"
+
+#: lib/loyalty_web/live/establishment_live/index.ex
+#, elixir-autogen, elixir-format
+msgid "Show"
+msgstr "Show"
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "My cards"
+msgstr "My cards"
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Enter your email to see all your loyalty cards."
+msgstr "Enter your email to see all your loyalty cards."
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Enter your WhatsApp number to see all your loyalty cards."
+msgstr "Enter your WhatsApp number to see all your loyalty cards."
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "View cards"
+msgstr "View cards"
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Change email"
+msgstr "Change email"
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Change number"
+msgstr "Change number"
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "No cards found."
+msgstr "No cards found."
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "ready to use!"
+msgstr "ready to use!"
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Please enter your email."
+msgstr "Please enter your email."
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Invalid email."
+msgstr "Invalid email."
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Please enter your WhatsApp number."
+msgstr "Please enter your WhatsApp number."
+
+#: lib/loyalty_web/live/cards_live.ex
+#, elixir-autogen, elixir-format
+msgid "Invalid number. Use the format +5511999999999."
+msgstr "Invalid number. Use the format +5511999999999."
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "You need to reauthenticate to perform sensitive actions on your account."
+msgstr "You need to reauthenticate to perform sensitive actions on your account."
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "Don't have an account?"
+msgstr "Don't have an account?"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "Sign up"
+msgstr "Sign up"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "for an account now."
+msgstr "for an account now."
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "Email"
+msgstr "Email"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "Log in with email"
+msgstr "Log in with email"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "or"
+msgstr "or"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Password"
+msgstr "Password"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "Log in and stay logged in"
+msgstr "Log in and stay logged in"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "Log in only this time"
+msgstr "Log in only this time"
+
+#: lib/loyalty_web/live/user_live/login.ex
+#, elixir-autogen, elixir-format
+msgid "If your email is in our system, you will receive instructions for logging in shortly."
+msgstr "If your email is in our system, you will receive instructions for logging in shortly."
+
+#: lib/loyalty_web/live/user_live/registration.ex
+#, elixir-autogen, elixir-format
+msgid "Register for an account"
+msgstr "Register for an account"
+
+#: lib/loyalty_web/live/user_live/registration.ex
+#, elixir-autogen, elixir-format
+msgid "Already registered?"
+msgstr "Already registered?"
+
+#: lib/loyalty_web/live/user_live/registration.ex
+#, elixir-autogen, elixir-format
+msgid "to your account now."
+msgstr "to your account now."
+
+#: lib/loyalty_web/live/user_live/registration.ex
+#, elixir-autogen, elixir-format
+msgid "Creating account..."
+msgstr "Creating account..."
+
+#: lib/loyalty_web/live/user_live/registration.ex
+#, elixir-autogen, elixir-format
+msgid "Create an account"
+msgstr "Create an account"
+
+#: lib/loyalty_web/live/user_live/registration.ex
+#, elixir-autogen, elixir-format
+msgid "An email was sent to %{email}, please access it to confirm your account."
+msgstr "An email was sent to %{email}, please access it to confirm your account."
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Account Settings"
+msgstr "Account Settings"
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Manage your account email address and password settings"
+msgstr "Manage your account email address and password settings"
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Changing..."
+msgstr "Changing..."
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Change Email"
+msgstr "Change Email"
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "New password"
+msgstr "New password"
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Confirm new password"
+msgstr "Confirm new password"
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Save Password"
+msgstr "Save Password"
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Email changed successfully."
+msgstr "Email changed successfully."
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "Email change link is invalid or it has expired."
+msgstr "Email change link is invalid or it has expired."
+
+#: lib/loyalty_web/live/user_live/settings.ex
+#, elixir-autogen, elixir-format
+msgid "A link to confirm your email change has been sent to the new address."
+msgstr "A link to confirm your email change has been sent to the new address."
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Admin"
+msgstr "Admin"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Admin Dashboard"
+msgstr "Admin Dashboard"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "All registered establishments"
+msgstr "All registered establishments"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "All"
+msgstr "All"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Active"
+msgstr "Active"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Unpaid / Free"
+msgstr "Unpaid / Free"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Establishment"
+msgstr "Establishment"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Plan"
+msgstr "Plan"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Cards"
+msgstr "Cards"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Registered"
+msgstr "Registered"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "No establishments found."
+msgstr "No establishments found."
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Past due"
+msgstr "Past due"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Unpaid"
+msgstr "Unpaid"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Canceled"
+msgstr "Canceled"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Free"
+msgstr "Free"
+
+#: lib/loyalty_web/live/admin_live.ex
+#, elixir-autogen, elixir-format
+msgid "Not authorized."
+msgstr "Not authorized."
