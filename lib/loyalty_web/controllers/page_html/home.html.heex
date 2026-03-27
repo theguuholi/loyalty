@@ -1,22 +1,41 @@
 <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
-  <main id="landing-hero" class="space-y-10">
+  <main id="landing" class="space-y-16 pb-16">
+    <%!-- Hero --%>
     <section
       aria-labelledby="landing-title"
-      class="rounded-[2rem] border-2 border-base-300 bg-gradient-to-br from-primary/10 via-base-100 to-secondary/10 p-5 shadow-sm sm:p-8 lg:p-10"
+      class="relative rounded-[2rem] overflow-hidden border border-base-300 shadow-sm"
+      style="background: linear-gradient(135deg, #1b4d3e 0%, #1e5c4a 60%, #0f3329 100%);"
     >
-      <header class="space-y-6 text-left">
-        <span class="inline-flex w-fit items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+      <%!-- Dot pattern --%>
+      <div
+        class="absolute inset-0 opacity-10"
+        style="background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 28px 28px;"
+      >
+      </div>
+      <%!-- Glow --%>
+      <div
+        class="absolute -top-20 -right-20 w-72 h-72 rounded-full opacity-10"
+        style="background: radial-gradient(circle, white, transparent 70%);"
+      >
+      </div>
+
+      <div class="relative px-6 py-10 sm:px-10 sm:py-14 lg:py-16 space-y-8">
+        <span
+          class="inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest"
+          style="background: rgba(212,175,55,0.15); color: #d4af37; border: 1px solid rgba(212,175,55,0.3);"
+        >
           Fidelidade digital para negócios locais
         </span>
-        <div class="space-y-4">
+
+        <div class="space-y-4 max-w-2xl">
           <h1
             id="landing-title"
-            class="max-w-2xl text-3xl font-bold leading-tight text-base-content sm:text-4xl lg:text-5xl"
+            class="text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl"
           >
-            Transforme cartões de papel em recorrência com uma experiência que o cliente realmente usa.
+            Transforme clientes em recorrência com cartões digitais que eles realmente usam.
           </h1>
-          <p class="max-w-xl text-base leading-7 text-base-content/70 sm:text-lg">
-            MyRewards ajuda estabelecimentos a vender mais retornos e fidelizar clientes com cartões digitais, progresso visível e uma jornada simples no celular.
+          <p class="text-base leading-7 text-white/70 sm:text-lg max-w-xl">
+            MyRewards ajuda estabelecimentos a fidelizar clientes com cartões digitais, progresso visível e uma jornada simples no celular — sem app extra.
           </p>
         </div>
 
@@ -27,128 +46,272 @@
           <.button
             id="landing-cta-cards"
             navigate={~p"/cards"}
-            variant="primary"
+            class="min-h-12 px-6 text-base font-semibold"
+            style="background: #d4af37; color: #0f2d24; border: none;"
           >
             Ver meus cartões
           </.button>
           <.button
             id="landing-link-establishment"
             navigate={~p"/users/log-in"}
+            class="min-h-12 px-6 text-base font-semibold border border-white/20 bg-white/10 text-white hover:bg-white/20"
           >
             Sou estabelecimento
           </.button>
         </nav>
 
+        <%!-- Trust badges --%>
         <aside
           id="landing-social-proof"
-          class="grid gap-3 pt-2 text-sm text-base-content/70 sm:grid-cols-3"
+          class="grid gap-3 sm:grid-cols-3 pt-2 text-sm"
         >
-          <article class="rounded-2xl border border-base-300 bg-base-100/80 p-4 shadow-[0_1px_0_rgba(0,0,0,.02)]">
-            <p class="font-semibold text-base-content">Sem app extra</p>
-            <p class="mt-1">O cliente abre no navegador e vê tudo por e-mail.</p>
+          <article
+            class="rounded-2xl p-4 border"
+            style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);"
+          >
+            <p class="font-semibold text-white">Sem app extra</p>
+            <p class="mt-1 text-white/60">O cliente abre no navegador e vê tudo por e-mail.</p>
           </article>
-          <article class="rounded-2xl border border-base-300 bg-base-100/80 p-4 shadow-[0_1px_0_rgba(0,0,0,.02)]">
-            <p class="font-semibold text-base-content">Assinatura simples</p>
-            <p class="mt-1">R$ 10/mês para manter o programa ativo.</p>
+          <article
+            class="rounded-2xl p-4 border"
+            style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);"
+          >
+            <p class="font-semibold text-white">Assinatura simples</p>
+            <p class="mt-1 text-white/60">R$ 10/mês para manter o programa ativo.</p>
           </article>
-          <article class="rounded-2xl border border-base-300 bg-base-100/80 p-4 shadow-[0_1px_0_rgba(0,0,0,.02)]">
-            <p class="font-semibold text-base-content">Pronto para vender</p>
-            <p class="mt-1">Programa, cartões e carimbos em um fluxo único.</p>
+          <article
+            class="rounded-2xl p-4 border"
+            style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);"
+          >
+            <p class="font-semibold text-white">Pronto para vender</p>
+            <p class="mt-1 text-white/60">Programa, cartões e carimbos em um fluxo único.</p>
           </article>
         </aside>
-      </header>
+      </div>
     </section>
 
-    <section id="landing-features" aria-labelledby="landing-features-title" class="space-y-4">
-      <h2
-        id="landing-features-title"
-        class="text-sm font-semibold uppercase tracking-[0.2em] text-base-content/60"
-      >
-        O que você entrega
-      </h2>
-      <div class="grid gap-4 lg:grid-cols-3">
-        <article class="rounded-3xl border-2 border-base-300 bg-base-100 p-5 shadow-sm transition-transform duration-200 hover:-translate-y-0.5">
-          <p class="text-sm font-semibold uppercase tracking-wide text-primary">
+    <%!-- Card preview section --%>
+    <section aria-labelledby="card-preview-title" class="space-y-6">
+      <header class="space-y-2">
+        <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">
+          Como fica para o cliente
+        </p>
+        <h2 id="card-preview-title" class="text-2xl font-bold text-base-content sm:text-3xl">
+          Cartões bonitos que transmitem confiança
+        </h2>
+        <p class="text-base-content/60 text-sm max-w-lg">
+          Cada estabelecimento tem sua identidade — com logo, nome e carimbos em destaque. O cliente sabe exatamente o que ganhou e o que falta.
+        </p>
+      </header>
+
+      <%!-- Sample card --%>
+      <div class="max-w-sm loyalty-card-animate">
+        <div
+          class="relative rounded-2xl overflow-hidden shadow-2xl"
+          style="background: linear-gradient(135deg, #1b4d3e 0%, #1e5c4a 50%, #0f3329 100%); aspect-ratio: 1.586;"
+        >
+          <div
+            class="absolute inset-0 opacity-10"
+            style="background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 24px 24px;"
+          >
+          </div>
+          <div
+            class="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-10"
+            style="background: radial-gradient(circle, white, transparent 70%);"
+          >
+          </div>
+          <header class="absolute top-4 left-4 right-4 flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style="background: linear-gradient(135deg, #d4af37, #f0d060);"
+            >
+              <span class="text-base font-black text-white">FA</span>
+            </div>
+            <div>
+              <p class="text-white font-bold text-sm">F.A Gourmet</p>
+              <p class="text-white/50 text-xs">Cartão fidelidade</p>
+            </div>
+          </header>
+          <div class="absolute left-4 right-4" style="bottom: 40px;">
+            <div class="flex gap-1.5 flex-wrap">
+              <div
+                :for={i <- 1..8}
+                class={[
+                  "w-7 h-7 rounded-full border-2 flex items-center justify-center",
+                  if(i <= 5, do: "border-[#d4af37]", else: "border-white/25")
+                ]}
+                style={
+                  if i <= 5,
+                    do: "background: #d4af37; box-shadow: 0 0 8px rgba(212,175,55,0.5);",
+                    else: ""
+                }
+              >
+                <.icon :if={i <= 5} name="hero-star-solid" class="w-3.5 h-3.5 text-white" />
+              </div>
+            </div>
+          </div>
+          <footer class="absolute left-4 right-4 bottom-3 flex items-center justify-between">
+            <p class="text-white/55 text-xs">1 refeição grátis</p>
+            <span class="text-white/50 text-xs">5 / 8 carimbos</span>
+          </footer>
+        </div>
+      </div>
+    </section>
+
+    <%!-- Features --%>
+    <section id="landing-features" aria-labelledby="landing-features-title" class="space-y-5">
+      <header>
+        <p class="text-xs font-semibold uppercase tracking-widest text-primary/70 mb-1">
+          O que você entrega
+        </p>
+        <h2 id="landing-features-title" class="text-2xl font-bold text-base-content sm:text-3xl">
+          Tudo que você precisa, nada que você não precisa
+        </h2>
+      </header>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <article class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+            <.icon name="hero-device-phone-mobile" class="w-5 h-5 text-primary" />
+          </div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-primary mb-1">
             Para clientes
           </p>
-          <h3 class="mt-2 text-lg font-semibold text-base-content">
+          <h3 class="text-base font-semibold text-base-content mb-2">
             Cartões no celular, sem perder histórico
           </h3>
-          <p class="mt-2 text-sm leading-6 text-base-content/70">
+          <p class="text-sm leading-6 text-base-content/60">
             O cliente entra com o e-mail e vê todos os cartões, progresso e recompensa em segundos.
           </p>
         </article>
 
-        <article class="rounded-3xl border-2 border-base-300 bg-base-100 p-5 shadow-sm transition-transform duration-200 hover:-translate-y-0.5">
-          <p class="text-sm font-semibold uppercase tracking-wide text-primary">
+        <article class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+            <.icon name="hero-chart-bar" class="w-5 h-5 text-primary" />
+          </div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-primary mb-1">
             Para negócios
           </p>
-          <h3 class="mt-2 text-lg font-semibold text-base-content">
+          <h3 class="text-base font-semibold text-base-content mb-2">
             Painel simples para fidelidade e operação
           </h3>
-          <p class="mt-2 text-sm leading-6 text-base-content/70">
+          <p class="text-sm leading-6 text-base-content/60">
             Cadastre clientes, ajuste o programa e adicione carimbos sem depender de planilhas ou papel.
           </p>
         </article>
 
-        <article class="rounded-3xl border-2 border-base-300 bg-base-100 p-5 shadow-sm transition-transform duration-200 hover:-translate-y-0.5">
-          <p class="text-sm font-semibold uppercase tracking-wide text-primary">Monetização</p>
-          <h3 class="mt-2 text-lg font-semibold text-base-content">
+        <article class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:col-span-2 lg:col-span-1">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+            <.icon name="hero-currency-dollar" class="w-5 h-5 text-primary" />
+          </div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-primary mb-1">
+            Monetização
+          </p>
+          <h3 class="text-base font-semibold text-base-content mb-2">
             Assinatura recorrente com valor claro
           </h3>
-          <p class="mt-2 text-sm leading-6 text-base-content/70">
-            Cobra R$ 10/mês por estabelecimento e mantenha um produto fácil de entender e vender.
+          <p class="text-sm leading-6 text-base-content/60">
+            R$ 10/mês por estabelecimento. Fácil de entender, fácil de vender.
           </p>
         </article>
       </div>
     </section>
 
-    <section class="rounded-[2rem] border-2 border-primary/20 bg-primary p-6 text-primary-content shadow-sm sm:p-8">
-      <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+    <%!-- CTA banner --%>
+    <section
+      class="rounded-[2rem] overflow-hidden border border-primary/20 shadow-sm"
+      style="background: linear-gradient(135deg, #1b4d3e 0%, #1e5c4a 100%);"
+    >
+      <div class="px-6 py-8 sm:px-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
         <div class="space-y-3">
-          <p class="text-sm font-semibold uppercase tracking-wide text-primary-content/70">
+          <p class="text-xs font-semibold uppercase tracking-widest text-white/50">
             Oferta simples
           </p>
-          <h2 class="text-2xl font-bold leading-tight sm:text-3xl">
+          <h2 class="text-2xl font-bold leading-tight text-white sm:text-3xl">
             Venda fidelização como um produto, não como uma promessa.
           </h2>
-          <p class="max-w-xl text-sm leading-7 text-primary-content/85">
+          <p class="text-sm leading-7 text-white/70 max-w-md">
             Com um fluxo enxuto, o cliente entende o valor na hora: digital, fácil de usar e com recompensa visível.
           </p>
+          <nav class="flex flex-col gap-3 sm:flex-row pt-2">
+            <.button
+              navigate={~p"/users/register"}
+              class="min-h-12 px-6 font-semibold"
+              style="background: #d4af37; color: #0f2d24; border: none;"
+            >
+              Começar grátis
+            </.button>
+          </nav>
         </div>
 
-        <div class="rounded-2xl border border-primary-content/20 bg-primary-content/10 p-5 backdrop-blur-sm">
-          <p class="text-sm font-semibold text-primary-content/80">Inclui</p>
-          <ul class="mt-3 space-y-2 text-sm text-primary-content/90">
-            <li>• Cartões digitais por e-mail</li>
-            <li>• Painel para programa e carimbos</li>
-            <li>• Cobrança recorrente por estabelecimento</li>
+        <div
+          class="rounded-2xl border p-5"
+          style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);"
+        >
+          <p class="text-sm font-semibold text-white/80 mb-3">Inclui</p>
+          <ul class="space-y-2 text-sm text-white/80">
+            <li class="flex items-center gap-2">
+              <span
+                class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                style="background: rgba(212,175,55,0.3); color: #d4af37;"
+              >
+                ✓
+              </span>
+              Cartões digitais por e-mail
+            </li>
+            <li class="flex items-center gap-2">
+              <span
+                class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                style="background: rgba(212,175,55,0.3); color: #d4af37;"
+              >
+                ✓
+              </span>
+              Painel para programa e carimbos
+            </li>
+            <li class="flex items-center gap-2">
+              <span
+                class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                style="background: rgba(212,175,55,0.3); color: #d4af37;"
+              >
+                ✓
+              </span>
+              Logo da empresa nos cartões
+            </li>
+            <li class="flex items-center gap-2">
+              <span
+                class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                style="background: rgba(212,175,55,0.3); color: #d4af37;"
+              >
+                ✓
+              </span>
+              Cobrança recorrente por estabelecimento
+            </li>
           </ul>
         </div>
       </div>
     </section>
 
+    <%!-- Testimonial --%>
     <section
       aria-labelledby="landing-testimonial-title"
-      class="grid gap-4 lg:grid-cols-[1fr_1.1fr] lg:items-center"
+      class="grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:items-center"
     >
-      <header class="space-y-2">
-        <p class="text-sm font-semibold uppercase tracking-wide text-primary">
-          Artesanal e confiável
+      <header class="space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">
+          Confiança e clareza
         </p>
         <h2 id="landing-testimonial-title" class="text-2xl font-bold text-base-content">
           Feito para parecer simples, mas vender com clareza.
         </h2>
-        <p class="text-sm leading-6 text-base-content/70">
-          A landing prioriza leitura rápida, uma hierarquia de ofertas nítida e acabamento visual mais humano, menos “software genérico”.
+        <p class="text-sm leading-6 text-base-content/60">
+          Design limpo, hierarquia clara e identidade visual que passa profissionalismo — não "software genérico".
         </p>
       </header>
 
-      <blockquote class="rounded-[2rem] border-2 border-base-300 bg-base-100 p-6 shadow-sm">
+      <blockquote class="rounded-[2rem] border border-base-300 bg-base-100 p-6 shadow-sm">
         <p class="text-lg font-medium leading-8 text-base-content">
-          “É o tipo de produto que eu consigo explicar em 30 segundos e vender no mesmo atendimento.”
+          "É o tipo de produto que eu consigo explicar em 30 segundos e vender no mesmo atendimento."
         </p>
-        <footer class="mt-4 text-sm text-base-content/70">
+        <footer class="mt-4 text-sm text-base-content/60">
           Estabelecimento local, pronto para fidelizar mais clientes.
         </footer>
       </blockquote>
