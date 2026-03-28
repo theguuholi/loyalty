@@ -57,6 +57,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLive.Form do
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
+  @impl true
   def handle_event("save", %{"loyalty_program" => loyalty_program_params}, socket) do
     save_loyalty_program(socket, socket.assigns.live_action, loyalty_program_params)
   end

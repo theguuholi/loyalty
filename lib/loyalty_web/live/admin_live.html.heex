@@ -1,0 +1,61 @@
+<Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
+  <.header>
+    {gettext("Admin Dashboard")}
+    <:subtitle>{gettext("All registered establishments")}</:subtitle>
+  </.header>
+
+  <div class="flex gap-2 my-4">
+    <.link
+      patch={~p"/admin"}
+      class={[
+        "px-3 py-1 rounded-md text-sm font-medium border transition-colors",
+        if(@filter == :all,
+          do: "bg-zinc-900 text-white border-zinc-900",
+          else: "border-zinc-300 text-zinc-600 hover:border-zinc-500"
+        )
+      ]}
+    >
+      {gettext("All")}
+    </.link>
+    <.link
+      patch={~p"/admin?filter=active"}
+      class={[
+        "px-3 py-1 rounded-md text-sm font-medium border transition-colors",
+        if(@filter == :active,
+          do: "bg-green-600 text-white border-green-600",
+          else: "border-zinc-300 text-zinc-600 hover:border-zinc-500"
+        )
+      ]}
+    >
+      {gettext("Active")}
+    </.link>
+    <.link
+      patch={~p"/admin?filter=unpaid"}
+      class={[
+        "px-3 py-1 rounded-md text-sm font-medium border transition-colors",
+        if(@filter == :unpaid,
+          do: "bg-red-600 text-white border-red-600",
+          else: "border-zinc-300 text-zinc-600 hover:border-zinc-500"
+        )
+      ]}
+    >
+      {gettext("Unpaid / Free")}
+    </.link>
+  </div>
+
+  <.table id="admin-table" rows={@rows}>
+    <:col :let={row} label={gettext("Email")}>{row.user_email}</:col>
+    <:col :let={row} label={gettext("Establishment")}>{row.name}</:col>
+    <:col :let={row} label={gettext("Plan")}>
+      <.status_badge status={row.subscription_status} />
+    </:col>
+    <:col :let={row} label={gettext("Cards")}>{row.card_count}</:col>
+    <:col :let={row} label={gettext("Registered")}>
+      {Calendar.strftime(row.inserted_at, "%d/%m/%Y")}
+    </:col>
+  </.table>
+
+  <p :if={@rows == []} class="text-center mt-8 text-zinc-500">
+    {gettext("No establishments found.")}
+  </p>
+</Layouts.app>

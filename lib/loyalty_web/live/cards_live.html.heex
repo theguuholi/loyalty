@@ -198,31 +198,27 @@
           </p>
 
           <.form id="cards-entry-form" for={@form} phx-submit="lookup">
-            <div class="flex gap-2">
-              <input
+            <div class="space-y-3">
+              <.input
                 :if={@contact_type == :email}
+                field={@form[:email]}
                 type="email"
                 id="cards-entry-email"
-                name="cards_entry[email]"
-                value={@form[:email].value || ""}
+                class="w-full text-sm px-4 py-2.5 rounded-xl border border-emerald-100 bg-green-50 text-emerald-900 outline-none min-h-11"
                 placeholder="seu@email.com"
-                class="flex-1 text-sm px-4 py-2.5 rounded-xl border outline-none min-h-11"
-                style="border-color: #d1fae5; background: #f0fdf4; color: #1b4d3e;"
               />
-              <input
+              <.input
                 :if={@contact_type == :whatsapp}
+                field={@form[:whatsapp_number]}
                 type="tel"
                 id="cards-entry-whatsapp"
-                name="cards_entry[whatsapp_number]"
-                value={@form[:whatsapp_number].value || ""}
+                class="w-full text-sm px-4 py-2.5 rounded-xl border border-emerald-100 bg-green-50 text-emerald-900 outline-none min-h-11"
                 placeholder="+5511999999999"
-                class="flex-1 text-sm px-4 py-2.5 rounded-xl border outline-none min-h-11"
-                style="border-color: #d1fae5; background: #f0fdf4; color: #1b4d3e;"
               />
               <button
                 type="submit"
                 id="cards-entry-submit"
-                class="shimmer-btn px-4 py-2.5 rounded-xl text-sm font-semibold min-h-11"
+                class="shimmer-btn w-full px-4 py-2.5 rounded-xl text-sm font-semibold min-h-11"
               >
                 Ver cartões
               </button>
