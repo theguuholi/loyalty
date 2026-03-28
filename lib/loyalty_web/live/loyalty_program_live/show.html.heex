@@ -44,7 +44,7 @@
 
     <%!-- Plan limit note --%>
     <p
-      :if={not @can_add_new_client and not @payment_issue_billing}
+      :if={not @can_add_new_client? and not @payment_issue_billing}
       class="text-sm text-base-content/70 px-1"
     >
       {gettext("New clients are limited by your plan.")}
@@ -83,7 +83,7 @@
         <.icon name="hero-users" class="w-4 h-4" /> {gettext("View clients")}
       </.link>
       <.link
-        :if={@can_add_new_client}
+        :if={@can_add_new_client?}
         navigate={~p"/establishments/#{@current_scope.establishment.id}/loyalty_cards/new"}
         class="flex-1 text-sm py-3 rounded-xl font-semibold text-center min-h-11 flex items-center justify-center gap-2"
         style="background: white; color: #1b4d3e; border: 1px solid #d1fae5;"

@@ -36,7 +36,12 @@ defmodule Loyalty.WhatsAppTest do
         plug: {Req.Test, __MODULE__}
       )
 
-      on_exit(fn -> Application.put_env(:loyalty, Loyalty.WhatsApp, prev) end)
+      on_exit(fn ->
+        if is_nil(prev),
+          do: Application.delete_env(:loyalty, Loyalty.WhatsApp),
+          else: Application.put_env(:loyalty, Loyalty.WhatsApp, prev)
+      end)
+
       :ok
     end
 

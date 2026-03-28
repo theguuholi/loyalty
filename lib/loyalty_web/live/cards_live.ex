@@ -130,16 +130,4 @@ defmodule LoyaltyWeb.CardsLive do
   defp valid_whatsapp?(number) do
     Regex.match?(~r/^\+[1-9]\d{7,14}$/, number)
   end
-
-  defp card_gradient(id) do
-    gradients = [
-      "background: linear-gradient(135deg, #1b4d3e 0%, #1e5c4a 50%, #0f3329 100%)",
-      "background: linear-gradient(135deg, #1b3a4d 0%, #1e4d5c 50%, #0f2533 100%)",
-      "background: linear-gradient(135deg, #3d1a4d 0%, #4d1e5c 50%, #250f33 100%)",
-      "background: linear-gradient(135deg, #3d2a1b 0%, #5c3a1e 50%, #2d1a0f 100%)",
-      "background: linear-gradient(135deg, #1b3d2a 0%, #1e5c3a 50%, #0f2d1a 100%)"
-    ]
-
-    Enum.at(gradients, :erlang.phash2(id, length(gradients)))
-  end
 end

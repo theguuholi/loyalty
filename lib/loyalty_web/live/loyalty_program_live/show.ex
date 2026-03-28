@@ -20,7 +20,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLive.Show do
      socket
      |> assign(:page_title, loyalty_program.name)
      |> assign(:loyalty_program, loyalty_program)
-     |> assign(:can_add_new_client, billing.can_add_new_client)
+     |> assign(:can_add_new_client?, billing.can_add_new_client?)
      |> assign(:payment_issue_billing, billing.payment_issue)}
   end
 
@@ -57,7 +57,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLive.Show do
 
     {:noreply,
      socket
-     |> assign(:can_add_new_client, billing.can_add_new_client)
+     |> assign(:can_add_new_client?, billing.can_add_new_client?)
      |> assign(:payment_issue_billing, billing.payment_issue)}
   end
 
@@ -69,6 +69,6 @@ defmodule LoyaltyWeb.LoyaltyProgramLive.Show do
   defp billing_assigns(%Establishment{} = establishment) do
     can_add = Establishments.check_new_loyalty_card_allowed(establishment) == :ok
     payment_issue = establishment.subscription_status in ["past_due", "unpaid"]
-    %{can_add_new_client: can_add, payment_issue: payment_issue}
+    %{can_add_new_client?: can_add, payment_issue: payment_issue}
   end
 end

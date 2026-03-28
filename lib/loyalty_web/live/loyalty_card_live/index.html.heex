@@ -14,7 +14,7 @@
             <.icon name="hero-arrow-left" class="w-4 h-4" /> {gettext("Back")}
           </.link>
           <.link
-            :if={@can_add_new_client}
+            :if={@can_add_new_client?}
             navigate={~p"/establishments/#{@current_scope.establishment.id}/loyalty_cards/new"}
             class="btn btn-primary btn-sm gap-1 min-h-9 ml-auto"
           >
@@ -32,7 +32,7 @@
         <p class="text-sm text-base-content/60 mb-6">
           {gettext("Register a client by email to create their first loyalty card.")}
         </p>
-        <%= if @can_add_new_client do %>
+        <%= if @can_add_new_client? do %>
           <.link
             id="loyalty-cards-empty-cta"
             navigate={~p"/establishments/#{@current_scope.establishment.id}/loyalty_cards/new"}
