@@ -180,12 +180,12 @@
           <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Create program")}
         </.button>
 
-        <%!-- View clients (program page) — only when program exists --%>
+        <%!-- View clients — only when program exists --%>
         <.button
           :if={@loyalty_program}
           id="dashboard-program-and-clients-link"
           variant="primary"
-          navigate={~p"/establishments/#{@establishment}/loyalty_programs/#{@loyalty_program}"}
+          navigate={~p"/establishments/#{@establishment}/loyalty_cards"}
           class="min-h-11 transition-transform hover:scale-[1.02] active:scale-[0.98]"
         >
           <.icon name="hero-users" class="w-4 h-4" /> {gettext("View clients")}

@@ -109,15 +109,51 @@
 /* This file is for your main application CSS */
 
 @keyframes card-enter {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes stamp-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  70%  { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
 .loyalty-card-animate {
-  animation: card-enter 0.4s ease-out both;
+  animation: card-enter 0.5s ease-out both;
 }
 .loyalty-card-animate:nth-child(1) { animation-delay: 0ms; }
-.loyalty-card-animate:nth-child(2) { animation-delay: 80ms; }
-.loyalty-card-animate:nth-child(3) { animation-delay: 160ms; }
-.loyalty-card-animate:nth-child(4) { animation-delay: 240ms; }
-.loyalty-card-animate:nth-child(5) { animation-delay: 320ms; }
-@media (prefers-reduced-motion: reduce) { .loyalty-card-animate { animation: none; } }
+.loyalty-card-animate:nth-child(2) { animation-delay: 120ms; }
+.loyalty-card-animate:nth-child(3) { animation-delay: 240ms; }
+
+.stamp-filled { animation: stamp-pop 0.35s cubic-bezier(.36,.07,.19,.97) both; }
+.stamp-filled:nth-child(1)  { animation-delay: 300ms; }
+.stamp-filled:nth-child(2)  { animation-delay: 380ms; }
+.stamp-filled:nth-child(3)  { animation-delay: 460ms; }
+.stamp-filled:nth-child(4)  { animation-delay: 540ms; }
+.stamp-filled:nth-child(5)  { animation-delay: 620ms; }
+.stamp-filled:nth-child(6)  { animation-delay: 700ms; }
+.stamp-filled:nth-child(7)  { animation-delay: 780ms; }
+.stamp-filled:nth-child(8)  { animation-delay: 860ms; }
+.stamp-filled:nth-child(9)  { animation-delay: 940ms; }
+.stamp-filled:nth-child(10) { animation-delay: 1020ms; }
+.stamp-filled:nth-child(11) { animation-delay: 1100ms; }
+.stamp-filled:nth-child(12) { animation-delay: 1180ms; }
+
+.shimmer-btn {
+  background: linear-gradient(90deg, #1b4d3e 0%, #2d7a5e 40%, #1b4d3e 60%, #1b4d3e 100%);
+  background-size: 200% auto;
+  animation: shimmer 2.5s linear infinite;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loyalty-card-animate { animation: none; }
+  .stamp-filled { animation: none; }
+  .shimmer-btn { animation: none; background: #1b4d3e; }
+}

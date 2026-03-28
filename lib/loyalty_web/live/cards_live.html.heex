@@ -42,8 +42,8 @@
         <ul :if={@cards != []} id="cards-list" class="space-y-4">
           <li :for={card <- @cards} id={"card-item-#{card.id}"} class="loyalty-card-animate">
             <article
-              class="relative rounded-2xl overflow-hidden shadow-xl"
-              style="background: linear-gradient(135deg, #1b4d3e 0%, #1e5c4a 50%, #0f3329 100%); aspect-ratio: 1.586;"
+              class="relative rounded-2xl overflow-hidden shadow-2xl"
+              style={"#{card_gradient(card.establishment_id)}; aspect-ratio: 1.586;"}
             >
               <%!-- Subtle dot pattern --%>
               <div
@@ -53,7 +53,7 @@
               </div>
               <%!-- Glow --%>
               <div
-                class="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-10"
+                class="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-10"
                 style="background: radial-gradient(circle, white, transparent 70%);"
               >
               </div>
@@ -64,10 +64,13 @@
                   <img
                     src={card.establishment.logo_url}
                     alt={card.establishment.name}
-                    class="w-10 h-10 rounded-xl object-cover ring-2 ring-white/20 flex-shrink-0"
+                    class="w-11 h-11 rounded-xl object-cover ring-2 ring-white/20 flex-shrink-0"
                   />
                 <% else %>
-                  <div class="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
+                  <div
+                    class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);"
+                  >
                     <.icon name="hero-building-storefront" class="w-5 h-5 text-white/60" />
                   </div>
                 <% end %>
@@ -83,7 +86,7 @@
                 >
                   <span
                     class="text-xs font-bold px-2 py-0.5 rounded-full"
-                    style="background: rgba(212,175,55,0.2); color: #d4af37; border: 1px solid rgba(212,175,55,0.35);"
+                    style="background: rgba(212,175,55,0.2); color: #d4af37; border: 1px solid rgba(212,175,55,0.4);"
                   >
                     ✓ Completo
                   </span>
@@ -93,20 +96,18 @@
               <%!-- Stamps --%>
               <div class="absolute left-4 right-4" style="bottom: 40px;">
                 <%= if card.stamps_required <= 12 do %>
-                  <div class="flex flex-wrap gap-1.5">
+                  <div class="flex flex-wrap gap-2">
                     <div
                       :for={i <- 1..card.stamps_required}
                       class={[
-                        "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all",
-                        if(i <= (card.stamps_current || 0),
-                          do: "border-[#d4af37]",
-                          else: "border-white/25 bg-transparent"
-                        )
+                        "w-8 h-8 rounded-full border-2 flex items-center justify-center",
+                        if(i <= (card.stamps_current || 0), do: "stamp-filled", else: "")
                       ]}
                       style={
                         if i <= (card.stamps_current || 0),
-                          do: "background: #d4af37; box-shadow: 0 0 8px rgba(212,175,55,0.55);",
-                          else: ""
+                          do:
+                            "background: #d4af37; box-shadow: 0 0 12px rgba(212,175,55,0.7); border-color: #d4af37;",
+                          else: "border-color: rgba(255,255,255,0.25); background: transparent;"
                       }
                     >
                       <.icon
@@ -134,7 +135,7 @@
 
               <%!-- Reward --%>
               <footer class="absolute left-4 right-4 bottom-3 flex items-center justify-between">
-                <p class="text-white/55 text-xs truncate">
+                <p class="text-white/60 text-xs truncate">
                   {card.loyalty_program.reward_description}
                 </p>
                 <span
@@ -152,71 +153,82 @@
     <% else %>
       <%!-- Lookup form --%>
       <section aria-label="Buscar cartões">
-        <%!-- Contact type toggle --%>
         <div
-          class="flex gap-2 mb-5 p-1 rounded-xl bg-base-200/60"
-          role="group"
-          aria-label="Tipo de contato"
+          class="rounded-2xl p-5 shadow-sm"
+          style="background: white; border: 1px solid rgba(255,255,255,0.8);"
         >
-          <button
-            type="button"
-            id="lookup-type-email"
-            phx-click="set_contact_type"
-            phx-value-type="email"
-            class={[
-              "flex-1 text-sm font-semibold py-2.5 rounded-lg transition-all",
-              if(@contact_type == :email,
-                do: "bg-base-100 text-primary shadow-sm",
-                else: "text-base-content/60 hover:text-base-content"
-              )
-            ]}
-          >
-            E-mail
-          </button>
-          <button
-            type="button"
-            id="lookup-type-whatsapp"
-            phx-click="set_contact_type"
-            phx-value-type="whatsapp"
-            class={[
-              "flex-1 text-sm font-semibold py-2.5 rounded-lg transition-all",
-              if(@contact_type == :whatsapp,
-                do: "bg-base-100 text-primary shadow-sm",
-                else: "text-base-content/60 hover:text-base-content"
-              )
-            ]}
-          >
-            WhatsApp
-          </button>
+          <p class="text-sm font-semibold mb-3" style="color: #1b4d3e;">Buscar cartões</p>
+
+          <%!-- Contact type toggle --%>
+          <div class="flex gap-2 mb-4" role="group" aria-label="Tipo de contato">
+            <button
+              type="button"
+              id="lookup-type-email"
+              phx-click="set_contact_type"
+              phx-value-type="email"
+              class="flex-1 text-sm font-semibold py-2 rounded-xl"
+              style={
+                if @contact_type == :email,
+                  do: "background: #1b4d3e; color: white;",
+                  else: "background: white; color: #6b7280; border: 1px solid #e5e7eb;"
+              }
+            >
+              E-mail
+            </button>
+            <button
+              type="button"
+              id="lookup-type-whatsapp"
+              phx-click="set_contact_type"
+              phx-value-type="whatsapp"
+              class="flex-1 text-sm font-semibold py-2 rounded-xl"
+              style={
+                if @contact_type == :whatsapp,
+                  do: "background: #1b4d3e; color: white;",
+                  else: "background: white; color: #6b7280; border: 1px solid #e5e7eb;"
+              }
+            >
+              WhatsApp
+            </button>
+          </div>
+
+          <p class="text-sm text-base-content/60 mb-3">
+            {if @contact_type == :email,
+              do: gettext("Enter your email to see all your loyalty cards."),
+              else: gettext("Enter your WhatsApp number to see all your loyalty cards.")}
+          </p>
+
+          <.form id="cards-entry-form" for={@form} phx-submit="lookup">
+            <div class="flex gap-2">
+              <input
+                :if={@contact_type == :email}
+                type="email"
+                id="cards-entry-email"
+                name="cards_entry[email]"
+                value={@form[:email].value || ""}
+                placeholder="seu@email.com"
+                class="flex-1 text-sm px-4 py-2.5 rounded-xl border outline-none min-h-11"
+                style="border-color: #d1fae5; background: #f0fdf4; color: #1b4d3e;"
+              />
+              <input
+                :if={@contact_type == :whatsapp}
+                type="tel"
+                id="cards-entry-whatsapp"
+                name="cards_entry[whatsapp_number]"
+                value={@form[:whatsapp_number].value || ""}
+                placeholder="+5511999999999"
+                class="flex-1 text-sm px-4 py-2.5 rounded-xl border outline-none min-h-11"
+                style="border-color: #d1fae5; background: #f0fdf4; color: #1b4d3e;"
+              />
+              <button
+                type="submit"
+                id="cards-entry-submit"
+                class="shimmer-btn px-4 py-2.5 rounded-xl text-sm font-semibold min-h-11"
+              >
+                Ver cartões
+              </button>
+            </div>
+          </.form>
         </div>
-
-        <p class="text-sm text-base-content/60 mb-5">
-          {if @contact_type == :email,
-            do: "Digite seu e-mail para ver todos os cartões de fidelidade.",
-            else: "Digite seu número de WhatsApp para ver todos os cartões de fidelidade."}
-        </p>
-
-        <.form id="cards-entry-form" for={@form} phx-submit="lookup" class="space-y-4">
-          <.input
-            :if={@contact_type == :email}
-            id="cards-entry-email"
-            field={@form[:email]}
-            type="email"
-            label="E-mail"
-            placeholder="seu@email.com"
-          />
-          <.input
-            :if={@contact_type == :whatsapp}
-            id="cards-entry-whatsapp"
-            field={@form[:whatsapp_number]}
-            type="tel"
-            label="WhatsApp"
-            placeholder="+5511999999999"
-          />
-          <button type="submit" id="cards-entry-submit" class="btn btn-primary w-full min-h-11">
-            Ver cartões
-          </button>
-        </.form>
       </section>
     <% end %>
   </main>

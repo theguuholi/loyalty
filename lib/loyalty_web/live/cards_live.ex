@@ -69,147 +69,6 @@ defmodule LoyaltyWeb.CardsLive do
   end
 
   @impl true
-  def render(assigns) do
-    ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
-      <div class="space-y-6">
-        <h1 class="text-xl font-semibold text-[#1a1d21]">{gettext("My cards")}</h1>
-
-        <%= if @show_list? do %>
-          <.list_view identifier={@identifier} cards={@cards} contact_type={@contact_type} />
-        <% else %>
-          <.entry_form form={@form} contact_type={@contact_type} />
-        <% end %>
-      </div>
-    </Layouts.app>
-    """
-  end
-
-  defp entry_form(assigns) do
-    ~H"""
-    <div>
-      <%!-- Contact type toggle --%>
-      <div class="flex gap-2 mb-4">
-        <button
-          type="button"
-          id="lookup-type-email"
-          phx-click="set_contact_type"
-          phx-value-type="email"
-          class={[
-            "btn btn-sm",
-            if(@contact_type == :email, do: "btn-primary", else: "btn-ghost border border-base-300")
-          ]}
-        >
-          E-mail
-        </button>
-        <button
-          type="button"
-          id="lookup-type-whatsapp"
-          phx-click="set_contact_type"
-          phx-value-type="whatsapp"
-          class={[
-            "btn btn-sm",
-            if(@contact_type == :whatsapp,
-              do: "btn-primary",
-              else: "btn-ghost border border-base-300"
-            )
-          ]}
-        >
-          WhatsApp
-        </button>
-      </div>
-
-      <p class="text-[#6b7280] mb-4">
-        <%= if @contact_type == :email do %>
-          {gettext("Enter your email to see all your loyalty cards.")}
-        <% else %>
-          {gettext("Enter your WhatsApp number to see all your loyalty cards.")}
-        <% end %>
-      </p>
-
-      <.form
-        id="cards-entry-form"
-        for={@form}
-        phx-submit="lookup"
-        class="space-y-4"
-      >
-        <%= if @contact_type == :email do %>
-          <.input
-            id="cards-entry-email"
-            field={@form[:email]}
-            type="email"
-            label="E-mail"
-            placeholder="seu@email.com"
-          />
-        <% else %>
-          <.input
-            id="cards-entry-whatsapp"
-            field={@form[:whatsapp_number]}
-            type="tel"
-            label="WhatsApp"
-            placeholder="+5511999999999"
-          />
-        <% end %>
-        <button type="submit" id="cards-entry-submit" class="btn btn-primary w-full max-w-xs">
-          {gettext("View cards")}
-        </button>
-      </.form>
-    </div>
-    """
-  end
-
-  defp list_view(assigns) do
-    ~H"""
-    <div>
-      <p class="text-[#6b7280] mb-4">{@identifier}</p>
-      <.link
-        id="cards-change-contact-link"
-        patch={~p"/cards"}
-        class="text-sm text-[#1b4d3e] hover:underline mb-4 inline-block"
-      >
-        {if @contact_type == :email, do: gettext("Change email"), else: gettext("Change number")}
-      </.link>
-
-      <%= if @cards == [] do %>
-        <p id="cards-empty-message" class="text-[#6b7280]">
-          {gettext("No cards found.")}
-        </p>
-      <% else %>
-        <div id="cards-list" class="space-y-4">
-          <div
-            :for={card <- @cards}
-            id={"card-item-#{card.id}"}
-            class="rounded-xl border-2 border-[#e2e5e8] bg-white p-4 shadow-sm"
-          >
-            <p id="card-establishment" class="font-semibold text-[#1a1d21]">
-              {card.establishment.name}
-            </p>
-            <div id="card-progress" class="mt-2 flex items-center gap-2">
-              <div class="h-2 flex-1 rounded-full bg-[#eef0f2] overflow-hidden">
-                <div
-                  class="h-full rounded-full bg-[#1b4d3e] transition-all"
-                  style={"width: #{min(100, div((card.stamps_current || 0) * 100, max(1, card.stamps_required)))}%"}
-                >
-                </div>
-              </div>
-              <span class="text-sm text-[#6b7280]">
-                {card.stamps_current || 0} {gettext("of")} {card.stamps_required} {gettext("stamps")}
-              </span>
-            </div>
-            <p id="card-reward" class="mt-2 text-sm text-[#40916c]">
-              {card.loyalty_program.reward_description}
-              <%= if (card.stamps_current || 0) >= card.stamps_required do %>
-                — {gettext("ready to use!")}
-              <% end %>
-            </p>
-          </div>
-        </div>
-      <% end %>
-    </div>
-    """
-  end
-
-  @impl true
   def handle_event("set_contact_type", %{"type" => type}, socket) do
     contact_type = if type == "whatsapp", do: :whatsapp, else: :email
     form_key = if contact_type == :whatsapp, do: "whatsapp_number", else: "email"
@@ -227,16 +86,6 @@ defmodule LoyaltyWeb.CardsLive do
       :email -> lookup_by_email(socket, entry)
       :whatsapp -> lookup_by_whatsapp(socket, entry)
     end
-  end
-
-  defp assign_reset(socket, contact_type) do
-    form_key = if contact_type == :whatsapp, do: "whatsapp_number", else: "email"
-
-    socket
-    |> assign(:identifier, nil)
-    |> assign(:cards, [])
-    |> assign(:show_list?, false)
-    |> assign(:form, to_form(%{form_key => ""}, as: :cards_entry))
   end
 
   defp lookup_by_email(socket, entry) do
@@ -280,5 +129,17 @@ defmodule LoyaltyWeb.CardsLive do
 
   defp valid_whatsapp?(number) do
     Regex.match?(~r/^\+[1-9]\d{7,14}$/, number)
+  end
+
+  defp card_gradient(id) do
+    gradients = [
+      "background: linear-gradient(135deg, #1b4d3e 0%, #1e5c4a 50%, #0f3329 100%)",
+      "background: linear-gradient(135deg, #1b3a4d 0%, #1e4d5c 50%, #0f2533 100%)",
+      "background: linear-gradient(135deg, #3d1a4d 0%, #4d1e5c 50%, #250f33 100%)",
+      "background: linear-gradient(135deg, #3d2a1b 0%, #5c3a1e 50%, #2d1a0f 100%)",
+      "background: linear-gradient(135deg, #1b3d2a 0%, #1e5c3a 50%, #0f2d1a 100%)"
+    ]
+
+    Enum.at(gradients, :erlang.phash2(id, length(gradients)))
   end
 end

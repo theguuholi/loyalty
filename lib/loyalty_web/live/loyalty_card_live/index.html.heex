@@ -1,0 +1,206 @@
+<Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
+  <main class="mx-auto max-w-md px-4 py-6 space-y-5">
+    <header>
+      <div class="rounded-2xl overflow-hidden shadow-sm border border-base-300">
+        <div class="p-5" style="background: linear-gradient(135deg, #1b4d3e 0%, #1e5c4a 100%);">
+          <h1 class="text-xl font-bold text-white">{gettext("Clients and cards")}</h1>
+          <p class="text-white/70 text-sm mt-1">{@current_scope.establishment.name}</p>
+        </div>
+        <div class="px-5 py-3 bg-base-100 border-t border-base-300 flex flex-wrap gap-2">
+          <.link
+            navigate={~p"/establishments/#{@current_scope.establishment.id}"}
+            class="btn btn-ghost btn-sm gap-1 min-h-9"
+          >
+            <.icon name="hero-arrow-left" class="w-4 h-4" /> {gettext("Back")}
+          </.link>
+          <.link
+            :if={@can_add_new_client}
+            navigate={~p"/establishments/#{@current_scope.establishment.id}/loyalty_cards/new"}
+            class="btn btn-primary btn-sm gap-1 min-h-9 ml-auto"
+          >
+            <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Register client")}
+          </.link>
+        </div>
+      </div>
+    </header>
+
+    <%= if @cards_empty? do %>
+      <div class="rounded-2xl border border-base-300 bg-base-100 p-10 text-center shadow-sm">
+        <p id="loyalty-cards-empty-message" class="font-medium text-base-content/70 mb-1">
+          {gettext("No cards yet.")}
+        </p>
+        <p class="text-sm text-base-content/60 mb-6">
+          {gettext("Register a client by email to create their first loyalty card.")}
+        </p>
+        <%= if @can_add_new_client do %>
+          <.link
+            id="loyalty-cards-empty-cta"
+            navigate={~p"/establishments/#{@current_scope.establishment.id}/loyalty_cards/new"}
+            class="btn btn-primary btn-sm gap-1"
+          >
+            <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Register first client")}
+          </.link>
+        <% else %>
+          <p class="text-sm text-base-content/60">
+            {gettext(
+              "You cannot register new clients until you subscribe or fix billing. Open your establishment dashboard."
+            )}
+          </p>
+        <% end %>
+      </div>
+    <% else %>
+      <section>
+        <p class="text-sm text-base-content/60 mb-4">
+          {gettext(
+            "Click \"+ 1 stamp\" when the client earns a stamp. Edit to change progress or delete to remove the card."
+          )}
+        </p>
+        <div id="loyalty_cards" phx-update="stream" class="space-y-4">
+          <div
+            :for={{id, loyalty_card} <- @streams.loyalty_cards}
+            id={id}
+            class="loyalty-card-animate"
+          >
+            <%!-- Loyalty card visual --%>
+            <article
+              class="relative rounded-2xl overflow-hidden shadow-2xl"
+              style={"#{card_gradient(loyalty_card.id)}; aspect-ratio: 1.586;"}
+            >
+              <%!-- Dot pattern --%>
+              <div
+                class="absolute inset-0 opacity-10"
+                style="background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 24px 24px;"
+              >
+              </div>
+              <%!-- Glow --%>
+              <div
+                class="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-10"
+                style="background: radial-gradient(circle, white, transparent 70%);"
+              >
+              </div>
+
+              <%!-- Establishment logo + client identifier --%>
+              <header class="absolute top-4 left-4 right-4 flex items-center gap-3">
+                <%= if @current_scope.establishment.logo_url do %>
+                  <img
+                    src={@current_scope.establishment.logo_url}
+                    alt={@current_scope.establishment.name}
+                    class="w-11 h-11 rounded-xl object-cover ring-2 ring-white/20 flex-shrink-0"
+                  />
+                <% else %>
+                  <div
+                    class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);"
+                  >
+                    <.icon name="hero-building-storefront" class="w-5 h-5 text-white/60" />
+                  </div>
+                <% end %>
+                <div class="min-w-0">
+                  <p class="text-white font-bold text-sm leading-tight truncate">
+                    {loyalty_card.customer.email || loyalty_card.customer.whatsapp_number}
+                  </p>
+                  <p class="text-white/50 text-xs">Cartão fidelidade</p>
+                </div>
+                <div
+                  :if={(loyalty_card.stamps_current || 0) >= loyalty_card.stamps_required}
+                  class="ml-auto flex-shrink-0"
+                >
+                  <span
+                    class="text-xs font-bold px-2 py-0.5 rounded-full"
+                    style="background: rgba(212,175,55,0.2); color: #d4af37; border: 1px solid rgba(212,175,55,0.4);"
+                  >
+                    ✓ Completo
+                  </span>
+                </div>
+              </header>
+
+              <%!-- Stamps --%>
+              <div class="absolute left-4 right-4" style="bottom: 40px;">
+                <%= if loyalty_card.stamps_required <= 12 do %>
+                  <div class="flex flex-wrap gap-2">
+                    <div
+                      :for={i <- 1..loyalty_card.stamps_required}
+                      class={[
+                        "w-8 h-8 rounded-full border-2 flex items-center justify-center",
+                        if(i <= (loyalty_card.stamps_current || 0), do: "stamp-filled", else: "")
+                      ]}
+                      style={
+                        if i <= (loyalty_card.stamps_current || 0),
+                          do:
+                            "background: #d4af37; box-shadow: 0 0 12px rgba(212,175,55,0.7); border-color: #d4af37;",
+                          else: "border-color: rgba(255,255,255,0.25); background: transparent;"
+                      }
+                    >
+                      <.icon
+                        :if={i <= (loyalty_card.stamps_current || 0)}
+                        name="hero-star-solid"
+                        class="w-3.5 h-3.5 text-white"
+                      />
+                    </div>
+                  </div>
+                <% else %>
+                  <div class="flex items-center gap-2">
+                    <div class="flex-1 h-2 rounded-full bg-white/20 overflow-hidden">
+                      <div
+                        class="h-full rounded-full transition-all"
+                        style={"width: #{progress_pct(loyalty_card)}%; background: #d4af37;"}
+                      >
+                      </div>
+                    </div>
+                    <span class="text-white/70 text-sm font-medium whitespace-nowrap">
+                      {loyalty_card.stamps_current || 0}/{loyalty_card.stamps_required}
+                    </span>
+                  </div>
+                <% end %>
+              </div>
+
+              <%!-- Reward --%>
+              <footer class="absolute left-4 right-4 bottom-3 flex items-center justify-between">
+                <p class="text-white/60 text-xs truncate">
+                  {loyalty_card.loyalty_program.reward_description}
+                </p>
+                <span
+                  :if={(loyalty_card.stamps_current || 0) >= loyalty_card.stamps_required}
+                  class="text-xs font-bold whitespace-nowrap ml-2"
+                  style="color: #d4af37;"
+                >
+                  ✓ {gettext("Reward ready!")}
+                </span>
+              </footer>
+            </article>
+
+            <%!-- Action buttons below the card --%>
+            <div class="flex gap-2 mt-2">
+              <button
+                id={"add-stamp-button-#{id}"}
+                type="button"
+                phx-click="add_stamp"
+                phx-value-id={loyalty_card.id}
+                class="flex-1 shimmer-btn text-sm py-2.5 rounded-xl font-semibold min-h-11"
+              >
+                + 1 {gettext("stamp")}
+              </button>
+              <.link
+                navigate={
+                  ~p"/establishments/#{@current_scope.establishment.id}/loyalty_cards/#{loyalty_card}/edit"
+                }
+                class="px-4 py-2.5 rounded-xl text-sm font-medium min-h-11 flex items-center"
+                style="border: 1px solid #e5e7eb; color: #6b7280; background: white;"
+              >
+                {gettext("Edit")}
+              </.link>
+              <.link
+                phx-click={JS.push("delete", value: %{id: loyalty_card.id}) |> hide("##{id}")}
+                data-confirm={gettext("Are you sure?")}
+                class="px-4 py-2.5 rounded-xl text-sm font-medium min-h-11 flex items-center"
+                style="border: 1px solid rgba(239,68,68,0.3); color: #ef4444; background: white;"
+              >
+                {gettext("Delete")}
+              </.link>
+            </div>
+          </div>
+        </div>
+      </section>
+    <% end %>
+  </main>
+</Layouts.app>

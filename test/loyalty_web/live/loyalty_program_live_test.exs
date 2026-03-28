@@ -2,7 +2,7 @@ defmodule LoyaltyWeb.LoyaltyProgramLiveTest do
   use LoyaltyWeb.ConnCase
 
   import Phoenix.LiveViewTest
-  import Loyalty.{LoyaltyCardsFixtures, LoyaltyProgramsFixtures}
+  import Loyalty.LoyaltyProgramsFixtures
 
   alias Loyalty.Repo
 
@@ -133,8 +133,8 @@ defmodule LoyaltyWeb.LoyaltyProgramLiveTest do
           ~p"/establishments/#{scope.establishment.id}/loyalty_programs/#{loyalty_program}"
         )
 
-      assert html =~ "Clients and cards"
       assert html =~ loyalty_program.name
+      assert html =~ loyalty_program.reward_description
     end
 
     test "shows payment issue when establishment is past_due", %{
@@ -154,54 +154,22 @@ defmodule LoyaltyWeb.LoyaltyProgramLiveTest do
         )
 
       assert html =~ loyalty_program.name
-      assert html =~ "Payment issue" or html =~ "pagamento" or html =~ "Problema"
+      assert html =~ "Payment issue"
       assert has_element?(show_live, "a.link-primary")
     end
 
-    test "add_stamp shows success flash", %{
+    test "links to view clients page", %{
       conn: conn,
       loyalty_program: loyalty_program,
       scope: scope
     } do
-      _card = loyalty_card_fixture(scope)
-
       {:ok, show_live, _html} =
         live(
           conn,
           ~p"/establishments/#{scope.establishment.id}/loyalty_programs/#{loyalty_program}"
         )
 
-      show_live
-      |> element("button[phx-click=add_stamp]")
-      |> render_click()
-
-      html = render(show_live)
-      assert html =~ "Stamp" or html =~ "Carimbo"
-    end
-
-    test "delete removes card from stream", %{
-      conn: conn,
-      loyalty_program: loyalty_program,
-      scope: scope
-    } do
-      card =
-        scope
-        |> loyalty_card_fixture()
-        |> Repo.preload(:customer)
-
-      {:ok, show_live, _html} =
-        live(
-          conn,
-          ~p"/establishments/#{scope.establishment.id}/loyalty_programs/#{loyalty_program}"
-        )
-
-      assert render(show_live) =~ card.customer.email
-
-      show_live
-      |> element("a", "Delete")
-      |> render_click()
-
-      refute render(show_live) =~ card.customer.email
+      assert has_element?(show_live, "a", "View clients")
     end
 
     test "updates loyalty_program and returns to show", %{

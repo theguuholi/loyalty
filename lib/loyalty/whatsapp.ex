@@ -42,15 +42,20 @@ defmodule Loyalty.WhatsApp do
       :ok
     else
       url = "https://api.twilio.com/2010-04-01/Accounts/#{account_sid}/Messages.json"
+      extra = Keyword.take(config, [:plug])
 
       result =
-        Req.post(url,
-          auth: {account_sid, auth_token},
-          form: [
-            From: "whatsapp:#{from_number}",
-            To: "whatsapp:#{to_number}",
-            Body: body
-          ]
+        Req.post(
+          url,
+          extra ++
+            [
+              auth: {:basic, "#{account_sid}:#{auth_token}"},
+              form: [
+                From: "whatsapp:#{from_number}",
+                To: "whatsapp:#{to_number}",
+                Body: body
+              ]
+            ]
         )
 
       case result do
