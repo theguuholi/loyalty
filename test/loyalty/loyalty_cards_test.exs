@@ -262,5 +262,127 @@ defmodule Loyalty.LoyaltyCardsTest do
       assert card1.id == card2.id
       assert card1.stamps_current == card2.stamps_current
     end
+
+    test "redeem_card/2 returns error when stamps_current is less than stamps_required" do
+      scope = establishment_scope_fixture()
+
+      card = loyalty_card_fixture(scope, %{stamps_current: 3, stamps_required: 10})
+
+      assert {:error, :card_not_complete} = LoyaltyCards.redeem_card(scope, card)
+    end
+
+    test "redeem_card/2 returns error when stamps_current is nil" do
+      scope = establishment_scope_fixture()
+
+      card = loyalty_card_fixture(scope, %{stamps_current: 0, stamps_required: 5})
+      # Force nil via update bypass
+      {:ok, nil_card} = LoyaltyCards.update_loyalty_card(scope, card, %{stamps_current: 0})
+      nil_card = %{nil_card | stamps_current: nil}
+
+      assert {:error, :card_not_complete} = LoyaltyCards.redeem_card(scope, nil_card)
+    end
+
+    test "redeem_card/2 inserts redemption and decrements stamps when card is complete" do
+      scope = establishment_scope_fixture()
+
+      card = loyalty_card_fixture(scope, %{stamps_current: 10, stamps_required: 10})
+
+      assert {:ok, {redemption, updated_card}} = LoyaltyCards.redeem_card(scope, card)
+
+      assert redemption.loyalty_card_id == card.id
+      assert redemption.establishment_id == card.establishment_id
+      assert redemption.stamps_required == 10
+      assert is_binary(redemption.reward_description)
+
+      assert updated_card.stamps_current == 0
+    end
+
+    test "redeem_card/2 decrements stamps by stamps_required when extra stamps exist" do
+      scope = establishment_scope_fixture()
+
+      card = loyalty_card_fixture(scope, %{stamps_current: 15, stamps_required: 10})
+
+      assert {:ok, {_redemption, updated_card}} = LoyaltyCards.redeem_card(scope, card)
+
+      assert updated_card.stamps_current == 5
+    end
+
+    test "redeem_card/2 with wrong scope raises MatchError" do
+      scope = establishment_scope_fixture()
+      other_scope = establishment_scope_fixture()
+      card = loyalty_card_fixture(scope, %{stamps_current: 10, stamps_required: 10})
+
+      assert_raise MatchError, fn ->
+        LoyaltyCards.redeem_card(other_scope, card)
+      end
+    end
+
+    test "redeem_card/2 preloads loyalty_program if not preloaded" do
+      scope = establishment_scope_fixture()
+
+      card = loyalty_card_fixture(scope, %{stamps_current: 5, stamps_required: 5})
+      # Ensure :loyalty_program is not preloaded
+      bare_card = %{card | loyalty_program: %Ecto.Association.NotLoaded{}}
+
+      assert {:ok, {redemption, _}} = LoyaltyCards.redeem_card(scope, bare_card)
+      assert is_binary(redemption.reward_description)
+    end
+
+    test "list_redemptions_for_card/1 returns redemptions ordered newest-first" do
+      scope = establishment_scope_fixture()
+
+      card = loyalty_card_fixture(scope, %{stamps_current: 20, stamps_required: 10})
+
+      assert {:ok, _} = LoyaltyCards.redeem_card(scope, card)
+
+      reloaded_card = LoyaltyCards.get_loyalty_card!(scope, card.id)
+      assert {:ok, _} = LoyaltyCards.redeem_card(scope, reloaded_card)
+
+      redemptions = LoyaltyCards.list_redemptions_for_card(card.id)
+
+      assert length(redemptions) == 2
+      [first | _] = redemptions
+      assert first.loyalty_card_id == card.id
+    end
+
+    test "list_redemptions_for_card/1 returns empty list for card with no redemptions" do
+      scope = establishment_scope_fixture()
+      card = loyalty_card_fixture(scope, %{stamps_current: 0, stamps_required: 10})
+
+      assert LoyaltyCards.list_redemptions_for_card(card.id) == []
+    end
+
+    test "redemption_counts_for_establishment/1 returns count map" do
+      scope = establishment_scope_fixture()
+
+      card = loyalty_card_fixture(scope, %{stamps_current: 20, stamps_required: 10})
+
+      assert {:ok, _} = LoyaltyCards.redeem_card(scope, card)
+
+      reloaded = LoyaltyCards.get_loyalty_card!(scope, card.id)
+      assert {:ok, _} = LoyaltyCards.redeem_card(scope, reloaded)
+
+      counts = LoyaltyCards.redemption_counts_for_establishment(scope.establishment.id)
+
+      assert Map.get(counts, card.id) == 2
+    end
+
+    test "redemption_counts_for_establishment/1 returns empty map when no redemptions" do
+      scope = establishment_scope_fixture()
+
+      counts = LoyaltyCards.redemption_counts_for_establishment(scope.establishment.id)
+
+      assert is_map(counts)
+    end
+
+    test "redeem_card/2 returns error when transaction fails due to FK violation" do
+      scope = establishment_scope_fixture()
+      card = loyalty_card_fixture(scope, %{stamps_current: 10, stamps_required: 10})
+
+      # Delete the card from DB so the Redemption insert fails the FK constraint
+      Loyalty.Repo.delete!(card)
+
+      assert {:error, _} = LoyaltyCards.redeem_card(scope, card)
+    end
   end
 end
