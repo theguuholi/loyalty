@@ -193,6 +193,50 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
 
       assert render(index_live) =~ "Stamp added."
     end
+
+    test "redeems a complete loyalty card", %{
+      conn: conn,
+      scope: scope,
+      loyalty_card: loyalty_card
+    } do
+      {:ok, index_live, _html} =
+        live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards")
+
+      index_live
+      |> element("#redeem-button-loyalty_cards-#{loyalty_card.id}", "Redeem")
+      |> render_click()
+
+      assert has_element?(index_live, "#flash-info", "Recompensa resgatada com sucesso.")
+    end
+
+    test "shows error when redeeming an incomplete loyalty card", %{
+      conn: conn,
+      scope: scope
+    } do
+      program =
+        case Loyalty.LoyaltyPrograms.list_loyalty_programs(scope) do
+          [p | _] -> p
+          [] -> loyalty_program_fixture(scope)
+        end
+
+      {:ok, another_customer} =
+        Loyalty.Customers.get_or_create_customer_by_email("incomplete-card-test@example.com")
+
+      {:ok, incomplete_card} =
+        Loyalty.LoyaltyCards.create_loyalty_card(scope, %{
+          customer_id: another_customer.id,
+          loyalty_program_id: program.id,
+          stamps_current: 0,
+          stamps_required: 10
+        })
+
+      {:ok, index_live, _html} =
+        live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards")
+
+      render_hook(index_live, "redeem", %{"id" => incomplete_card.id})
+
+      assert has_element?(index_live, "#flash-error", "O cartão ainda não está completo.")
+    end
   end
 
   describe "Index billing" do

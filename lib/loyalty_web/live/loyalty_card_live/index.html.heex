@@ -172,6 +172,23 @@
             <%!-- Action buttons below the card --%>
             <div class="flex gap-2 mt-2">
               <button
+                :if={(loyalty_card.stamps_current || 0) >= loyalty_card.stamps_required}
+                id={"redeem-button-#{id}"}
+                type="button"
+                phx-click="redeem"
+                phx-value-id={loyalty_card.id}
+                class="flex-1 text-sm py-2.5 rounded-xl font-semibold min-h-11 transition-all"
+                style="background: linear-gradient(135deg, #d4af37, #b8962e); color: white;"
+              >
+                {gettext("Redeem")}
+                <span
+                  :if={Map.get(@redemption_counts, loyalty_card.id, 0) > 0}
+                  class="ml-1 text-xs opacity-80"
+                >
+                  ({Map.get(@redemption_counts, loyalty_card.id, 0)}×)
+                </span>
+              </button>
+              <button
                 id={"add-stamp-button-#{id}"}
                 type="button"
                 phx-click="add_stamp"
