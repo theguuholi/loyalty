@@ -90,5 +90,39 @@ defmodule Loyalty.LoyaltyCards.RedemptionTest do
       refute changeset.valid?
       assert %{reward_description: [_ | _]} = errors_on(changeset)
     end
+
+    test "missing stamps_required returns invalid changeset", %{
+      scope: scope,
+      customer: customer,
+      loyalty_card: loyalty_card
+    } do
+      attrs = %{
+        loyalty_card_id: loyalty_card.id,
+        establishment_id: scope.establishment.id,
+        customer_id: customer.id,
+        reward_description: "Free Coffee"
+      }
+
+      changeset = Redemption.changeset(%Redemption{}, attrs)
+      refute changeset.valid?
+      assert %{stamps_required: [_ | _]} = errors_on(changeset)
+    end
+
+    test "non-existent loyalty_card_id violates FK constraint", %{
+      scope: scope,
+      customer: customer
+    } do
+      attrs = %{
+        loyalty_card_id: Ecto.UUID.generate(),
+        establishment_id: scope.establishment.id,
+        customer_id: customer.id,
+        reward_description: "Free Coffee",
+        stamps_required: 10
+      }
+
+      changeset = Redemption.changeset(%Redemption{}, attrs)
+      assert {:error, error_changeset} = Loyalty.Repo.insert(changeset)
+      assert %{loyalty_card_id: [_ | _]} = errors_on(error_changeset)
+    end
   end
 end
