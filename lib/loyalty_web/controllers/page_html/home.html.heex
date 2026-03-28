@@ -91,7 +91,10 @@
     </section>
 
     <%!-- Card preview section --%>
-    <section aria-labelledby="card-preview-title" class="space-y-6">
+    <section
+      aria-labelledby="card-preview-title"
+      class="space-y-6 flex flex-col items-center text-center"
+    >
       <header class="space-y-2">
         <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">
           Como fica para o cliente
@@ -99,13 +102,13 @@
         <h2 id="card-preview-title" class="text-2xl font-bold text-base-content sm:text-3xl">
           Cartões bonitos que transmitem confiança
         </h2>
-        <p class="text-base-content/60 text-sm max-w-lg">
+        <p class="text-base-content/60 text-sm max-w-lg mx-auto">
           Cada estabelecimento tem sua identidade — com logo, nome e carimbos em destaque. O cliente sabe exatamente o que ganhou e o que falta.
         </p>
       </header>
 
       <%!-- Sample card --%>
-      <div class="max-w-sm loyalty-card-animate">
+      <div class="w-full max-w-sm loyalty-card-animate">
         <div
           class="relative rounded-2xl overflow-hidden shadow-2xl"
           style="background: linear-gradient(135deg, #1b4d3e 0%, #1e5c4a 50%, #0f3329 100%); aspect-ratio: 1.586;"

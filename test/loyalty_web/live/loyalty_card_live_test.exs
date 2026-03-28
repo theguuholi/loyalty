@@ -311,6 +311,25 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
 
       assert render(form_live) =~ "limit"
     end
+
+    test "shows validation error when stamps_required is blank", %{conn: conn, scope: scope} do
+      _program = loyalty_program_fixture(scope)
+
+      {:ok, form_live, _html} =
+        live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
+
+      form_live
+      |> form("#loyalty_card-form",
+        loyalty_card: %{
+          email: "stamps-blank@example.com",
+          stamps_current: "",
+          stamps_required: ""
+        }
+      )
+      |> render_submit()
+
+      assert has_element?(form_live, "#loyalty_card-form")
+    end
   end
 
   describe "Edit form" do

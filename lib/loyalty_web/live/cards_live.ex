@@ -80,7 +80,8 @@ defmodule LoyaltyWeb.CardsLive do
   def handle_event("lookup", params, socket) do
     entry = params["cards_entry"] || %{}
     contact_type = socket.assigns.contact_type
-    changeset = entry_changeset(contact_type, entry) |> Map.put(:action, :validate)
+    changeset = entry_changeset(contact_type, entry)
+    changeset = Map.put(changeset, :action, :validate)
 
     if changeset.valid? do
       case contact_type do

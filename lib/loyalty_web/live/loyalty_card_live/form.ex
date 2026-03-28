@@ -72,7 +72,9 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
     form =
       if socket.assigns.live_action == :new do
         changeset =
-          new_card_input_changeset(loyalty_card_params) |> Map.put(:action, :validate)
+          loyalty_card_params
+          |> new_card_input_changeset()
+          |> Map.put(:action, :validate)
 
         to_form(changeset, as: :loyalty_card)
       else
@@ -115,58 +117,59 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
 
   defp save_loyalty_card(socket, :new, loyalty_card_params) do
     changeset =
-      new_card_input_changeset(loyalty_card_params) |> Map.put(:action, :validate)
+      loyalty_card_params
+      |> new_card_input_changeset()
+      |> Map.put(:action, :validate)
 
     if changeset.valid? do
-      case prepare_new_card_attrs(socket, loyalty_card_params) do
-        {:ok, attrs} ->
-          case LoyaltyCards.create_loyalty_card(socket.assigns.current_scope, attrs) do
-            {:ok, _loyalty_card} ->
-              {:noreply,
-               socket
-               |> put_flash(:info, gettext("Loyalty card created successfully"))
-               |> push_navigate(
-                 to:
-                   ~p"/establishments/#{socket.assigns.current_scope.establishment.id}/loyalty_cards"
-               )}
-
-            {:error, :client_limit_reached} ->
-              {:noreply,
-               put_flash(
-                 socket,
-                 :error,
-                 gettext(
-                   "Client limit reached for your plan. Subscribe on the establishment page to add more clients."
-                 )
-               )}
-
-            {:error, :subscription_inactive} ->
-              {:noreply,
-               put_flash(
-                 socket,
-                 :error,
-                 gettext(
-                   "Billing is not active. Fix your subscription on the establishment page before adding clients."
-                 )
-               )}
-
-            {:error, %Ecto.Changeset{} = inner_changeset} ->
-              {:noreply, assign(socket, form: to_form(inner_changeset, as: :loyalty_card))}
-          end
-
-        {:error, :contact_required} ->
-          error_changeset =
-            new_card_input_changeset(loyalty_card_params)
-            |> Ecto.Changeset.add_error(:email, gettext("Email or WhatsApp number is required."))
-            |> Map.put(:action, :validate)
-
-          {:noreply, assign(socket, form: to_form(error_changeset, as: :loyalty_card))}
-
-        {:error, %Ecto.Changeset{} = inner_changeset} ->
-          {:noreply, assign(socket, form: to_form(inner_changeset, as: :loyalty_card))}
-      end
+      do_create_after_validation(socket, loyalty_card_params)
     else
       {:noreply, assign(socket, form: to_form(changeset, as: :loyalty_card))}
+    end
+  end
+
+  defp do_create_after_validation(socket, loyalty_card_params) do
+    case prepare_new_card_attrs(socket, loyalty_card_params) do
+      {:ok, attrs} ->
+        do_create_loyalty_card(socket, attrs)
+
+      {:error, %Ecto.Changeset{} = inner_changeset} ->
+        {:noreply, assign(socket, form: to_form(inner_changeset, as: :loyalty_card))}
+    end
+  end
+
+  defp do_create_loyalty_card(socket, attrs) do
+    case LoyaltyCards.create_loyalty_card(socket.assigns.current_scope, attrs) do
+      {:ok, _loyalty_card} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, gettext("Loyalty card created successfully"))
+         |> push_navigate(
+           to: ~p"/establishments/#{socket.assigns.current_scope.establishment.id}/loyalty_cards"
+         )}
+
+      {:error, :client_limit_reached} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           gettext(
+             "Client limit reached for your plan. Subscribe on the establishment page to add more clients."
+           )
+         )}
+
+      {:error, :subscription_inactive} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           gettext(
+             "Billing is not active. Fix your subscription on the establishment page before adding clients."
+           )
+         )}
+
+      {:error, %Ecto.Changeset{} = inner_changeset} ->
+        {:noreply, assign(socket, form: to_form(inner_changeset, as: :loyalty_card))}
     end
   end
 
@@ -188,7 +191,13 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
   end
 
   defp new_card_input_changeset(params) do
-    {%{}, %{email: :string, whatsapp_number: :string, stamps_current: :integer, stamps_required: :integer}}
+    {%{},
+     %{
+       email: :string,
+       whatsapp_number: :string,
+       stamps_current: :integer,
+       stamps_required: :integer
+     }}
     |> Ecto.Changeset.cast(params, [:email, :whatsapp_number, :stamps_current, :stamps_required])
     |> validate_contact_present()
   end
@@ -199,7 +208,11 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
 
     if (is_nil(email) or String.trim(email) == "") and
          (is_nil(whatsapp) or String.trim(whatsapp) == "") do
-      Ecto.Changeset.add_error(changeset, :email, gettext("Email or WhatsApp number is required."))
+      Ecto.Changeset.add_error(
+        changeset,
+        :email,
+        gettext("Email or WhatsApp number is required.")
+      )
     else
       changeset
     end

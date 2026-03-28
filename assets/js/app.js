@@ -40,6 +40,58 @@ window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 // connect if there are any LiveViews on the page
 liveSocket.connect()
 
+// PWA install prompt
+;(() => {
+  const DISMISSED_KEY = "pwa_banner_dismissed"
+  const banner = document.getElementById("pwa-install-banner")
+  if (!banner) return
+
+  const dismiss = document.getElementById("pwa-banner-dismiss")
+  const installBtn = document.getElementById("pwa-install-btn")
+  const androidAction = document.getElementById("pwa-android-action")
+  const iosAction = document.getElementById("pwa-ios-action")
+
+  const isDismissed = () => localStorage.getItem(DISMISSED_KEY) === "1"
+  const isInStandaloneMode = () =>
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true
+
+  if (isDismissed() || isInStandaloneMode()) return
+
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
+  const isSafari = /safari/i.test(navigator.userAgent) && !/chrome/i.test(navigator.userAgent)
+
+  let deferredPrompt = null
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault()
+    deferredPrompt = e
+    androidAction.removeAttribute("hidden")
+    banner.removeAttribute("hidden")
+  })
+
+  if (isIos && isSafari) {
+    iosAction.removeAttribute("hidden")
+    banner.removeAttribute("hidden")
+  }
+
+  installBtn && installBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) return
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    if (outcome === "accepted") {
+      localStorage.setItem(DISMISSED_KEY, "1")
+      banner.setAttribute("hidden", "")
+    }
+    deferredPrompt = null
+  })
+
+  dismiss && dismiss.addEventListener("click", () => {
+    localStorage.setItem(DISMISSED_KEY, "1")
+    banner.setAttribute("hidden", "")
+  })
+})()
+
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
