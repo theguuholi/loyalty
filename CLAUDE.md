@@ -54,7 +54,8 @@ This is a Phoenix v1.8 web application with LiveView, Ecto, and `phx.gen.auth`.
 
 ## Ecto
 
-- **Always** preload associations in context queries when they will be accessed in templates
+- **Always use changesets** for data validation and mutation — never validate params manually with `if/case` logic or raw map checks. Changesets are the single source of truth for what is valid.
+- **Always preload associations** in context queries when they will be accessed in templates
 - `Ecto.Schema` fields use `:string` even for text columns: `field :name, :string`
 - `Ecto.Changeset.validate_number/2` does **not** support `:allow_nil` — omit it, validations already skip nil values by default
 - Use `Ecto.Changeset.get_field(changeset, :field)` to read changeset values — never `changeset[:field]`

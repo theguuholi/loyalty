@@ -39,10 +39,12 @@ defmodule LoyaltyWeb.EstablishmentLive.Form do
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
+  @impl true
   def handle_event("cancel_upload", %{"ref" => ref}, socket) do
     {:noreply, cancel_upload(socket, :logo, ref)}
   end
 
+  @impl true
   def handle_event("save", %{"establishment" => establishment_params}, socket) do
     logo_url = consume_uploaded_logo(socket)
 

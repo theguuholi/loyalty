@@ -4,6 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MyRewards" />
+    <meta name="theme-color" content="#1b4d3e" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/images/pwa-icon.svg" />
     <meta
       name="description"
       content={
@@ -49,5 +56,60 @@
   </head>
   <body>
     {@inner_content}
+    <%!-- PWA install banner (shown/hidden by pwa.js) --%>
+    <div
+      id="pwa-install-banner"
+      hidden
+      role="banner"
+      aria-live="polite"
+      style="position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 9999; width: calc(100% - 2rem); max-width: 420px;"
+    >
+      <div style="background: #1b4d3e; border: 1px solid rgba(212,175,55,0.3); border-radius: 1rem; padding: 1rem; box-shadow: 0 8px 32px rgba(0,0,0,0.25); display: flex; align-items: flex-start; gap: 0.75rem;">
+        <img
+          src="/images/pwa-icon.svg"
+          alt=""
+          style="width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;"
+        />
+        <div style="flex: 1; min-width: 0;">
+          <p
+            id="pwa-banner-title"
+            style="margin: 0 0 0.125rem; font-size: 0.875rem; font-weight: 700; color: white;"
+          >
+            Adicionar ao celular
+          </p>
+          <p
+            id="pwa-banner-body"
+            style="margin: 0; font-size: 0.75rem; color: rgba(255,255,255,0.65); line-height: 1.4;"
+          >
+            Instale o MyRewards para acessar seus cartões direto da tela inicial, sem abrir o navegador.
+          </p>
+          <div id="pwa-android-action" style="margin-top: 0.625rem;" hidden>
+            <button
+              id="pwa-install-btn"
+              type="button"
+              style="background: #d4af37; color: #0f2d24; border: none; border-radius: 0.5rem; padding: 0.375rem 0.875rem; font-size: 0.8125rem; font-weight: 700; cursor: pointer;"
+            >
+              Instalar
+            </button>
+          </div>
+          <p
+            id="pwa-ios-action"
+            style="margin: 0.5rem 0 0; font-size: 0.75rem; color: rgba(255,255,255,0.55);"
+            hidden
+          >
+            Toque em <strong style="color: rgba(255,255,255,0.8);">Compartilhar</strong>
+            e depois em <strong style="color: rgba(255,255,255,0.8);">"Adicionar à Tela de Início"</strong>.
+          </p>
+        </div>
+        <button
+          id="pwa-banner-dismiss"
+          type="button"
+          aria-label="Fechar"
+          style="background: none; border: none; padding: 0.25rem; color: rgba(255,255,255,0.4); cursor: pointer; flex-shrink: 0; line-height: 1; font-size: 1.25rem;"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
   </body>
 </html>

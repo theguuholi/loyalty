@@ -39,8 +39,8 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
                  ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new"
                )
 
-      assert render(form_live) =~ "Register client"
-      assert render(form_live) =~ "Client email"
+      assert has_element?(form_live, "h1", "Register client")
+      assert has_element?(form_live, "label", "Client email")
 
       assert {:ok, index_live, _html} =
                form_live
@@ -105,13 +105,11 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
       assert has_element?(index_live, "#loyalty-cards-empty-message")
     end
 
-    test "saves new loyalty_card using whatsapp number", %{conn: conn, scope: scope} do
+    test "saves new loyalty_card using whatsapp number only", %{conn: conn, scope: scope} do
       {:ok, form_live, _html} =
         live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
 
-      form_live |> element("#contact-type-whatsapp") |> render_click()
-
-      assert render(form_live) =~ "WhatsApp"
+      assert has_element?(form_live, "input[name='loyalty_card[whatsapp_number]']")
 
       assert {:ok, _index_live, _html} =
                form_live
@@ -129,28 +127,34 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
                )
     end
 
-    test "submitting email form with blank email shows error", %{conn: conn, scope: scope} do
+    test "saves new loyalty_card using both email and whatsapp", %{conn: conn, scope: scope} do
       {:ok, form_live, _html} =
         live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
 
-      form_live
-      |> form("#loyalty_card-form",
-        loyalty_card: %{email: "", stamps_current: 0, stamps_required: 10}
-      )
-      |> render_submit()
-
-      assert has_element?(form_live, "#loyalty_card-form")
+      assert {:ok, _index_live, _html} =
+               form_live
+               |> form("#loyalty_card-form",
+                 loyalty_card: %{
+                   email: "both@example.com",
+                   whatsapp_number: "+5511900000099",
+                   stamps_current: 0,
+                   stamps_required: 10
+                 }
+               )
+               |> render_submit()
+               |> follow_redirect(
+                 conn,
+                 ~p"/establishments/#{scope.establishment.id}/loyalty_cards"
+               )
     end
 
-    test "submitting whatsapp form with blank number shows error", %{conn: conn, scope: scope} do
+    test "submitting with both blank contacts shows error", %{conn: conn, scope: scope} do
       {:ok, form_live, _html} =
         live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
 
-      form_live |> element("#contact-type-whatsapp") |> render_click()
-
       form_live
       |> form("#loyalty_card-form",
-        loyalty_card: %{whatsapp_number: "", stamps_current: 0, stamps_required: 10}
+        loyalty_card: %{email: "", whatsapp_number: "", stamps_current: 0, stamps_required: 10}
       )
       |> render_submit()
 
@@ -171,8 +175,6 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
     test "submitting invalid whatsapp format shows error", %{conn: conn, scope: scope} do
       {:ok, form_live, _html} =
         live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
-
-      form_live |> element("#contact-type-whatsapp") |> render_click()
 
       form_live
       |> form("#loyalty_card-form",
@@ -308,6 +310,25 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
       |> render_submit()
 
       assert render(form_live) =~ "limit"
+    end
+
+    test "shows validation error when stamps_required is blank", %{conn: conn, scope: scope} do
+      _program = loyalty_program_fixture(scope)
+
+      {:ok, form_live, _html} =
+        live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
+
+      form_live
+      |> form("#loyalty_card-form",
+        loyalty_card: %{
+          email: "stamps-blank@example.com",
+          stamps_current: "",
+          stamps_required: ""
+        }
+      )
+      |> render_submit()
+
+      assert has_element?(form_live, "#loyalty_card-form")
     end
   end
 

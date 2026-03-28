@@ -15,7 +15,7 @@ defmodule LoyaltyWeb.CardsLive do
      |> assign(:identifier, nil)
      |> assign(:cards, [])
      |> assign(:show_list?, false)
-     |> assign(:form, to_form(%{"email" => ""}, as: :cards_entry))}
+     |> assign(:form, to_form(entry_changeset(:email, %{}), as: :cards_entry))}
   end
 
   @impl true
@@ -59,75 +59,62 @@ defmodule LoyaltyWeb.CardsLive do
   end
 
   defp assign_reset(socket, contact_type) do
-    form_key = if contact_type == :whatsapp, do: "whatsapp_number", else: "email"
-
     socket
     |> assign(:identifier, nil)
     |> assign(:cards, [])
     |> assign(:show_list?, false)
-    |> assign(:form, to_form(%{form_key => ""}, as: :cards_entry))
+    |> assign(:form, to_form(entry_changeset(contact_type, %{}), as: :cards_entry))
   end
 
   @impl true
   def handle_event("set_contact_type", %{"type" => type}, socket) do
     contact_type = if type == "whatsapp", do: :whatsapp, else: :email
-    form_key = if contact_type == :whatsapp, do: "whatsapp_number", else: "email"
 
     {:noreply,
      socket
      |> assign(:contact_type, contact_type)
-     |> assign(:form, to_form(%{form_key => ""}, as: :cards_entry))}
+     |> assign(:form, to_form(entry_changeset(contact_type, %{}), as: :cards_entry))}
   end
 
+  @impl true
   def handle_event("lookup", params, socket) do
     entry = params["cards_entry"] || %{}
+    contact_type = socket.assigns.contact_type
+    changeset = entry_changeset(contact_type, entry)
+    changeset = Map.put(changeset, :action, :validate)
 
-    case socket.assigns.contact_type do
-      :email -> lookup_by_email(socket, entry)
-      :whatsapp -> lookup_by_whatsapp(socket, entry)
+    if changeset.valid? do
+      case contact_type do
+        :email ->
+          email = Ecto.Changeset.get_field(changeset, :email)
+          {:noreply, push_patch(socket, to: "/cards?email=" <> URI.encode_www_form(email))}
+
+        :whatsapp ->
+          number = Ecto.Changeset.get_field(changeset, :whatsapp_number)
+          {:noreply, push_patch(socket, to: "/cards?whatsapp=" <> URI.encode_www_form(number))}
+      end
+    else
+      {:noreply, assign(socket, form: to_form(changeset, as: :cards_entry))}
     end
   end
 
-  defp lookup_by_email(socket, entry) do
-    email = (entry["email"] || "") |> String.trim()
-
-    cond do
-      email == "" ->
-        {:noreply, put_flash(socket, :error, gettext("Please enter your email."))}
-
-      not valid_email?(email) ->
-        {:noreply, put_flash(socket, :error, gettext("Invalid email."))}
-
-      true ->
-        {:noreply, push_patch(socket, to: "/cards?email=" <> URI.encode_www_form(email))}
-    end
+  defp entry_changeset(:email, params) do
+    {%{}, %{email: :string}}
+    |> Ecto.Changeset.cast(params, [:email])
+    |> Ecto.Changeset.validate_required([:email], message: gettext("Please enter your email."))
+    |> Ecto.Changeset.validate_format(:email, ~r/^[^\s]+@[^\s]+\.[^\s]+$/,
+      message: gettext("Invalid email.")
+    )
   end
 
-  defp lookup_by_whatsapp(socket, entry) do
-    number = (entry["whatsapp_number"] || "") |> String.trim()
-
-    cond do
-      number == "" ->
-        {:noreply, put_flash(socket, :error, gettext("Please enter your WhatsApp number."))}
-
-      not valid_whatsapp?(number) ->
-        {:noreply,
-         put_flash(
-           socket,
-           :error,
-           gettext("Invalid number. Use the format +5511999999999.")
-         )}
-
-      true ->
-        {:noreply, push_patch(socket, to: "/cards?whatsapp=" <> URI.encode_www_form(number))}
-    end
-  end
-
-  defp valid_email?(email) do
-    Regex.match?(~r/^[^\s]+@[^\s]+\.[^\s]+$/, email)
-  end
-
-  defp valid_whatsapp?(number) do
-    Regex.match?(~r/^\+[1-9]\d{7,14}$/, number)
+  defp entry_changeset(:whatsapp, params) do
+    {%{}, %{whatsapp_number: :string}}
+    |> Ecto.Changeset.cast(params, [:whatsapp_number])
+    |> Ecto.Changeset.validate_required([:whatsapp_number],
+      message: gettext("Please enter your WhatsApp number.")
+    )
+    |> Ecto.Changeset.validate_format(:whatsapp_number, ~r/^\+[1-9]\d{7,14}$/,
+      message: gettext("Invalid number. Use the format +5511999999999.")
+    )
   end
 end

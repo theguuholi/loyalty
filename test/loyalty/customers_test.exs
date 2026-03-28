@@ -111,6 +111,68 @@ defmodule Loyalty.CustomersTest do
     end
   end
 
+  describe "get_or_create_customer_by_contact/2" do
+    test "returns error when both are blank" do
+      assert {:error, :contact_required} =
+               Customers.get_or_create_customer_by_contact("", "")
+    end
+
+    test "creates customer with email only" do
+      assert {:ok, %Customer{} = c} =
+               Customers.get_or_create_customer_by_contact("contact-email@example.com", "")
+
+      assert c.email == "contact-email@example.com"
+      assert is_nil(c.whatsapp_number)
+    end
+
+    test "creates customer with whatsapp only" do
+      assert {:ok, %Customer{} = c} =
+               Customers.get_or_create_customer_by_contact("", "+5511900000020")
+
+      assert c.whatsapp_number == "+5511900000020"
+      assert is_nil(c.email)
+    end
+
+    test "creates customer with both email and whatsapp" do
+      assert {:ok, %Customer{} = c} =
+               Customers.get_or_create_customer_by_contact("both2@example.com", "+5511900000021")
+
+      assert c.email == "both2@example.com"
+      assert c.whatsapp_number == "+5511900000021"
+    end
+
+    test "returns existing customer when found by email and adds whatsapp" do
+      {:ok, existing} = Customers.get_or_create_customer_by_email("found-by-email@example.com")
+
+      assert {:ok, updated} =
+               Customers.get_or_create_customer_by_contact(
+                 "found-by-email@example.com",
+                 "+5511900000022"
+               )
+
+      assert updated.id == existing.id
+      assert updated.whatsapp_number == "+5511900000022"
+    end
+
+    test "returns existing customer when found by whatsapp and adds email" do
+      {:ok, existing} = Customers.get_or_create_customer_by_whatsapp("+5511900000023")
+
+      assert {:ok, updated} =
+               Customers.get_or_create_customer_by_contact(
+                 "found-by-wa@example.com",
+                 "+5511900000023"
+               )
+
+      assert updated.id == existing.id
+      assert updated.email == "found-by-wa@example.com"
+    end
+
+    test "returns error for invalid whatsapp format" do
+      assert {:error, %Ecto.Changeset{}} =
+               Customers.get_or_create_customer_by_contact("", "not-a-number")
+    end
+  end
+
   describe "update_customer_contact/2" do
     test "adds email to a whatsapp-only customer" do
       {:ok, customer} = Customers.get_or_create_customer_by_whatsapp("+5511900000004")

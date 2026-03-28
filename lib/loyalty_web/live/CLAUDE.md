@@ -331,3 +331,68 @@ end
 ```
 
 For destructive actions where only `{:ok, _}` is expected (e.g. delete), still use a `case` or assert with a comment explaining why the error branch is omitted.
+
+---
+
+## Field Errors — `<.input>` Handles Everything
+
+Forms **must always** be backed by a changeset. Never validate form params manually with `if/case` guards or raw map checks — put all validation in the changeset and let `<.input>` surface the errors automatically.
+
+When a form uses `<.input field={@form[:field]} ...>`, the component **already renders its own error message** from the changeset. There is nothing else to add.
+
+The full pipeline is:
+1. Context function returns `{:error, changeset}`
+2. LiveView assigns `form: to_form(changeset)`
+3. `<.input>` reads the error from the form field and displays it inline
+
+```elixir
+# CORRECT — put the changeset back into the form assign, nothing else needed
+{:error, changeset} ->
+  {:noreply, assign(socket, form: to_form(changeset))}
+```
+
+```heex
+<%!-- CORRECT — <.input> renders label, input, and error automatically --%>
+<.input field={@form[:name]} type="text" label="Name" />
+```
+
+**Never** add any extra error rendering around or below a `<.input>`:
+
+```heex
+<%!-- WRONG — manual error beside <.input> (error is already inside the component) --%>
+<.input field={@form[:name]} type="text" label="Name" />
+<p class="text-red-500">{hd(@form[:name].errors)}</p>
+
+<%!-- WRONG — raw input with manual error (never bypass <.input>) --%>
+<input name="name" />
+<span>{@form[:name].errors}</span>
+```
+
+If you need a custom layout, extend or slot `<.input>` — **never** replace it with raw HTML and manual error markup.
+
+---
+
+## User-Facing Messages — Always via Flash
+
+All user-facing feedback messages (success, error, info, warning) **must** use `put_flash/3`. **Never** render inline message banners, alert `<div>`s, or status text assigned to the socket for this purpose.
+
+```elixir
+# CORRECT — use put_flash for all user feedback
+{:ok, _item} ->
+  {:noreply, put_flash(socket, :info, gettext("Saved successfully."))}
+
+{:error, _reason} ->
+  {:noreply, put_flash(socket, :error, gettext("Something went wrong."))}
+```
+
+```heex
+<%!-- WRONG — inline message div, not using flash --%>
+<%= if @saved? do %>
+  <div class="bg-green-100 text-green-800 p-4">Saved!</div>
+<% end %>
+
+<%!-- WRONG — status assign rendered as text --%>
+<p :if={@error_message}>{@error_message}</p>
+```
+
+Flash is displayed automatically by the layout via `<Layouts.app flash={@flash} ...>` — do not add a second flash renderer anywhere in the template.
