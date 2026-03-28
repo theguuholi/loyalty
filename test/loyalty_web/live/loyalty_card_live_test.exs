@@ -191,7 +191,7 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
       |> element("#add-stamp-button-loyalty_cards-#{loyalty_card.id}")
       |> render_click()
 
-      assert render(index_live) =~ "Stamp added."
+      assert has_element?(index_live, "#flash-info", "Stamp added.")
     end
 
     test "redeems a complete loyalty card", %{
@@ -203,7 +203,7 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
         live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards")
 
       index_live
-      |> element("#redeem-button-loyalty_cards-#{loyalty_card.id}", "Redeem")
+      |> element("#redeem-button-loyalty_cards-#{loyalty_card.id}", "Resgatar")
       |> render_click()
 
       assert has_element?(index_live, "#flash-info", "Recompensa resgatada com sucesso.")

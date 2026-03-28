@@ -59,7 +59,7 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Index do
           put_flash(socket, :error, gettext("O cartão ainda não está completo."))
 
         {:error, _changeset} ->
-          put_flash(socket, :error, gettext("Could not redeem card."))
+          put_flash(socket, :error, gettext("Não foi possível resgatar o cartão."))
       end
 
     redemption_counts = LoyaltyCards.redemption_counts_for_establishment(scope.establishment.id)
