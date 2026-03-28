@@ -1,0 +1,47 @@
+<Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
+  <main class="mx-auto max-w-lg px-4 py-6">
+    <header class="mb-6 flex items-center gap-3">
+      <.link
+        navigate={return_path(@current_scope, @return_to, @loyalty_program)}
+        class="flex items-center justify-center w-9 h-9 rounded-xl border border-base-300 bg-base-100 hover:bg-base-200 transition-colors"
+      >
+        <.icon name="hero-arrow-left" class="w-4 h-4 text-base-content/70" />
+      </.link>
+      <div>
+        <h1 class="text-xl font-bold text-base-content">{@page_title}</h1>
+        <p class="text-sm text-base-content/60">
+          {gettext("Manage program name, stamps required and reward.")}
+        </p>
+      </div>
+    </header>
+
+    <div class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
+      <.form
+        for={@form}
+        id="loyalty_program-form"
+        phx-change="validate"
+        phx-submit="save"
+        class="space-y-4"
+      >
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
+        <.input field={@form[:stamps_required]} type="number" label={gettext("Stamps required")} />
+        <.input
+          field={@form[:reward_description]}
+          type="text"
+          label={gettext("Reward description")}
+        />
+        <footer class="flex flex-wrap gap-3 border-t border-base-300 pt-5">
+          <.button phx-disable-with={gettext("Saving...")} variant="primary" class="min-h-11">
+            {gettext("Save")}
+          </.button>
+          <.link
+            navigate={return_path(@current_scope, @return_to, @loyalty_program)}
+            class="btn btn-primary btn-soft min-h-11"
+          >
+            {gettext("Back to list")}
+          </.link>
+        </footer>
+      </.form>
+    </div>
+  </main>
+</Layouts.app>
