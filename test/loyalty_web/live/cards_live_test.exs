@@ -133,9 +133,30 @@ defmodule LoyaltyWeb.CardsLiveTest do
       _card = loyalty_card_fixture(scope, %{stamps_current: 42, stamps_required: 42})
       email = "customer-#{scope.establishment.id}@example.com"
 
-      {:ok, _view, html} = live(conn, "/cards?email=#{URI.encode_www_form(email)}")
+      {:ok, view, _html} = live(conn, "/cards?email=#{URI.encode_www_form(email)}")
 
-      assert html =~ "Pronto para usar!"
+      assert has_element?(view, "article", "Pronto para usar!")
+    end
+
+    test "shows redemption count badge when card has been redeemed", %{conn: conn} do
+      scope = establishment_scope_fixture()
+      card = loyalty_card_fixture(scope, %{stamps_current: 10, stamps_required: 10})
+      {:ok, _} = Loyalty.LoyaltyCards.redeem_card(scope, card)
+      email = "customer-#{scope.establishment.id}@example.com"
+
+      {:ok, view, _html} = live(conn, "/cards?email=#{URI.encode_www_form(email)}")
+
+      assert has_element?(view, "#redemption-count-#{card.id}")
+    end
+
+    test "does not show redemption badge when card has never been redeemed", %{conn: conn} do
+      scope = establishment_scope_fixture()
+      card = loyalty_card_fixture(scope)
+      email = "customer-#{scope.establishment.id}@example.com"
+
+      {:ok, view, _html} = live(conn, "/cards?email=#{URI.encode_www_form(email)}")
+
+      refute has_element?(view, "#redemption-count-#{card.id}")
     end
   end
 end

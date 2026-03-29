@@ -385,6 +385,38 @@ defmodule Loyalty.LoyaltyCardsTest do
       assert is_map(counts)
     end
 
+    test "redemption_counts_for_cards/1 returns count map for given card ids" do
+      scope = establishment_scope_fixture()
+
+      card = loyalty_card_fixture(scope, %{stamps_current: 10, stamps_required: 10})
+
+      assert {:ok, _} = LoyaltyCards.redeem_card(scope, card)
+
+      counts = LoyaltyCards.redemption_counts_for_cards([card.id])
+
+      assert Map.get(counts, card.id) == 1
+    end
+
+    test "redemption_counts_for_cards/1 returns empty map for empty list" do
+      assert LoyaltyCards.redemption_counts_for_cards([]) == %{}
+    end
+
+    test "redemption_counts_for_cards/1 only counts cards in the given list" do
+      scope = establishment_scope_fixture()
+      other_scope = establishment_scope_fixture()
+
+      card = loyalty_card_fixture(scope, %{stamps_current: 10, stamps_required: 10})
+      other_card = loyalty_card_fixture(other_scope, %{stamps_current: 5, stamps_required: 5})
+
+      assert {:ok, _} = LoyaltyCards.redeem_card(scope, card)
+      assert {:ok, _} = LoyaltyCards.redeem_card(other_scope, other_card)
+
+      counts = LoyaltyCards.redemption_counts_for_cards([card.id])
+
+      assert Map.get(counts, card.id) == 1
+      refute Map.has_key?(counts, other_card.id)
+    end
+
     test "redeem_card/2 returns error when transaction fails due to FK violation" do
       scope = establishment_scope_fixture()
       card = loyalty_card_fixture(scope, %{stamps_current: 10, stamps_required: 10})

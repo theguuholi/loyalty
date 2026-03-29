@@ -147,6 +147,13 @@
                 </span>
               </footer>
             </article>
+            <p
+              :if={Map.get(@redemption_counts, card.id, 0) > 0}
+              id={"redemption-count-#{card.id}"}
+              class="text-xs text-base-content/50 mt-1 text-center"
+            >
+              {gettext("Resgatado %{n} vez(es)", n: Map.get(@redemption_counts, card.id, 0))}
+            </p>
           </li>
         </ul>
       </section>

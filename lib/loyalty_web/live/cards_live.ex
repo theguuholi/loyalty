@@ -15,7 +15,8 @@ defmodule LoyaltyWeb.CardsLive do
      |> assign(:identifier, nil)
      |> assign(:cards, [])
      |> assign(:show_list?, false)
-     |> assign(:form, to_form(%{"email" => ""}, as: :cards_entry))}
+     |> assign(:form, to_form(%{"email" => ""}, as: :cards_entry))
+     |> assign(:redemption_counts, %{})}
   end
 
   @impl true
@@ -26,12 +27,14 @@ defmodule LoyaltyWeb.CardsLive do
 
         if email != "" do
           cards = LoyaltyCards.list_loyalty_cards_by_customer_email(email)
+          counts = cards |> Enum.map(& &1.id) |> LoyaltyCards.redemption_counts_for_cards()
 
           {:noreply,
            socket
            |> assign(:contact_type, :email)
            |> assign(:identifier, email)
            |> assign(:cards, cards)
+           |> assign(:redemption_counts, counts)
            |> assign(:show_list?, true)}
         else
           {:noreply, assign_reset(socket, :email)}
@@ -42,12 +45,14 @@ defmodule LoyaltyWeb.CardsLive do
 
         if number != "" do
           cards = LoyaltyCards.list_loyalty_cards_by_customer_whatsapp(number)
+          counts = cards |> Enum.map(& &1.id) |> LoyaltyCards.redemption_counts_for_cards()
 
           {:noreply,
            socket
            |> assign(:contact_type, :whatsapp)
            |> assign(:identifier, number)
            |> assign(:cards, cards)
+           |> assign(:redemption_counts, counts)
            |> assign(:show_list?, true)}
         else
           {:noreply, assign_reset(socket, :whatsapp)}

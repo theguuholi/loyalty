@@ -329,6 +329,19 @@ defmodule Loyalty.LoyaltyCards do
     |> Map.new()
   end
 
+  @doc """
+  Returns a map of `%{card_id => redemption_count}` for the given list of card IDs.
+  """
+  @spec redemption_counts_for_cards([binary()]) :: %{binary() => integer()}
+  def redemption_counts_for_cards(card_ids) when is_list(card_ids) do
+    Redemption
+    |> where([r], r.loyalty_card_id in ^card_ids)
+    |> group_by([r], r.loyalty_card_id)
+    |> select([r], {r.loyalty_card_id, count(r.id)})
+    |> Repo.all()
+    |> Map.new()
+  end
+
   defp notify_whatsapp(%LoyaltyCard{} = card) do
     card = Repo.preload(card, [:customer, :establishment, :loyalty_program])
 
