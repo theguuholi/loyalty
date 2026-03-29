@@ -12,6 +12,7 @@ defmodule Loyalty.LoyaltyCards do
     Establishments,
     Establishments.Establishment,
     LoyaltyCards.LoyaltyCard,
+    LoyaltyCards.Redemption,
     LoyaltyPrograms.Customer,
     WhatsApp
   }
@@ -234,6 +235,90 @@ defmodule Loyalty.LoyaltyCards do
       notify_whatsapp(updated_card)
       {:ok, updated_card}
     end
+  end
+
+  @doc """
+  Redeems a loyalty card by inserting a Redemption record and decrementing stamps.
+
+  Returns `{:ok, {redemption, updated_card}}` on success.
+  Returns `{:error, :card_not_complete}` if the card does not have enough stamps.
+  Returns `{:error, changeset}` if the database operation fails.
+  """
+  @spec redeem_card(Scope.t(), LoyaltyCard.t()) ::
+          {:ok, {Redemption.t(), LoyaltyCard.t()}}
+          | {:error, :card_not_complete}
+          | {:error, Ecto.Changeset.t()}
+  def redeem_card(%Scope{} = scope, %LoyaltyCard{} = card) do
+    true = card.establishment_id == scope.establishment.id
+
+    card = Repo.preload(card, :loyalty_program)
+
+    do_redeem_card(scope, card)
+  end
+
+  defp do_redeem_card(_, card)
+       when is_nil(card.stamps_current) or card.stamps_current < card.stamps_required do
+    {:error, :card_not_complete}
+  end
+
+  defp do_redeem_card(scope, card) do
+    case Repo.transaction(fn -> do_redeem_transaction(scope, card) end) do
+      {:ok, {redemption, updated_card}} ->
+        broadcast_loyalty_card(scope, {:updated, updated_card})
+        {:ok, {redemption, updated_card}}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  defp do_redeem_transaction(scope, card) do
+    redemption_attrs = %{
+      loyalty_card_id: card.id,
+      establishment_id: card.establishment_id,
+      customer_id: card.customer_id,
+      reward_description: card.loyalty_program.reward_description,
+      stamps_required: card.stamps_required
+    }
+
+    with {:ok, redemption} <-
+           %Redemption{}
+           |> Redemption.changeset(redemption_attrs)
+           |> Repo.insert(),
+         new_stamps = (card.stamps_current || 0) - card.stamps_required,
+         {:ok, updated_card} <-
+           card
+           |> LoyaltyCard.changeset(%{stamps_current: new_stamps}, scope)
+           |> Repo.update() do
+      {redemption, updated_card}
+    else
+      {:error, changeset} -> Repo.rollback(changeset)
+    end
+  end
+
+  @doc """
+  Returns all redemptions for the given loyalty card id, ordered newest-first.
+  """
+  @spec list_redemptions_for_card(binary()) :: [Redemption.t()]
+  def list_redemptions_for_card(card_id) when is_binary(card_id) do
+    Redemption
+    |> where([r], r.loyalty_card_id == ^card_id)
+    |> order_by([r], desc: r.inserted_at)
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns a map of `%{card_id => redemption_count}` for all cards belonging to the
+  given establishment.
+  """
+  @spec redemption_counts_for_establishment(binary()) :: %{binary() => integer()}
+  def redemption_counts_for_establishment(establishment_id) when is_binary(establishment_id) do
+    Redemption
+    |> where([r], r.establishment_id == ^establishment_id)
+    |> group_by([r], r.loyalty_card_id)
+    |> select([r], {r.loyalty_card_id, count(r.id)})
+    |> Repo.all()
+    |> Map.new()
   end
 
   defp notify_whatsapp(%LoyaltyCard{} = card) do

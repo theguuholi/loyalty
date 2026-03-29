@@ -16,12 +16,14 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Index do
 
     can_add = Establishments.check_new_loyalty_card_allowed(establishment) == :ok
     list = list_loyalty_cards(scope)
+    redemption_counts = LoyaltyCards.redemption_counts_for_establishment(scope.establishment.id)
 
     {:ok,
      socket
      |> assign(:page_title, gettext("Clients and cards"))
      |> assign(:cards_empty?, list == [])
      |> assign(:can_add_new_client?, can_add)
+     |> assign(:redemption_counts, redemption_counts)
      |> stream(:loyalty_cards, list)}
   end
 
@@ -41,6 +43,28 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Index do
      |> assign(:cards_empty?, list_after == [])
      |> assign(:can_add_new_client?, can_add)
      |> stream_delete(:loyalty_cards, loyalty_card)}
+  end
+
+  @impl true
+  def handle_event("redeem", %{"id" => id}, socket) do
+    scope = socket.assigns.current_scope
+    loyalty_card = LoyaltyCards.get_loyalty_card!(scope, id)
+
+    socket =
+      case LoyaltyCards.redeem_card(scope, loyalty_card) do
+        {:ok, _} ->
+          put_flash(socket, :info, gettext("Recompensa resgatada com sucesso."))
+
+        {:error, :card_not_complete} ->
+          put_flash(socket, :error, gettext("O cartão ainda não está completo."))
+
+        {:error, _changeset} ->
+          put_flash(socket, :error, gettext("Não foi possível resgatar o cartão."))
+      end
+
+    redemption_counts = LoyaltyCards.redemption_counts_for_establishment(scope.establishment.id)
+
+    {:noreply, assign(socket, :redemption_counts, redemption_counts)}
   end
 
   @impl true
@@ -65,10 +89,13 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Index do
     establishment = Establishments.get_establishment!(scope, scope.establishment.id)
     can_add = Establishments.check_new_loyalty_card_allowed(establishment) == :ok
 
+    redemption_counts = LoyaltyCards.redemption_counts_for_establishment(scope.establishment.id)
+
     {:noreply,
      socket
      |> assign(:cards_empty?, list == [])
      |> assign(:can_add_new_client?, can_add)
+     |> assign(:redemption_counts, redemption_counts)
      |> stream(:loyalty_cards, list, reset: true)}
   end
 

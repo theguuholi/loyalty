@@ -9,6 +9,7 @@ This is a Phoenix v1.8 web application with LiveView, Ecto, and `phx.gen.auth`.
 
 ## Workflow
 
+- **Always** write implementation plans to the `plan/` folder before touching code. Every plan must be a file in `plan/` — never write plans inline or in other locations. Each plan must explain **why** every migration and context module exists — what problem it solves, what data it owns, or what responsibility it carries.
 - **Always** run `mix precommit` before every commit and **fix every issue it reports**. A failing `mix precommit` means the work is not done — do not commit until it passes clean.
 - For HTTP requests, use the included `:req` (`Req`) library. **Never** use `:httpoison`, `:tesla`, or `:httpc`.
 - Read task docs before running unfamiliar mix tasks: `mix help task_name`
