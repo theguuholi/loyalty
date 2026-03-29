@@ -122,6 +122,16 @@ defmodule Loyalty.LoyaltyCardsTest do
       assert %Ecto.Changeset{} = LoyaltyCards.change_loyalty_card(scope, loyalty_card)
     end
 
+    test "change_new_loyalty_card/1 returns valid changeset when email present" do
+      cs = LoyaltyCards.change_new_loyalty_card(%{email: "x@y.com", stamps_required: 10})
+      assert cs.valid?
+    end
+
+    test "change_new_loyalty_card/1 returns invalid changeset when no contact given" do
+      cs = LoyaltyCards.change_new_loyalty_card(%{stamps_required: 10})
+      refute cs.valid?
+    end
+
     test "list_loyalty_cards_by_customer_email/1 returns cards for customer email" do
       scope = establishment_scope_fixture()
       loyalty_card = loyalty_card_fixture(scope)

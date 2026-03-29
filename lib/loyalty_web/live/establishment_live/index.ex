@@ -4,48 +4,6 @@ defmodule LoyaltyWeb.EstablishmentLive.Index do
   alias Loyalty.Establishments
 
   @impl true
-  def render(assigns) do
-    ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
-      <.header>
-        {gettext("Listing Establishments")}
-        <:actions>
-          <%= if @can_create_establishment do %>
-            <.button variant="primary" navigate={~p"/establishments/new"}>
-              <.icon name="hero-plus" /> {gettext("New Establishment")}
-            </.button>
-          <% else %>
-            <span class="rounded-full border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content/70">
-              {gettext("Only one establishment allowed")}
-            </span>
-          <% end %>
-        </:actions>
-      </.header>
-
-      <.table
-        id="establishments"
-        rows={@streams.establishments}
-        row_click={fn {_id, establishment} -> JS.navigate(~p"/establishments/#{establishment}") end}
-      >
-        <:col :let={{_id, establishment}} label={gettext("Name")}>{establishment.name}</:col>
-        <:action :let={{id, establishment}}>
-          <div class="sr-only">
-            <.link navigate={~p"/establishments/#{establishment}"}>{gettext("Show")}</.link>
-          </div>
-          <.link navigate={~p"/establishments/#{establishment}/edit"}>{gettext("Edit")}</.link>
-          <.link
-            phx-click={JS.push("delete", value: %{id: establishment.id}) |> hide("##{id}")}
-            data-confirm={gettext("Are you sure?")}
-          >
-            {gettext("Delete")}
-          </.link>
-        </:action>
-      </.table>
-    </Layouts.app>
-    """
-  end
-
-  @impl true
   def mount(_params, _session, socket) do
     if connected?(socket) do
       Establishments.subscribe_establishments(socket.assigns.current_scope)

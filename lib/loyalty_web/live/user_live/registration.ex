@@ -5,44 +5,6 @@ defmodule LoyaltyWeb.UserLive.Registration do
   alias Loyalty.Accounts.User
 
   @impl true
-  def render(assigns) do
-    ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} locale={@locale}>
-      <div class="mx-auto max-w-sm">
-        <div class="text-center">
-          <.header>
-            {gettext("Register for an account")}
-            <:subtitle>
-              {gettext("Already registered?")}
-              <.link navigate={~p"/users/log-in"} class="font-semibold text-brand hover:underline">
-                {gettext("Log in")}
-              </.link>
-              {gettext("to your account now.")}
-            </:subtitle>
-          </.header>
-        </div>
-
-        <.form for={@form} id="registration_form" phx-submit="save" phx-change="validate">
-          <.input
-            field={@form[:email]}
-            type="email"
-            label={gettext("Email")}
-            autocomplete="username"
-            spellcheck="false"
-            required
-            phx-mounted={JS.focus()}
-          />
-
-          <.button phx-disable-with={gettext("Creating account...")} class="btn btn-primary w-full">
-            {gettext("Create an account")}
-          </.button>
-        </.form>
-      </div>
-    </Layouts.app>
-    """
-  end
-
-  @impl true
   def mount(_params, _session, %{assigns: %{current_scope: %{user: user}}} = socket)
       when user != nil do
     {:ok, redirect(socket, to: LoyaltyWeb.UserAuth.signed_in_path(socket))}

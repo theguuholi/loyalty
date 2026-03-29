@@ -184,6 +184,14 @@ defmodule Loyalty.LoyaltyCards do
   end
 
   @doc """
+  Returns a changeset for the new-loyalty-card form (email/whatsapp virtual fields).
+  Used for live validation before the customer is resolved.
+  """
+  def change_new_loyalty_card(attrs \\ %{}) do
+    LoyaltyCard.new_card_changeset(attrs)
+  end
+
+  @doc """
   Returns all loyalty cards for the customer with the given email (for "Meus cartões").
   Returns an empty list if no customer exists for that email. Cards are preloaded with
   establishment and loyalty_program.

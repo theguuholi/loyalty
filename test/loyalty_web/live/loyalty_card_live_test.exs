@@ -140,7 +140,10 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
       assert has_element?(form_live, "#loyalty_card-form")
     end
 
-    test "submitting form with blank email and whatsapp shows error", %{conn: conn, scope: scope} do
+    test "submitting form with blank email and whatsapp shows inline error", %{
+      conn: conn,
+      scope: scope
+    } do
       {:ok, form_live, _html} =
         live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
 
@@ -150,7 +153,82 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
       )
       |> render_submit()
 
-      assert has_element?(form_live, "#flash-error", "Email or WhatsApp number is required.")
+      assert has_element?(form_live, "#loyalty_card-form", "enter an email or WhatsApp number")
+    end
+
+    test "saves new loyalty_card when customer already has whatsapp set", %{
+      conn: conn,
+      scope: scope
+    } do
+      # Pre-create customer with both contacts; form should succeed using the existing customer
+      {:ok, customer} =
+        Loyalty.Customers.get_or_create_customer_by_email("existing-wapp@example.com")
+
+      {:ok, _} =
+        Loyalty.Customers.update_customer_contact(customer, %{whatsapp_number: "+5511900000094"})
+
+      {:ok, form_live, _html} =
+        live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
+
+      assert {:ok, _index_live, _html} =
+               form_live
+               |> form("#loyalty_card-form",
+                 loyalty_card: %{
+                   email: "existing-wapp@example.com",
+                   whatsapp_number: "+5511900000094",
+                   stamps_current: 0,
+                   stamps_required: 10
+                 }
+               )
+               |> render_submit()
+               |> follow_redirect(
+                 conn,
+                 ~p"/establishments/#{scope.establishment.id}/loyalty_cards"
+               )
+    end
+
+    test "saves new loyalty_card using both email and whatsapp", %{conn: conn, scope: scope} do
+      {:ok, form_live, _html} =
+        live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
+
+      assert {:ok, _index_live, _html} =
+               form_live
+               |> form("#loyalty_card-form",
+                 loyalty_card: %{
+                   email: "both-fields@example.com",
+                   whatsapp_number: "+5511900000092",
+                   stamps_current: 0,
+                   stamps_required: 10
+                 }
+               )
+               |> render_submit()
+               |> follow_redirect(
+                 conn,
+                 ~p"/establishments/#{scope.establishment.id}/loyalty_cards"
+               )
+    end
+
+    test "submitting with whatsapp belonging to another customer shows inline error", %{
+      conn: conn,
+      scope: scope
+    } do
+      {:ok, _} = Loyalty.Customers.get_or_create_customer_by_whatsapp("+5511900000093")
+
+      {:ok, form_live, _html} =
+        live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
+
+      form_live
+      |> form("#loyalty_card-form",
+        loyalty_card: %{
+          email: "conflict-owner@example.com",
+          whatsapp_number: "+5511900000093",
+          stamps_current: 0,
+          stamps_required: 10
+        }
+      )
+      |> render_submit()
+
+      assert has_element?(form_live, "#loyalty_card-form", "has already been taken")
     end
 
     test "validate event on new form updates the form", %{conn: conn, scope: scope} do
