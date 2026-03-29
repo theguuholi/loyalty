@@ -109,9 +109,7 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
       {:ok, form_live, _html} =
         live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
 
-      form_live |> element("#contact-type-whatsapp") |> render_click()
-
-      assert render(form_live) =~ "WhatsApp"
+      assert has_element?(form_live, "#loyalty_card_whatsapp_number")
 
       assert {:ok, _index_live, _html} =
                form_live
@@ -142,19 +140,17 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
       assert has_element?(form_live, "#loyalty_card-form")
     end
 
-    test "submitting whatsapp form with blank number shows error", %{conn: conn, scope: scope} do
+    test "submitting form with blank email and whatsapp shows error", %{conn: conn, scope: scope} do
       {:ok, form_live, _html} =
         live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
 
-      form_live |> element("#contact-type-whatsapp") |> render_click()
-
       form_live
       |> form("#loyalty_card-form",
-        loyalty_card: %{whatsapp_number: "", stamps_current: 0, stamps_required: 10}
+        loyalty_card: %{email: "", whatsapp_number: "", stamps_current: 0, stamps_required: 10}
       )
       |> render_submit()
 
-      assert has_element?(form_live, "#loyalty_card-form")
+      assert has_element?(form_live, "#flash-error", "Email or WhatsApp number is required.")
     end
 
     test "validate event on new form updates the form", %{conn: conn, scope: scope} do
@@ -171,8 +167,6 @@ defmodule LoyaltyWeb.LoyaltyCardLiveTest do
     test "submitting invalid whatsapp format shows error", %{conn: conn, scope: scope} do
       {:ok, form_live, _html} =
         live(conn, ~p"/establishments/#{scope.establishment.id}/loyalty_cards/new")
-
-      form_live |> element("#contact-type-whatsapp") |> render_click()
 
       form_live
       |> form("#loyalty_card-form",

@@ -35,7 +35,6 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
     |> assign(:page_title, gettext("Edit card"))
     |> assign(:form_subtitle, gettext("Update this client's stamp progress."))
     |> assign(:client_label, client_label)
-    |> assign(:contact_type, :email)
     |> assign(:loyalty_card, loyalty_card)
     |> assign(
       :form,
@@ -70,18 +69,12 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
       |> assign(:page_title, gettext("Register client"))
       |> assign(:form_subtitle, gettext("Register a new client to start their loyalty card."))
       |> assign(:client_label, nil)
-      |> assign(:contact_type, :email)
       |> assign(:loyalty_card, loyalty_card)
       |> assign(:form, to_form(attrs, as: :loyalty_card))
     end
   end
 
   @impl true
-  def handle_event("set_contact_type", %{"type" => type}, socket) do
-    contact_type = if type == "whatsapp", do: :whatsapp, else: :email
-    {:noreply, assign(socket, contact_type: contact_type)}
-  end
-
   def handle_event("validate", %{"loyalty_card" => loyalty_card_params}, socket) do
     form =
       if socket.assigns.live_action == :new do
@@ -176,7 +169,7 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
   end
 
   defp prepare_new_card_attrs(socket, params) when is_map(params) do
-    with {:ok, customer} <- resolve_customer(socket.assigns.contact_type, params) do
+    with {:ok, customer} <- resolve_customer(params) do
       program = program_for_scope(socket.assigns.current_scope)
 
       {:ok,
@@ -189,20 +182,26 @@ defmodule LoyaltyWeb.LoyaltyCardLive.Form do
     end
   end
 
-  defp resolve_customer(:email, params) do
-    email = (params["email"] || "") |> String.trim()
+  defp resolve_customer(params) do
+    email = String.trim(params["email"] || "")
+    number = String.trim(params["whatsapp_number"] || "")
 
-    if email == "",
-      do: {:error, :contact_required},
-      else: Customers.get_or_create_customer_by_email(email)
+    cond do
+      email != "" and number != "" -> resolve_customer_both(email, number)
+      email != "" -> Customers.get_or_create_customer_by_email(email)
+      number != "" -> Customers.get_or_create_customer_by_whatsapp(number)
+      true -> {:error, :contact_required}
+    end
   end
 
-  defp resolve_customer(:whatsapp, params) do
-    number = (params["whatsapp_number"] || "") |> String.trim()
-
-    if number == "",
-      do: {:error, :contact_required},
-      else: Customers.get_or_create_customer_by_whatsapp(number)
+  defp resolve_customer_both(email, number) do
+    with {:ok, customer} <- Customers.get_or_create_customer_by_email(email) do
+      if is_nil(customer.whatsapp_number) do
+        Customers.update_customer_contact(customer, %{whatsapp_number: number})
+      else
+        {:ok, customer}
+      end
+    end
   end
 
   defp program_for_scope(scope) do
