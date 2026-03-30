@@ -389,8 +389,7 @@ defmodule Loyalty.LoyaltyCardsTest do
       scope = establishment_scope_fixture()
 
       card = loyalty_card_fixture(scope, %{stamps_current: 10, stamps_required: 10})
-
-      assert {:ok, _} = LoyaltyCards.redeem_card(scope, card)
+      redemption_fixture(scope, card)
 
       counts = LoyaltyCards.redemption_counts_for_cards([card.id])
 

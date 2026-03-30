@@ -30,4 +30,12 @@ defmodule Loyalty.LoyaltyCardsFixtures do
     {:ok, loyalty_card} = Loyalty.LoyaltyCards.create_loyalty_card(scope, attrs)
     loyalty_card
   end
+
+  @doc """
+  Generate a redemption for the given card (card must have stamps_current >= stamps_required).
+  """
+  def redemption_fixture(scope, card) do
+    {:ok, {redemption, _updated_card}} = Loyalty.LoyaltyCards.redeem_card(scope, card)
+    redemption
+  end
 end
