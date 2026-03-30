@@ -283,6 +283,20 @@ defmodule Loyalty.Accounts do
     :ok
   end
 
+  @doc """
+  Saves referral codes captured during registration onto the user record.
+  Silently ignores codes that don't resolve to a known record.
+  """
+  def save_referral_codes(user, est_code, _cust_code) do
+    if is_binary(est_code) && est_code != "" do
+      user
+      |> Ecto.Changeset.change(%{establishment_referral_code: est_code})
+      |> Repo.update()
+    else
+      {:ok, user}
+    end
+  end
+
   ## Token helper
 
   defp update_user_and_delete_all_tokens(changeset) do

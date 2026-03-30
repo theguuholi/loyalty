@@ -102,6 +102,11 @@ defmodule LoyaltyWeb.EstablishmentLive.Form do
   defp save_establishment(socket, :new, establishment_params) do
     case Establishments.create_establishment(socket.assigns.current_scope, establishment_params) do
       {:ok, establishment} ->
+        Establishments.set_referred_by(
+          establishment,
+          socket.assigns.current_scope.user.establishment_referral_code
+        )
+
         {:noreply,
          socket
          |> put_flash(:info, gettext("Establishment created successfully."))

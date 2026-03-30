@@ -110,5 +110,8 @@ defmodule LoyaltyWeb.Router do
 
     post "/users/log-in", UserSessionController, :create
     delete "/users/log-out", UserSessionController, :delete
+
+    get "/ref/:code", ReferralController, :establishment
+    get "/ref/c/:code", ReferralController, :customer
   end
 end

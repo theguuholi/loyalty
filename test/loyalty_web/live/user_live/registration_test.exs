@@ -68,6 +68,40 @@ defmodule LoyaltyWeb.UserLive.RegistrationTest do
     end
   end
 
+  describe "registration with referral code" do
+    test "saves establishment_referral_code on user after registration", %{conn: conn} do
+      conn = Plug.Conn.put_session(conn, "establishment_referral_code", "REF12345")
+
+      {:ok, lv, _html} = live(conn, ~p"/users/register")
+
+      email = unique_user_email()
+      form = form(lv, "#registration_form", user: valid_user_attributes(email: email))
+      submitted = render_submit(form)
+
+      {:ok, _lv, _html} =
+        submitted
+        |> follow_redirect(conn, ~p"/users/log-in")
+
+      user = Loyalty.Repo.get_by!(Loyalty.Accounts.User, email: email)
+      assert user.establishment_referral_code == "REF12345"
+    end
+
+    test "registration without referral code leaves field nil", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/users/register")
+
+      email = unique_user_email()
+      form = form(lv, "#registration_form", user: valid_user_attributes(email: email))
+      submitted = render_submit(form)
+
+      {:ok, _lv, _html} =
+        submitted
+        |> follow_redirect(conn, ~p"/users/log-in")
+
+      user = Loyalty.Repo.get_by!(Loyalty.Accounts.User, email: email)
+      assert user.establishment_referral_code == nil
+    end
+  end
+
   describe "registration navigation" do
     test "redirects to login page when the Log in button is clicked", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")

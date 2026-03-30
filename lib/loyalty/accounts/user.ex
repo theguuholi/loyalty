@@ -10,6 +10,8 @@ defmodule Loyalty.Accounts.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
+    field :establishment_referral_code, :string
+    field :referred_by_customer_id, :binary_id
 
     timestamps(type: :utc_datetime)
   end

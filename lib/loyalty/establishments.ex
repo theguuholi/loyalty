@@ -112,25 +112,20 @@ defmodule Loyalty.Establishments do
   Other subscription states: `{:error, :subscription_inactive}`.
   """
   def check_new_loyalty_card_allowed(%Establishment{} = establishment) do
-    n = count_loyalty_cards(establishment.id)
-    free? = Billing.on_free_plan?(establishment)
-    paid_ok? = Billing.paid_subscription_allows_new_clients?(establishment)
+    if Billing.has_free_access?(establishment) do
+      :ok
+    else
+      n = count_loyalty_cards(establishment.id)
+      free? = Billing.on_free_plan?(establishment)
+      paid_ok? = Billing.paid_subscription_allows_new_clients?(establishment)
 
-    cond do
-      free? and n < Billing.free_client_limit() ->
-        :ok
-
-      free? ->
-        {:error, :client_limit_reached}
-
-      paid_ok? and n < Billing.paid_client_limit() ->
-        :ok
-
-      paid_ok? ->
-        {:error, :client_limit_reached}
-
-      true ->
-        {:error, :subscription_inactive}
+      cond do
+        free? and n < Billing.free_client_limit() -> :ok
+        free? -> {:error, :client_limit_reached}
+        paid_ok? and n < Billing.paid_client_limit() -> :ok
+        paid_ok? -> {:error, :client_limit_reached}
+        true -> {:error, :subscription_inactive}
+      end
     end
   end
 
@@ -276,5 +271,70 @@ defmodule Loyalty.Establishments do
     true = establishment.user_id == scope.user.id
 
     Establishment.changeset(establishment, attrs, scope)
+  end
+
+  @doc "Finds an establishment by its referral code. Returns nil if not found."
+  def get_establishment_by_referral_code(code) when is_binary(code) do
+    Repo.get_by(Establishment, referral_code: code)
+  end
+
+  @doc "Sets referred_by_establishment_id on a newly created establishment. No-op if referral_code is blank or unknown."
+  def set_referred_by(%Establishment{} = establishment, referral_code)
+      when is_binary(referral_code) and referral_code != "" do
+    case get_establishment_by_referral_code(referral_code) do
+      nil ->
+        :ok
+
+      referrer ->
+        establishment
+        |> Ecto.Changeset.change(%{referred_by_establishment_id: referrer.id})
+        |> Repo.update()
+    end
+  end
+
+  def set_referred_by(%Establishment{}, _), do: :ok
+
+  @doc "Extends referrer's free_access_until by 30 days (stacks with existing credit)."
+  def apply_referral_credit(%Establishment{} = referrer) do
+    base =
+      if referrer.free_access_until &&
+           DateTime.after?(referrer.free_access_until, DateTime.utc_now()) do
+        referrer.free_access_until
+      else
+        DateTime.utc_now()
+      end
+
+    new_until = base |> DateTime.add(30, :day) |> DateTime.truncate(:second)
+
+    referrer
+    |> Ecto.Changeset.change(free_access_until: new_until)
+    |> Repo.update()
+  end
+
+  @doc "Loads an establishment by id for referral credit processing. Returns nil if not found."
+  def get_establishment_for_referral_credit(id) when is_binary(id) do
+    Repo.get(Establishment, id)
+  end
+
+  @doc "Counts establishments referred by this establishment (signed up via referral link)."
+  def count_referral_signups(%Establishment{} = referrer) do
+    from(e in Establishment,
+      where: e.referred_by_establishment_id == ^referrer.id,
+      select: count(e.id)
+    )
+    |> Repo.one!()
+  end
+
+  @doc "Counts referred establishments that converted to a paid subscription."
+  def count_referral_conversions(%Establishment{} = referrer) do
+    active_statuses = Billing.paid_subscription_active_statuses()
+
+    from(e in Establishment,
+      where:
+        e.referred_by_establishment_id == ^referrer.id and
+          e.subscription_status in ^active_statuses,
+      select: count(e.id)
+    )
+    |> Repo.one!()
   end
 end

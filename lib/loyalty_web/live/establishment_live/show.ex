@@ -26,6 +26,7 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
       |> assign(:establishment, establishment)
       |> assign(:loyalty_program, loyalty_program)
       |> assign_billing(establishment)
+      |> assign_referral(establishment)
 
     {:ok, socket}
   end
@@ -86,7 +87,8 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
     {:noreply,
      socket
      |> assign(:establishment, establishment)
-     |> assign_billing(establishment)}
+     |> assign_billing(establishment)
+     |> assign_referral(establishment)}
   end
 
   def handle_info(
@@ -102,6 +104,18 @@ defmodule LoyaltyWeb.EstablishmentLive.Show do
   def handle_info({type, %Establishment{}}, socket)
       when type in [:created, :updated, :deleted] do
     {:noreply, socket}
+  end
+
+  defp assign_referral(socket, %Establishment{} = establishment) do
+    referral_link = LoyaltyWeb.Endpoint.url() <> "/ref/#{establishment.referral_code}"
+    referral_signups = Establishments.count_referral_signups(establishment)
+    referral_conversions = Establishments.count_referral_conversions(establishment)
+
+    socket
+    |> assign(:referral_link, referral_link)
+    |> assign(:referral_signups, referral_signups)
+    |> assign(:referral_conversions, referral_conversions)
+    |> assign(:free_access_until, establishment.free_access_until)
   end
 
   defp assign_billing(socket, %Establishment{} = establishment) do

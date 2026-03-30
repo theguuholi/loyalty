@@ -2,6 +2,7 @@ defmodule Loyalty.Billing.StripeWebhook do
   @moduledoc "Handles Stripe webhook event payloads (after signature verification)."
 
   alias Loyalty.Establishments
+  alias Loyalty.Establishments.Establishment
 
   @doc """
   Dispatches a decoded Stripe `event` map. Returns `:ok` or `{:error, term}`.
@@ -46,7 +47,7 @@ defmodule Loyalty.Billing.StripeWebhook do
              stripe_subscription_id: subscription_id,
              subscription_status: "active"
            }) do
-        {:ok, _} -> :ok
+        {:ok, est} -> maybe_apply_referral_credit(est)
         {:error, :not_found} -> :ok
         {:error, other} -> {:error, other}
       end
@@ -109,7 +110,7 @@ defmodule Loyalty.Billing.StripeWebhook do
              stripe_subscription_id: subscription_id,
              subscription_status: "active"
            }) do
-        {:ok, _} -> :ok
+        {:ok, est} -> maybe_apply_referral_credit(est)
         {:error, :not_found} -> :ok
         {:error, other} -> {:error, other}
       end
@@ -148,6 +149,34 @@ defmodule Loyalty.Billing.StripeWebhook do
       id when is_binary(id) -> id
       %{"id" => id} when is_binary(id) -> id
       _ -> nil
+    end
+  end
+
+  defp maybe_apply_referral_credit(%Establishment{} = est) do
+    referrer_id = est.referred_by_establishment_id
+
+    if is_binary(referrer_id) do
+      case Establishments.get_establishment_for_referral_credit(referrer_id) do
+        nil -> :ok
+        referrer -> maybe_credit_referrer(referrer, est)
+      end
+    else
+      :ok
+    end
+  end
+
+  defp maybe_credit_referrer(referrer, est) do
+    window_end = DateTime.add(est.inserted_at, 90, :day)
+    within_window? = DateTime.before?(DateTime.utc_now(), window_end)
+
+    already_credited? =
+      referrer.free_access_until != nil &&
+        DateTime.after?(referrer.free_access_until, window_end)
+
+    if within_window? && not already_credited? do
+      Establishments.apply_referral_credit(referrer)
+    else
+      :ok
     end
   end
 end

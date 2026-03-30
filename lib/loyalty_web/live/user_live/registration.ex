@@ -10,16 +10,31 @@ defmodule LoyaltyWeb.UserLive.Registration do
     {:ok, redirect(socket, to: LoyaltyWeb.UserAuth.signed_in_path(socket))}
   end
 
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     changeset = Accounts.change_user_email(%User{}, %{}, validate_unique: false)
+    est_code = Map.get(session, "establishment_referral_code")
+    cust_code = Map.get(session, "customer_referral_code")
 
-    {:ok, assign_form(socket, changeset), temporary_assigns: [form: nil]}
+    socket =
+      socket
+      |> assign(:est_referral_code, est_code)
+      |> assign(:cust_referral_code, cust_code)
+      |> assign_form(changeset)
+
+    {:ok, socket, temporary_assigns: [form: nil]}
   end
 
   @impl true
   def handle_event("save", %{"user" => user_params}, socket) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
+        {:ok, _} =
+          Accounts.save_referral_codes(
+            user,
+            socket.assigns.est_referral_code,
+            socket.assigns.cust_referral_code
+          )
+
         {:ok, _} =
           Accounts.deliver_login_instructions(
             user,

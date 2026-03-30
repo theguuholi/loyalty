@@ -232,5 +232,74 @@
         )}
       </p>
     </section>
+
+    <%!-- Referral program section --%>
+    <section
+      aria-label={gettext("Referral program")}
+      class="rounded-2xl border border-base-300 bg-base-100 shadow-sm overflow-hidden"
+    >
+      <div
+        class="p-5 border-b border-base-300"
+        style="background: linear-gradient(135deg, #1b4d3e 0%, #1e5c4a 100%);"
+      >
+        <h2 class="text-base font-bold text-white">{gettext("Referral program")}</h2>
+        <p class="text-sm text-white/70 mt-0.5">
+          {gettext(
+            "Refer other businesses and earn 30 free days when they subscribe within 90 days."
+          )}
+        </p>
+      </div>
+      <div class="p-5 space-y-4">
+        <%!-- Referral link --%>
+        <div>
+          <p class="text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1">
+            {gettext("Your referral link")}
+          </p>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              readonly
+              value={@referral_link}
+              id="referral-link-input"
+              class="flex-1 text-sm px-3 py-2 rounded-xl border border-base-300 bg-base-200 text-base-content/80 min-h-10"
+            />
+            <button
+              id="copy-referral-link-btn"
+              type="button"
+              phx-hook="ClipboardCopy"
+              data-url={@referral_link}
+              phx-update="ignore"
+              class="shimmer-btn px-4 py-2 rounded-xl text-sm font-semibold min-h-10"
+            >
+              {gettext("Copy")}
+            </button>
+          </div>
+        </div>
+
+        <%!-- Stats row --%>
+        <div class="flex gap-4">
+          <div
+            class="flex-1 rounded-xl p-3 text-center"
+            style="background: #f0fdf4; border: 1px solid #d1fae5;"
+          >
+            <p class="text-2xl font-black" style="color: #1b4d3e;">{@referral_signups}</p>
+            <p class="text-xs text-base-content/60 mt-0.5">{gettext("Sign-ups")}</p>
+          </div>
+          <div
+            class="flex-1 rounded-xl p-3 text-center"
+            style="background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.3);"
+          >
+            <p class="text-2xl font-black" style="color: #b8962e;">{@referral_conversions}</p>
+            <p class="text-xs text-base-content/60 mt-0.5">{gettext("Converted")}</p>
+          </div>
+        </div>
+
+        <%!-- Free access until --%>
+        <p :if={@free_access_until} class="text-sm text-base-content/70" id="free-access-until">
+          {gettext("Free access until:")}
+          <strong>{Calendar.strftime(@free_access_until, "%B %d, %Y")}</strong>
+        </p>
+      </div>
+    </section>
   </main>
 </Layouts.app>

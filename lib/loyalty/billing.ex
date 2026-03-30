@@ -34,4 +34,10 @@ defmodule Loyalty.Billing do
   def paid_subscription_allows_new_clients?(establishment) do
     establishment.subscription_status in paid_subscription_active_statuses()
   end
+
+  @doc "True if the establishment has active free access granted via referral credit."
+  def has_free_access?(%{free_access_until: nil}), do: false
+
+  def has_free_access?(%{free_access_until: until}),
+    do: DateTime.after?(until, DateTime.utc_now())
 end

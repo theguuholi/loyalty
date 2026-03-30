@@ -234,5 +234,160 @@ defmodule Loyalty.EstablishmentsTest do
       rows = Establishments.list_all_establishments_with_owner_emails()
       assert Enum.any?(rows, &(&1.id == establishment.id))
     end
+
+    test "create_establishment/2 generates an 8-char referral_code" do
+      scope = user_scope_fixture()
+      {:ok, establishment} = Establishments.create_establishment(scope, %{name: "ref-test"})
+      assert is_binary(establishment.referral_code)
+      assert String.length(establishment.referral_code) == 8
+    end
+
+    test "get_establishment_by_referral_code/1 finds by code" do
+      scope = user_scope_fixture()
+      establishment = establishment_fixture(scope)
+      found = Establishments.get_establishment_by_referral_code(establishment.referral_code)
+      assert found.id == establishment.id
+    end
+
+    test "get_establishment_by_referral_code/1 returns nil for unknown code" do
+      assert Establishments.get_establishment_by_referral_code("ZZZZZZZZ") == nil
+    end
+
+    test "set_referred_by/2 sets referred_by_establishment_id for valid code" do
+      scope = user_scope_fixture()
+      referrer = establishment_fixture(scope)
+
+      other_scope = user_scope_fixture()
+      referred = establishment_fixture(other_scope)
+
+      assert {:ok, updated} = Establishments.set_referred_by(referred, referrer.referral_code)
+      assert updated.referred_by_establishment_id == referrer.id
+    end
+
+    test "set_referred_by/2 is no-op for blank code" do
+      scope = user_scope_fixture()
+      establishment = establishment_fixture(scope)
+      assert :ok == Establishments.set_referred_by(establishment, "")
+    end
+
+    test "set_referred_by/2 is no-op for nil code" do
+      scope = user_scope_fixture()
+      establishment = establishment_fixture(scope)
+      assert :ok == Establishments.set_referred_by(establishment, nil)
+    end
+
+    test "set_referred_by/2 is no-op for unknown referral code" do
+      scope = user_scope_fixture()
+      establishment = establishment_fixture(scope)
+      assert :ok == Establishments.set_referred_by(establishment, "UNKNOWN8")
+    end
+
+    test "apply_referral_credit/1 sets free_access_until 30 days from now" do
+      scope = user_scope_fixture()
+      establishment = establishment_fixture(scope)
+      assert establishment.free_access_until == nil
+
+      {:ok, updated} = Establishments.apply_referral_credit(establishment)
+      assert updated.free_access_until != nil
+
+      diff = DateTime.diff(updated.free_access_until, DateTime.utc_now(), :day)
+      assert diff >= 29 and diff <= 30
+    end
+
+    test "apply_referral_credit/1 stacks on existing credit" do
+      scope = user_scope_fixture()
+      establishment = establishment_fixture(scope)
+
+      future = DateTime.utc_now() |> DateTime.add(15, :day) |> DateTime.truncate(:second)
+
+      {:ok, est_with_credit} =
+        establishment
+        |> Ecto.Changeset.change(%{free_access_until: future})
+        |> Loyalty.Repo.update()
+
+      {:ok, updated} = Establishments.apply_referral_credit(est_with_credit)
+      diff = DateTime.diff(updated.free_access_until, future, :day)
+      assert diff >= 29 and diff <= 30
+    end
+
+    test "count_referral_signups/1 counts referred establishments" do
+      scope = user_scope_fixture()
+      referrer = establishment_fixture(scope)
+      assert Establishments.count_referral_signups(referrer) == 0
+
+      other_scope = user_scope_fixture()
+      referred = establishment_fixture(other_scope)
+
+      referred
+      |> Ecto.Changeset.change(%{referred_by_establishment_id: referrer.id})
+      |> Loyalty.Repo.update!()
+
+      assert Establishments.count_referral_signups(referrer) == 1
+    end
+
+    test "count_referral_conversions/1 counts referred with active subscription" do
+      scope = user_scope_fixture()
+      referrer = establishment_fixture(scope)
+
+      other_scope = user_scope_fixture()
+      referred = establishment_fixture(other_scope)
+
+      referred
+      |> Ecto.Changeset.change(%{
+        referred_by_establishment_id: referrer.id,
+        subscription_status: "active"
+      })
+      |> Loyalty.Repo.update!()
+
+      assert Establishments.count_referral_conversions(referrer) == 1
+    end
+
+    test "count_referral_conversions/1 excludes non-active subscriptions" do
+      scope = user_scope_fixture()
+      referrer = establishment_fixture(scope)
+
+      other_scope = user_scope_fixture()
+      referred = establishment_fixture(other_scope)
+
+      referred
+      |> Ecto.Changeset.change(%{
+        referred_by_establishment_id: referrer.id,
+        subscription_status: "past_due"
+      })
+      |> Loyalty.Repo.update!()
+
+      assert Establishments.count_referral_conversions(referrer) == 0
+    end
+
+    test "get_establishment_for_referral_credit/1 returns establishment by id" do
+      scope = user_scope_fixture()
+      establishment = establishment_fixture(scope)
+
+      assert Establishments.get_establishment_for_referral_credit(establishment.id).id ==
+               establishment.id
+    end
+
+    test "get_establishment_for_referral_credit/1 returns nil for unknown id" do
+      assert Establishments.get_establishment_for_referral_credit(
+               "00000000-0000-0000-0000-000000000000"
+             ) == nil
+    end
+
+    test "check_new_loyalty_card_allowed/1 with free_access bypasses card limit" do
+      scope = user_scope_fixture()
+
+      establishment =
+        establishment_fixture(scope, %{subscription_status: "past_due"})
+
+      {:ok, est_with_access} =
+        establishment
+        |> Ecto.Changeset.change(%{
+          free_access_until:
+            DateTime.utc_now() |> DateTime.add(10, :day) |> DateTime.truncate(:second)
+        })
+        |> Loyalty.Repo.update()
+
+      assert Establishments.check_new_loyalty_card_allowed(est_with_access) == :ok
+    end
   end
 end

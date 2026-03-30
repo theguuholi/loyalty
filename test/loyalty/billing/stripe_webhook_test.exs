@@ -253,5 +253,165 @@ defmodule Loyalty.Billing.StripeWebhookTest do
       updated = Establishments.get_establishment!(scope, establishment.id)
       assert updated.subscription_status == nil
     end
+
+    test "checkout.session.completed applies referral credit to referrer within 90-day window" do
+      referrer_scope = AccountsFixtures.user_scope_fixture()
+      referrer = EstablishmentsFixtures.establishment_fixture(referrer_scope)
+      assert referrer.free_access_until == nil
+
+      referred_scope = AccountsFixtures.user_scope_fixture()
+      referred = EstablishmentsFixtures.establishment_fixture(referred_scope)
+
+      referred
+      |> Ecto.Changeset.change(%{referred_by_establishment_id: referrer.id})
+      |> Loyalty.Repo.update!()
+
+      event = %{
+        "type" => "checkout.session.completed",
+        "data" => %{
+          "object" => %{
+            "customer" => "cus_ref",
+            "subscription" => "sub_ref",
+            "metadata" => %{"establishment_id" => referred.id}
+          }
+        }
+      }
+
+      assert {:ok, _} = StripeWebhook.handle_event(event)
+
+      updated_referrer = Establishments.get_establishment_for_referral_credit(referrer.id)
+      assert updated_referrer.free_access_until != nil
+    end
+
+    test "invoice.paid applies referral credit to referrer" do
+      referrer_scope = AccountsFixtures.user_scope_fixture()
+      referrer = EstablishmentsFixtures.establishment_fixture(referrer_scope)
+
+      referred_scope = AccountsFixtures.user_scope_fixture()
+      referred = EstablishmentsFixtures.establishment_fixture(referred_scope)
+
+      referred
+      |> Ecto.Changeset.change(%{referred_by_establishment_id: referrer.id})
+      |> Loyalty.Repo.update!()
+
+      event = %{
+        "type" => "invoice.paid",
+        "data" => %{
+          "object" => %{
+            "paid" => true,
+            "customer" => "cus_inv_ref",
+            "subscription" => "sub_inv_ref",
+            "metadata" => %{"establishment_id" => referred.id}
+          }
+        }
+      }
+
+      assert {:ok, _} = StripeWebhook.handle_event(event)
+
+      updated_referrer = Establishments.get_establishment_for_referral_credit(referrer.id)
+      assert updated_referrer.free_access_until != nil
+    end
+
+    test "referral credit is not applied when referred_by_establishment_id is nil" do
+      scope = AccountsFixtures.user_scope_fixture()
+      establishment = EstablishmentsFixtures.establishment_fixture(scope)
+
+      event = %{
+        "type" => "checkout.session.completed",
+        "data" => %{
+          "object" => %{
+            "customer" => "cus_no_ref",
+            "subscription" => "sub_no_ref",
+            "metadata" => %{"establishment_id" => establishment.id}
+          }
+        }
+      }
+
+      assert :ok == StripeWebhook.handle_event(event)
+
+      updated = Establishments.get_establishment!(scope, establishment.id)
+      assert updated.free_access_until == nil
+    end
+
+    test "get_establishment_for_referral_credit returns nil for unknown id" do
+      assert Establishments.get_establishment_for_referral_credit(
+               "00000000-0000-0000-0000-000000000099"
+             ) == nil
+    end
+
+    test "referral credit is not double-applied (idempotency)" do
+      referrer_scope = AccountsFixtures.user_scope_fixture()
+      referrer = EstablishmentsFixtures.establishment_fixture(referrer_scope)
+
+      referred_scope = AccountsFixtures.user_scope_fixture()
+      referred = EstablishmentsFixtures.establishment_fixture(referred_scope)
+
+      referred
+      |> Ecto.Changeset.change(%{referred_by_establishment_id: referrer.id})
+      |> Loyalty.Repo.update!()
+
+      event = %{
+        "type" => "checkout.session.completed",
+        "data" => %{
+          "object" => %{
+            "customer" => "cus_idem",
+            "subscription" => "sub_idem",
+            "metadata" => %{"establishment_id" => referred.id}
+          }
+        }
+      }
+
+      # First call applies credit
+      assert {:ok, _} = StripeWebhook.handle_event(event)
+      referrer_v1 = Establishments.get_establishment_for_referral_credit(referrer.id)
+      assert referrer_v1.free_access_until != nil
+
+      # Set free_access_until far beyond the 90-day window to simulate already credited
+      window_end = DateTime.add(referred.inserted_at, 90, :day)
+      far_future = window_end |> DateTime.add(1, :day) |> DateTime.truncate(:second)
+
+      referrer_v1
+      |> Ecto.Changeset.change(%{free_access_until: far_future})
+      |> Loyalty.Repo.update!()
+
+      # Second call should not re-apply (already_credited? check)
+      assert :ok == StripeWebhook.handle_event(event)
+      referrer_v2 = Establishments.get_establishment_for_referral_credit(referrer.id)
+      assert referrer_v2.free_access_until == far_future
+    end
+
+    test "referral credit not applied outside 90-day window" do
+      referrer_scope = AccountsFixtures.user_scope_fixture()
+      referrer = EstablishmentsFixtures.establishment_fixture(referrer_scope)
+
+      referred_scope = AccountsFixtures.user_scope_fixture()
+      referred = EstablishmentsFixtures.establishment_fixture(referred_scope)
+
+      # Backdate referred establishment to more than 90 days ago
+      past = DateTime.utc_now() |> DateTime.add(-91, :day) |> DateTime.truncate(:second)
+
+      referred
+      |> Ecto.Changeset.change(%{
+        referred_by_establishment_id: referrer.id,
+        inserted_at: past
+      })
+      |> Loyalty.Repo.update!()
+
+      event = %{
+        "type" => "checkout.session.completed",
+        "data" => %{
+          "object" => %{
+            "customer" => "cus_old",
+            "subscription" => "sub_old",
+            "metadata" => %{"establishment_id" => referred.id}
+          }
+        }
+      }
+
+      assert :ok == StripeWebhook.handle_event(event)
+
+      updated_referrer = Establishments.get_establishment_for_referral_credit(referrer.id)
+      assert updated_referrer.free_access_until == nil
+    end
   end
 end

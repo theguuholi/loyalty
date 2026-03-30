@@ -223,6 +223,33 @@ defmodule LoyaltyWeb.EstablishmentLiveTest do
       assert has_element?(show_live, "#dashboard-billing-card")
     end
 
+    test "referral section shows copy-referral-link button", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
+      {:ok, show_live, _html} = live(conn, ~p"/establishments/#{establishment}")
+      assert has_element?(show_live, "#copy-referral-link-btn")
+    end
+
+    test "free-access-until is shown when set", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
+
+      {:ok, _} =
+        establishment
+        |> Ecto.Changeset.change(%{
+          free_access_until:
+            DateTime.utc_now() |> DateTime.add(10, :day) |> DateTime.truncate(:second)
+        })
+        |> Loyalty.Repo.update()
+
+      {:ok, show_live, _html} = live(conn, ~p"/establishments/#{establishment}")
+      assert has_element?(show_live, "#free-access-until")
+    end
+
+    test "free-access-until is hidden when nil", %{conn: conn, scope: scope} do
+      establishment = establishment_fixture(scope)
+      {:ok, show_live, _html} = live(conn, ~p"/establishments/#{establishment}")
+      refute has_element?(show_live, "#free-access-until")
+    end
+
     test "shows near-limit hint when close to free plan limit", %{conn: conn, scope: scope} do
       establishment = establishment_fixture(scope)
       scope_with_est = Loyalty.Accounts.Scope.put_establishment(scope, establishment)
