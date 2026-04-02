@@ -24,21 +24,8 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/loyalty"
 import topbar from "../vendor/topbar"
+import Hooks from "./hooks"
 
-let Hooks = {}
-
-Hooks.ClipboardCopy = {
-  mounted() {
-    this.el.addEventListener("click", () => {
-      const url = this.el.dataset.url;
-      navigator.clipboard.writeText(url).then(() => {
-        const orig = this.el.textContent;
-        this.el.textContent = "Copiado!";
-        setTimeout(() => { this.el.textContent = orig; }, 1500);
-      });
-    });
-  }
-};
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {

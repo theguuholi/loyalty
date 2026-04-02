@@ -16,7 +16,8 @@ defmodule LoyaltyWeb.CardsLive do
      |> assign(:cards, [])
      |> assign(:show_list?, false)
      |> assign(:form, to_form(%{"email" => ""}, as: :cards_entry))
-     |> assign(:redemption_counts, %{})}
+     |> assign(:redemption_counts, %{})
+     |> assign(:customer_referral_code, nil)}
   end
 
   @impl true
@@ -29,12 +30,15 @@ defmodule LoyaltyWeb.CardsLive do
           cards = LoyaltyCards.list_loyalty_cards_by_customer_email(email)
           counts = cards |> Enum.map(& &1.id) |> LoyaltyCards.redemption_counts_for_cards()
 
+          referral_code = get_referral_code(cards)
+
           {:noreply,
            socket
            |> assign(:contact_type, :email)
            |> assign(:identifier, email)
            |> assign(:cards, cards)
            |> assign(:redemption_counts, counts)
+           |> assign(:customer_referral_code, referral_code)
            |> assign(:show_list?, true)}
         else
           {:noreply, assign_reset(socket, :email)}
@@ -47,12 +51,15 @@ defmodule LoyaltyWeb.CardsLive do
           cards = LoyaltyCards.list_loyalty_cards_by_customer_whatsapp(number)
           counts = cards |> Enum.map(& &1.id) |> LoyaltyCards.redemption_counts_for_cards()
 
+          referral_code = get_referral_code(cards)
+
           {:noreply,
            socket
            |> assign(:contact_type, :whatsapp)
            |> assign(:identifier, number)
            |> assign(:cards, cards)
            |> assign(:redemption_counts, counts)
+           |> assign(:customer_referral_code, referral_code)
            |> assign(:show_list?, true)}
         else
           {:noreply, assign_reset(socket, :whatsapp)}
@@ -70,6 +77,7 @@ defmodule LoyaltyWeb.CardsLive do
     |> assign(:identifier, nil)
     |> assign(:cards, [])
     |> assign(:show_list?, false)
+    |> assign(:customer_referral_code, nil)
     |> assign(:form, to_form(%{form_key => ""}, as: :cards_entry))
   end
 
@@ -135,4 +143,7 @@ defmodule LoyaltyWeb.CardsLive do
   defp valid_whatsapp?(number) do
     Regex.match?(~r/^\+[1-9]\d{7,14}$/, number)
   end
+
+  defp get_referral_code([card | _]), do: card.customer.referral_code
+  defp get_referral_code([]), do: nil
 end

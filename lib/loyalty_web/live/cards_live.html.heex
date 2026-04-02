@@ -154,6 +154,19 @@
             >
               {gettext("Resgatado %{n} vez(es)", n: Map.get(@redemption_counts, card.id, 0))}
             </p>
+            <div :if={@customer_referral_code} class="mt-2 flex justify-end">
+              <button
+                id={"indicar-btn-#{card.id}"}
+                type="button"
+                phx-hook="ClipboardCopy"
+                data-url={LoyaltyWeb.Endpoint.url() <> "/ref/c/#{@customer_referral_code}"}
+                phx-update="ignore"
+                class="text-xs px-3 py-1.5 rounded-lg font-semibold min-h-8"
+                style="background: rgba(27,77,62,0.08); color: #1b4d3e; border: 1px solid rgba(27,77,62,0.2);"
+              >
+                {gettext("Indicar")}
+              </button>
+            </div>
           </li>
         </ul>
       </section>

@@ -59,6 +59,12 @@ defmodule Loyalty.Customers do
     |> Repo.update()
   end
 
+  @doc "Finds a customer by referral code. Returns the customer or nil if not found."
+  @spec get_customer_by_referral_code(String.t()) :: Customer.t() | nil
+  def get_customer_by_referral_code(code) when is_binary(code) do
+    Repo.get_by(Customer, referral_code: code)
+  end
+
   defp insert_customer(attrs) do
     %Customer{}
     |> Customer.changeset(attrs)

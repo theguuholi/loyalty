@@ -9,6 +9,7 @@ defmodule Loyalty.LoyaltyPrograms.Customer do
   schema "customers" do
     field :email, :string
     field :whatsapp_number, :string
+    field :referral_code, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -22,6 +23,8 @@ defmodule Loyalty.LoyaltyPrograms.Customer do
     |> validate_whatsapp_format()
     |> unique_constraint(:email)
     |> unique_constraint(:whatsapp_number)
+    |> unique_constraint(:referral_code)
+    |> prepare_changes(&generate_referral_code/1)
   end
 
   @doc """
@@ -64,4 +67,18 @@ defmodule Loyalty.LoyaltyPrograms.Customer do
   defp blank_or_nil?(nil), do: true
   defp blank_or_nil?(""), do: true
   defp blank_or_nil?(str) when is_binary(str), do: String.trim(str) == ""
+
+  defp generate_referral_code(changeset) do
+    if get_field(changeset, :referral_code) do
+      changeset
+    else
+      code =
+        6
+        |> :crypto.strong_rand_bytes()
+        |> Base.url_encode64(padding: false)
+        |> String.slice(0, 8)
+
+      put_change(changeset, :referral_code, code)
+    end
+  end
 end

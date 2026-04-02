@@ -7,6 +7,9 @@ This is a Phoenix v1.8 web application with LiveView, Ecto, and `phx.gen.auth`.
 
 ---
 
+## Test
+ALL THE INTENTION CODE MUST FOLLOW THE GOOD PRACTICES OF TDD (TEST DRIVEN DEVELOPMENT) always create test first 
+
 ## Workflow
 
 - **Always** write implementation plans to the `plan/` folder before touching code. Every plan must be a file in `plan/` — never write plans inline or in other locations. Each plan must explain **why** every migration and context module exists — what problem it solves, what data it owns, or what responsibility it carries.
@@ -129,6 +132,10 @@ end
 - **Never** write inline `<script>` tags in HEEx — write JS in `assets/js/` and import via `app.js`
 - Use `phx-hook="MyHook"` + `phx-update="ignore"` together whenever a JS hook manages its own DOM
 
+### Always single responsibility principes
+
+If page has a lot of responsibilities, create in smaller components for the page example
+
 ### Interpolation rules
 
 | Situation | Correct syntax |
@@ -180,7 +187,7 @@ Always use the list syntax for conditional classes:
 <a class={[
   "px-2 text-white",
   @active && "font-bold",
-  if(@error, do: "border-red-500", else: "border-base-300"),
+  :if=(@error, do: "border-red-500", else: "border-base-300"),
 ]}>
 ```
 
@@ -199,6 +206,74 @@ Annotate the parent tag with `phx-no-curly-interpolation` when outputting `{` or
 Always use `<%!-- comment --%>` for template comments, not `<!-- -->`.
 
 ---
+
+---
+## Hooks
+Hooks using Phoenix and Liveview MUST follow the folder structure add in the hooks.js, create a folder and add the index and everything related to hooks must be inside the folder
+
+assets/js/hooks.js
+```js
+import ClipboardCopy from "./hooks/ClipboardCopy";
+
+let Hooks = {
+    ClipboardCopy: ClipboardCopy
+};
+
+export default Hooks;
+```
+
+assets/js/hooks/ClipboardCopy/index.js
+
+```js index.js
+const ClipboardCopy = {
+  mounted() {
+    this.el.addEventListener("click", () => {
+      const url = this.el.dataset.url;
+      navigator.clipboard.writeText(url).then(() => {
+        const orig = this.el.textContent;
+        this.el.textContent = "Copiado!";
+        setTimeout(() => { this.el.textContent = orig; }, 1500);
+      });
+    });
+  }
+}
+
+export default ClipboardCopy;
+```
+
+The test must be created using the hook in the *test.exs related to the liveview page 
+like and it must have event before and after the hook result 
+
+```elixir
+  test "load more products", %{conn: conn} do
+    products = for _ <- 0..12, do: product_fixture()
+
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    [products_page_1, products_page_2] = products |> Enum.chunk_every(8)
+
+    Enum.each(products_page_1, fn product ->
+      assert has_element?(view, "[data-role=item][data-id=#{product.id}]")
+    end)
+
+    Enum.each(products_page_2, fn product ->
+      refute has_element?(view, "[data-role=item][data-id=#{product.id}]")
+    end)
+
+    view
+    |> element("#load_more_products")
+    |> render_hook("load_more_products", %{})
+
+    view
+    |> element("#load_more_products")
+    |> render_hook("load_more_products", %{})
+
+    Enum.each(products_page_2, fn product ->
+      assert has_element?(view, "[data-role=item][data-id=#{product.id}]")
+    end)
+  end
+
+```
 
 ## Forms
 

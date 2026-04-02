@@ -205,7 +205,7 @@ defmodule Loyalty.LoyaltyCards do
       %Customer{id: customer_id} ->
         LoyaltyCard
         |> Ecto.Query.where([c], c.customer_id == ^customer_id)
-        |> Ecto.Query.preload([:establishment, :loyalty_program])
+        |> Ecto.Query.preload([:customer, :establishment, :loyalty_program])
         |> Repo.all()
     end
   end
@@ -223,7 +223,7 @@ defmodule Loyalty.LoyaltyCards do
       %Customer{id: customer_id} ->
         LoyaltyCard
         |> Ecto.Query.where([c], c.customer_id == ^customer_id)
-        |> Ecto.Query.preload([:establishment, :loyalty_program])
+        |> Ecto.Query.preload([:customer, :establishment, :loyalty_program])
         |> Repo.all()
     end
   end

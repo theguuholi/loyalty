@@ -37,7 +37,7 @@ defmodule LoyaltyWeb.CardsLiveTest do
 
     test "given list view when they click Trocar e-mail then they go back to entry", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/cards?email=someone@example.com")
-      assert view |> element("#cards-change-contact-link") |> render_click()
+      assert view |> element("#cards-change-contact-link", "Trocar e-mail") |> render_click()
       assert has_element?(view, "#cards-entry-form")
     end
 
@@ -51,20 +51,20 @@ defmodule LoyaltyWeb.CardsLiveTest do
   describe "contact type toggle" do
     test "switching to whatsapp shows phone input", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/cards")
-      view |> element("#lookup-type-whatsapp") |> render_click()
+      view |> element("#lookup-type-whatsapp", "WhatsApp") |> render_click()
       assert has_element?(view, "#cards-entry-whatsapp")
     end
 
     test "switching back to email shows email input", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/cards")
-      view |> element("#lookup-type-whatsapp") |> render_click()
-      view |> element("#lookup-type-email") |> render_click()
+      view |> element("#lookup-type-whatsapp", "WhatsApp") |> render_click()
+      view |> element("#lookup-type-email", "E-mail") |> render_click()
       assert has_element?(view, "#cards-entry-email")
     end
 
     test "submitting whatsapp lookup shows list view", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/cards")
-      view |> element("#lookup-type-whatsapp") |> render_click()
+      view |> element("#lookup-type-whatsapp", "WhatsApp") |> render_click()
 
       view
       |> form("#cards-entry-form", %{"cards_entry" => %{"whatsapp_number" => "+5511900000099"}})
@@ -75,7 +75,7 @@ defmodule LoyaltyWeb.CardsLiveTest do
 
     test "submitting invalid whatsapp shows error", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/cards")
-      view |> element("#lookup-type-whatsapp") |> render_click()
+      view |> element("#lookup-type-whatsapp", "WhatsApp") |> render_click()
 
       view
       |> form("#cards-entry-form", %{"cards_entry" => %{"whatsapp_number" => "notaphone"}})
@@ -86,7 +86,7 @@ defmodule LoyaltyWeb.CardsLiveTest do
 
     test "submitting empty whatsapp shows error", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/cards")
-      view |> element("#lookup-type-whatsapp") |> render_click()
+      view |> element("#lookup-type-whatsapp", "WhatsApp") |> render_click()
 
       view
       |> form("#cards-entry-form", %{"cards_entry" => %{"whatsapp_number" => ""}})
