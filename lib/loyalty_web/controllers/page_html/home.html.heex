@@ -32,10 +32,10 @@
             id="landing-title"
             class="text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl"
           >
-            Transforme clientes em recorrência com cartões digitais que eles realmente usam.
+            Faça seus clientes voltarem mais vezes — sem cartãozinho de papel
           </h1>
           <p class="text-base leading-7 text-white/70 sm:text-lg max-w-xl">
-            MyRewards ajuda estabelecimentos a fidelizar clientes com cartões digitais, progresso visível e uma jornada simples no celular — sem app extra.
+            Volta Sempre ajuda seu negócio a fidelizar clientes pelo celular, sem app, sem complicação.
           </p>
         </div>
 
@@ -77,7 +77,7 @@
             style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);"
           >
             <p class="font-semibold text-white">Assinatura simples</p>
-            <p class="mt-1 text-white/60">R$ 10/mês para manter o programa ativo.</p>
+            <p class="mt-1 text-white/60">R$ 49/mês para manter o programa ativo.</p>
           </article>
           <article
             class="rounded-2xl p-4 border"
@@ -88,6 +88,36 @@
           </article>
         </aside>
       </div>
+    </section>
+
+    <%!-- 3 passos --%>
+    <section aria-labelledby="steps-title" class="space-y-6">
+      <header class="text-center space-y-2">
+        <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Como funciona</p>
+        <h2 id="steps-title" class="text-2xl font-bold text-base-content sm:text-3xl">
+          Simples assim
+        </h2>
+      </header>
+      <ol class="grid gap-4 sm:grid-cols-3">
+        <li class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm flex flex-col gap-3">
+          <span class="text-3xl">📲</span>
+          <div>
+            <p class="font-semibold text-base-content">1. Cliente escaneia o QR Code no balcão</p>
+          </div>
+        </li>
+        <li class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm flex flex-col gap-3">
+          <span class="text-3xl">☕</span>
+          <div>
+            <p class="font-semibold text-base-content">2. Acumula carimbos a cada visita</p>
+          </div>
+        </li>
+        <li class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm flex flex-col gap-3">
+          <span class="text-3xl">🎁</span>
+          <div>
+            <p class="font-semibold text-base-content">3. Ganha a recompensa e volta mais vezes</p>
+          </div>
+        </li>
+      </ol>
     </section>
 
     <%!-- Card preview section --%>
@@ -213,7 +243,7 @@
             Assinatura recorrente com valor claro
           </h3>
           <p class="text-sm leading-6 text-base-content/60">
-            R$ 10/mês por estabelecimento. Fácil de entender, fácil de vender.
+            R$ 49/mês por estabelecimento. Se um cliente voltar só mais uma vez por mês, já se paga.
           </p>
         </article>
       </div>
@@ -241,7 +271,7 @@
               class="min-h-12 px-6 font-semibold"
               style="background: #d4af37; color: #0f2d24; border: none;"
             >
-              Começar grátis
+              Quero fidelizar meus clientes
             </.button>
           </nav>
         </div>
@@ -293,31 +323,5 @@
       </div>
     </section>
 
-    <%!-- Testimonial --%>
-    <section
-      aria-labelledby="landing-testimonial-title"
-      class="grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:items-center"
-    >
-      <header class="space-y-3">
-        <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">
-          Confiança e clareza
-        </p>
-        <h2 id="landing-testimonial-title" class="text-2xl font-bold text-base-content">
-          Feito para parecer simples, mas vender com clareza.
-        </h2>
-        <p class="text-sm leading-6 text-base-content/60">
-          Design limpo, hierarquia clara e identidade visual que passa profissionalismo — não "software genérico".
-        </p>
-      </header>
-
-      <blockquote class="rounded-[2rem] border border-base-300 bg-base-100 p-6 shadow-sm">
-        <p class="text-lg font-medium leading-8 text-base-content">
-          "É o tipo de produto que eu consigo explicar em 30 segundos e vender no mesmo atendimento."
-        </p>
-        <footer class="mt-4 text-sm text-base-content/60">
-          Estabelecimento local, pronto para fidelizar mais clientes.
-        </footer>
-      </blockquote>
-    </section>
   </main>
 </Layouts.app>

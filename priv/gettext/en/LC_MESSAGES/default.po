@@ -501,8 +501,8 @@ msgstr "Account menu"
 
 #: lib/loyalty_web/components/layouts.ex:44
 #, elixir-autogen, elixir-format
-msgid "MyRewards"
-msgstr "MyRewards"
+msgid "Volta Sempre"
+msgstr "Volta Sempre"
 
 #: lib/loyalty_web/user_auth.ex:236
 #: lib/loyalty_web/user_auth.ex:321
